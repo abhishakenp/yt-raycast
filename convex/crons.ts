@@ -17,6 +17,14 @@ crons.interval(
   internal.sessions.cleanupStuckSessions,
 )
 
+// Re-check only existing commerce instances hourly so suspension/deletion
+// follows paid-through entitlement without scanning the entire table.
+crons.interval(
+  'commerce instance lifecycle sweep',
+  { hours: 1 },
+  internal.commerceInstances.runLifecycleSweep,
+)
+
 crons.cron(
   'clear expired session IP hashes',
   '0 3 * * *',

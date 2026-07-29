@@ -82,6 +82,76 @@ describe('billing webhook state mutation', () => {
     expect(webhooks).toHaveLength(1)
   })
 
+  it('persists currentPeriodEnd/cancelAtPeriodEnd and keeps them on later patches that omit them', async () => {
+    vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', 'billing-secret')
+    const t = convexTest(schema, modules)
+    const userId = 'billing-period-end-user'
+    const periodEnd = Date.now() + 30 * 24 * 60 * 60 * 1000
+
+    await t.mutation(api.billing.applyBillingWebhook, {
+      secret: 'billing-secret',
+      provider: 'stripe',
+      idempotencyKey: 'evt_subscription_updated',
+      userId,
+      subscription: {
+        status: 'active',
+        planId: 'pro',
+        providerSubscriptionId: 'sub_period_end',
+        currentPeriodEnd: periodEnd,
+        cancelAtPeriodEnd: true,
+      },
+    })
+
+    // A later event for the same subscription (e.g. an invoice event) that
+    // doesn't carry period-end data must not erase the value already known.
+    await t.mutation(api.billing.applyBillingWebhook, {
+      secret: 'billing-secret',
+      provider: 'stripe',
+      idempotencyKey: 'evt_invoice_paid',
+      userId,
+      subscription: {
+        status: 'active',
+        planId: 'pro',
+        providerSubscriptionId: 'sub_period_end',
+      },
+    })
+
+    const rows = await t.run((ctx) =>
+      ctx.db
+        .query('subscriptions')
+        .withIndex('by_userId', (index) => index.eq('userId', userId))
+        .take(10),
+    )
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({
+      currentPeriodEnd: periodEnd,
+      cancelAtPeriodEnd: true,
+    })
+  })
+
+  it('rejects a non-positive currentPeriodEnd', async () => {
+    vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', 'billing-secret')
+    const t = convexTest(schema, modules)
+
+    await expect(
+      t.mutation(api.billing.applyBillingWebhook, {
+        secret: 'billing-secret',
+        provider: 'stripe',
+        idempotencyKey: 'evt_bad_period_end',
+        userId: 'billing-bad-period-end-user',
+        subscription: {
+          status: 'active',
+          planId: 'pro',
+          providerSubscriptionId: 'sub_bad_period_end',
+          currentPeriodEnd: -1,
+        },
+      }),
+    ).rejects.toMatchObject({
+      data: expect.objectContaining({ code: 'INVALID_BILLING_EVENT' }),
+    })
+  })
+
   it('idempotently applies credit-pack webhooks and consumes export credits', async () => {
     vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', 'billing-secret')
     const t = convexTest(schema, modules)

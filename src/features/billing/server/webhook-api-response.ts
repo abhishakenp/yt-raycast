@@ -146,6 +146,13 @@ function normalizeRazorpayStatus(status: unknown): BillingStatus {
   return 'cancelled'
 }
 
+function toMillisFromUnixSeconds(value: unknown): number | undefined {
+  const seconds = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(seconds) && seconds > 0
+    ? Math.round(seconds * 1000)
+    : undefined
+}
+
 function creditsForPack(packId: string): number {
   return packId === '10_credits' ? 10 : packId === '3_credits' ? 3 : 0
 }
@@ -345,6 +352,11 @@ function stripePayloadToMutation(event: unknown, env: BillingWebhookEnv) {
       planId: String(metadata.tier ?? plan?.id ?? 'pro'),
       providerSubscriptionId: subscriptionId || undefined,
       providerCheckoutId: String(object.id ?? '') || undefined,
+      currentPeriodEnd: toMillisFromUnixSeconds(object.current_period_end),
+      cancelAtPeriodEnd:
+        typeof object.cancel_at_period_end === 'boolean'
+          ? object.cancel_at_period_end
+          : undefined,
     },
   }
 }
@@ -374,6 +386,14 @@ function razorpayPayloadToMutation(event: unknown, env: BillingWebhookEnv) {
         status: normalizeRazorpayStatus(subscription.status),
         planId: String(subscription.plan_id ?? notes.tier ?? 'pro'),
         providerSubscriptionId: String(subscription.id),
+        currentPeriodEnd: toMillisFromUnixSeconds(subscription.current_end),
+        // Razorpay doesn't expose a cancel-at-cycle-end flag on the
+        // subscription entity; a pending scheduled change is the closest
+        // available signal that cancellation was requested but not yet final.
+        cancelAtPeriodEnd:
+          typeof subscription.has_scheduled_changes === 'boolean'
+            ? subscription.has_scheduled_changes
+            : undefined,
       },
     }
   }

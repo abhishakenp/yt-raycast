@@ -136,6 +136,45 @@ describe('createCheckoutConfirmApiResponse', () => {
     })
   })
 
+  it('normalizes current_end into the billing confirmation mutation', async () => {
+    const signature = await hmacSha256('pay_123|sub_123', 'rzp_secret')
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'sub_123',
+          status: 'authenticated',
+          plan_id: 'plan_pro',
+          current_end: 1_700_000_000,
+          has_scheduled_changes: true,
+          notes: { userId: 'user_123' },
+        }),
+      ),
+    )
+
+    const response = await createCheckoutConfirmApiResponse(
+      new Request('https://ship-fast.test/api/payments/razorpay/confirm', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          subscriptionId: 'sub_123',
+          paymentId: 'pay_123',
+          signature,
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        currentPeriodEnd: 1_700_000_000_000,
+        cancelAtPeriodEnd: true,
+      }),
+    )
+  })
+
   it('rejects confirmation when the Razorpay subscription belongs to a different user', async () => {
     const signature = await hmacSha256('pay_123|sub_123', 'rzp_secret')
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(

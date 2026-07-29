@@ -1,272 +1,206 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import type { Mock } from 'vitest'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { CommercePanel } from './CommercePanel'
 
-type CommercePanelConfig = {
-  adminUrl?: string
-  backendUrl?: string
-  errorMessage?: string
-  productCount: number
-  status: string
-  storefrontUrl?: string
+type CommerceAccessValue =
+  | { authState: 'signed-out' }
+  | { authState: 'unpaid' }
+  | {
+      authState: 'paid'
+      enabled: boolean
+      instanceStatus: string | null
+      storeStatus: string | null
+      backendUrl?: string
+      adminUrl?: string
+      storefrontUrl?: string
+      publishableKey?: string
+      productCount?: number
+    }
+  | undefined
+
+type CommerceAccessTestState = {
+  access: CommerceAccessValue
+  adminError: string | undefined
+  enableCommerce: Mock
+  enableError: string | undefined
+  isEnabling: boolean
+  isOpeningAdmin: boolean
+  openAdmin: Mock
+  useCommerceAccess: Mock
 }
 
-type CommercePanelHandoff = {
-  adminUrl: string
-  backendUrl: string
-  storefrontUrl: string
-  tenantId: string
-}
-
-type CommercePanelTestState = {
-  config: CommercePanelConfig
-  handoff: CommercePanelHandoff | undefined
-  hostedMedusaConfig: {
-    backendUrl?: string
-    enabled?: boolean
-  }
-  isHostedMedusaConfigLoading: boolean
-  provisionCommerce: Mock
-  useCommerceController: Mock
-}
-
-const commerceState = vi.hoisted<CommercePanelTestState>(() => ({
-  config: {
-    errorMessage: 'Medusa Store API is unavailable: fetch failed',
-    productCount: 0,
-    status: 'ready',
-  },
-  handoff: undefined,
-  hostedMedusaConfig: {},
-  isHostedMedusaConfigLoading: false,
-  provisionCommerce: vi.fn(),
-  useCommerceController: vi.fn(),
+const commerceState = vi.hoisted<CommerceAccessTestState>(() => ({
+  access: { authState: 'signed-out' },
+  adminError: undefined,
+  enableCommerce: vi.fn(),
+  enableError: undefined,
+  isEnabling: false,
+  isOpeningAdmin: false,
+  openAdmin: vi.fn(),
+  useCommerceAccess: vi.fn(),
 }))
 
-vi.mock('../hooks/useCommerceController', () => ({
-  useCommerceController: (...args: unknown[]) => {
-    commerceState.useCommerceController(...args)
+vi.mock('../hooks/useCommerceAccess', () => ({
+  useCommerceAccess: (...args: unknown[]) => {
+    commerceState.useCommerceAccess(...args)
     return {
-      commerceError: undefined,
-      commerceHandoff: commerceState.handoff,
-      config: commerceState.config,
-      isSaving: false,
-      provisionCommerce: commerceState.provisionCommerce,
+      access: commerceState.access,
+      adminError: commerceState.adminError,
+      enableCommerce: commerceState.enableCommerce,
+      enableError: commerceState.enableError,
+      isEnabling: commerceState.isEnabling,
+      isOpeningAdmin: commerceState.isOpeningAdmin,
+      openAdmin: commerceState.openAdmin,
     }
   },
-  useHostedMedusaConfig: () => ({
-    config: commerceState.hostedMedusaConfig,
-    isLoading: commerceState.isHostedMedusaConfigLoading,
-  }),
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  requestClerkSignIn: vi.fn(),
 }))
 
 describe('CommercePanel', () => {
   afterEach(() => {
     cleanup()
-    commerceState.config = {
-      errorMessage: 'Medusa Store API is unavailable: fetch failed',
-      productCount: 0,
-      status: 'ready',
+    commerceState.access = { authState: 'signed-out' }
+    commerceState.adminError = undefined
+    commerceState.enableError = undefined
+    commerceState.isEnabling = false
+    commerceState.isOpeningAdmin = false
+    commerceState.enableCommerce.mockReset()
+    commerceState.openAdmin.mockReset()
+    commerceState.useCommerceAccess.mockClear()
+  })
+
+  it('shows a sign-in prompt and no admin credential fields for signed-out visitors', () => {
+    commerceState.access = { authState: 'signed-out' }
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(screen.getByRole('button', { name: /Sign in/ })).toBeTruthy()
+    expect(screen.queryByLabelText('Admin email')).toBeNull()
+    expect(screen.queryByLabelText('Admin password')).toBeNull()
+    expect(screen.queryByRole('button', { name: /Enable Commerce/ })).toBeNull()
+  })
+
+  it('shows an upgrade prompt for signed-in users without an active subscription', () => {
+    commerceState.access = { authState: 'unpaid' }
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(screen.getByRole('link', { name: /Upgrade/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Enable Commerce/ })).toBeNull()
+  })
+
+  it('shows Enable Commerce for a paid user who has not enabled commerce yet', () => {
+    commerceState.access = {
+      authState: 'paid',
+      enabled: false,
+      instanceStatus: null,
+      storeStatus: null,
     }
-    commerceState.handoff = undefined
-    commerceState.hostedMedusaConfig = {}
-    commerceState.isHostedMedusaConfigLoading = false
-    commerceState.useCommerceController.mockClear()
-    commerceState.provisionCommerce.mockReset()
-  })
-
-  it('shows visual readiness with a live checkout warning', () => {
     render(<CommercePanel sessionId="session_123" />)
 
-    expect(screen.getByText('Visual ready')).toBeTruthy()
-    expect(screen.getByText('Medusa Store API is unavailable.')).toBeTruthy()
-    expect(
-      screen.queryByText('Medusa Store API is unavailable: fetch failed'),
-    ).toBeNull()
-    expect(screen.queryByText('Automatic')).toBeNull()
+    const button = screen.getByRole('button', { name: 'Enable Commerce' })
+    expect(button.hasAttribute('disabled')).toBe(false)
+    expect(screen.queryByLabelText('Admin email')).toBeNull()
+    expect(screen.queryByLabelText('Admin password')).toBeNull()
   })
 
-  it('shows a sanitized Store API failure instead of raw network details', () => {
+  it('shows a deterministic provisioning state while the instance is being created', () => {
+    commerceState.access = {
+      authState: 'paid',
+      enabled: true,
+      instanceStatus: 'provisioning',
+      storeStatus: 'not_enabled',
+    }
     render(<CommercePanel sessionId="session_123" />)
 
-    expect(screen.getByText('Medusa Store API is unavailable.')).toBeTruthy()
+    expect(screen.getByText('Provisioning...')).toBeTruthy()
     expect(
-      screen.queryByText('Medusa Store API is unavailable: fetch failed'),
-    ).toBeNull()
-    expect(
-      screen.queryByText(
-        'Commerce enabled. Live checkout needs Medusa Store API configuration.',
-      ),
-    ).toBeNull()
+      screen.getByText(/updates automatically — no need to refresh/),
+    ).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Enable Commerce' })).toBeNull()
   })
 
-  it('shows visual product count when live Medusa products are not synced yet', () => {
+  it('shows a degraded warning without hiding the storefront when the instance is degraded', () => {
+    commerceState.access = {
+      authState: 'paid',
+      enabled: true,
+      instanceStatus: 'degraded',
+      storeStatus: 'ready',
+    }
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(screen.getByText('Degraded')).toBeTruthy()
+    expect(
+      screen.getByText(/Commerce is degraded/),
+    ).toBeTruthy()
+  })
+
+  it('shows storefront and Open Admin action once fully ready, with no credential UI', () => {
+    commerceState.access = {
+      authState: 'paid',
+      enabled: true,
+      instanceStatus: 'ready',
+      storeStatus: 'ready',
+      adminUrl: 'https://admin.medusa.test',
+      backendUrl: 'https://backend.medusa.test',
+      storefrontUrl: 'https://store.medusa.test',
+      productCount: 5,
+    }
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(screen.getByText('Live ready')).toBeTruthy()
+    expect(
+      screen
+        .getByRole('link', { name: 'Open storefront' })
+        .getAttribute('href'),
+    ).toBe('https://store.medusa.test')
+    expect(screen.getByRole('button', { name: 'Open admin' })).toBeTruthy()
+    expect(screen.queryByLabelText('Admin email')).toBeNull()
+    expect(screen.queryByLabelText('Admin password')).toBeNull()
+    expect(screen.getByText('5')).toBeTruthy()
+  })
+
+  it('falls back to the visual product count before any live product sync', () => {
+    commerceState.access = {
+      authState: 'paid',
+      enabled: false,
+      instanceStatus: null,
+      storeStatus: null,
+    }
     render(<CommercePanel sessionId="session_123" visualProductCount={6} />)
 
     expect(screen.getByText('Products')).toBeTruthy()
     expect(screen.getByText('6')).toBeTruthy()
   })
 
-  it('passes generated visual products into the commerce controller', () => {
-    const visualProducts = [
-      { handle: 'truffle-box', price: 79, title: 'Truffle Box' },
-    ]
-
-    render(
-      <CommercePanel
-        sessionId="session_123"
-        visualProductCount={visualProducts.length}
-        visualProducts={visualProducts}
-      />,
-    )
-
-    expect(commerceState.useCommerceController).toHaveBeenCalledWith(
-      'session_123',
-      visualProducts,
-    )
-  })
-
-  it('offers Medusa storefront and admin links without exposing credentials', () => {
-    commerceState.handoff = {
-      adminUrl: 'https://admin.medusa.test',
-      backendUrl: 'https://backend.medusa.test',
-      storefrontUrl: 'https://store.medusa.test',
-      tenantId: 'session_123',
+  it('surfaces an enable error message', () => {
+    commerceState.access = {
+      authState: 'paid',
+      enabled: false,
+      instanceStatus: null,
+      storeStatus: null,
     }
-
+    commerceState.enableError = 'Enabling commerce failed.'
     render(<CommercePanel sessionId="session_123" />)
 
-    expect(
-      screen
-        .getByRole('link', { name: 'Open storefront' })
-        .getAttribute('href'),
-    ).toBe('https://store.medusa.test')
-    expect(
-      screen.getByRole('link', { name: 'Open admin' }).getAttribute('href'),
-    ).toBe('https://admin.medusa.test')
+    expect(screen.getByText('Enabling commerce failed.')).toBeTruthy()
   })
 
-  it('requires a user-created admin account before enabling commerce', () => {
-    commerceState.config = { productCount: 0, status: 'setup' }
-    render(<CommercePanel sessionId="session_123" />)
-
-    const button = screen.getByRole('button', { name: 'Enable Commerce' })
-    expect(button.hasAttribute('disabled')).toBe(true)
-
-    fireEvent.change(screen.getByLabelText('Admin email'), {
-      target: { value: 'owner@store.test' },
-    })
-    fireEvent.change(screen.getByLabelText('Admin password'), {
-      target: { value: 'user-created-password' },
-    })
-    expect(button.hasAttribute('disabled')).toBe(false)
-    fireEvent.click(button)
-
-    expect(commerceState.provisionCommerce).toHaveBeenCalledWith({
-      email: 'owner@store.test',
-      password: 'user-created-password',
-    })
-  })
-
-  it('uses hosted Medusa setup without asking for a user-created admin account', () => {
-    commerceState.config = { productCount: 0, status: 'setup' }
-    commerceState.hostedMedusaConfig = {
-      backendUrl: 'https://medusa.devliv.io',
+  it('surfaces an admin SSO error message without exposing credentials', () => {
+    commerceState.access = {
+      authState: 'paid',
       enabled: true,
+      instanceStatus: 'ready',
+      storeStatus: 'ready',
+      adminUrl: 'https://admin.medusa.test',
     }
-
+    commerceState.adminError = 'Could not open the admin.'
     render(<CommercePanel sessionId="session_123" />)
 
-    expect(screen.queryByLabelText('Admin email')).toBeNull()
-    expect(screen.queryByLabelText('Admin password')).toBeNull()
-    const button = screen.getByRole('button', { name: 'Enable Commerce' })
-    expect(button.hasAttribute('disabled')).toBe(false)
-
-    fireEvent.click(button)
-
-    expect(commerceState.provisionCommerce).toHaveBeenCalledWith(undefined)
-  })
-
-  it('keeps Medusa studio links available from persisted tenant config', () => {
-    commerceState.config = {
-      adminUrl: 'https://admin.persisted-medusa.test/app',
-      backendUrl: 'https://backend.persisted-medusa.test',
-      productCount: 3,
-      status: 'ready',
-      storefrontUrl: 'https://store.persisted-medusa.test',
-    }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    expect(
-      screen
-        .getByRole('link', { name: 'Open storefront' })
-        .getAttribute('href'),
-    ).toBe('https://store.persisted-medusa.test')
-    expect(
-      screen.getByRole('link', { name: 'Open admin' }).getAttribute('href'),
-    ).toBe('https://admin.persisted-medusa.test/app')
-    expect(
-      screen.queryByText(
-        'Set Medusa backend, admin, and storefront URLs to unlock links.',
-      ),
-    ).toBeNull()
-  })
-
-  it('opens the generated storefront when persisted Medusa storefront points at the API root', () => {
-    commerceState.config = {
-      adminUrl: 'http://localhost:9116/app',
-      backendUrl: 'http://localhost:9116',
-      productCount: 3,
-      status: 'ready',
-      storefrontUrl: 'http://localhost:9116',
-    }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    expect(
-      screen
-        .getByRole('link', { name: 'Open storefront' })
-        .getAttribute('href'),
-    ).toBe('/generate/session_123')
-    expect(
-      screen.getByRole('link', { name: 'Open admin' }).getAttribute('href'),
-    ).toBe('http://localhost:9116/app')
-  })
-
-  it('does not show persisted fallback localhost links when Medusa is not reachable', () => {
-    commerceState.config = {
-      adminUrl: 'http://localhost:7001',
-      backendUrl: 'http://localhost:9000',
-      errorMessage: 'Medusa Store API is unavailable: fetch failed',
-      productCount: 0,
-      status: 'ready',
-      storefrontUrl: 'http://localhost:9000',
-    }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    expect(screen.queryByRole('link', { name: 'Open storefront' })).toBeNull()
-    expect(screen.queryByRole('link', { name: 'Open admin' })).toBeNull()
-    expect(
-      screen.getByText(
-        'Set Medusa backend, admin, and storefront URLs to unlock links.',
-      ),
-    ).toBeTruthy()
-  })
-
-  it('does not show dead handoff links when no Medusa handoff exists', () => {
-    render(<CommercePanel sessionId="session_123" />)
-
-    expect(screen.queryByRole('link', { name: 'Open storefront' })).toBeNull()
-    expect(screen.queryByRole('link', { name: 'Open admin' })).toBeNull()
-    expect(
-      screen.getByText(
-        'Set Medusa backend, admin, and storefront URLs to unlock links.',
-      ),
-    ).toBeTruthy()
+    expect(screen.getByText('Could not open the admin.')).toBeTruthy()
   })
 })

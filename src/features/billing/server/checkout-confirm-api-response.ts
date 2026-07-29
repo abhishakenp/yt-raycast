@@ -74,6 +74,13 @@ const timingSafeEqual = (left: string, right: string): boolean => {
   return diff === 0
 }
 
+const toMillisFromUnixSeconds = (value: unknown): number | undefined => {
+  const seconds = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(seconds) && seconds > 0
+    ? Math.round(seconds * 1000)
+    : undefined
+}
+
 const normalizeRazorpayStatus = (status: unknown): BillingStatus => {
   if (status === 'active') return 'active'
   if (status === 'trialing') return 'trialing'
@@ -151,6 +158,8 @@ export const createCheckoutConfirmApiResponse = async (
     id?: string
     status?: string
     plan_id?: string
+    current_end?: number
+    has_scheduled_changes?: boolean
     notes?: { userId?: string; user_id?: string }
   }
   try {
@@ -195,6 +204,11 @@ export const createCheckoutConfirmApiResponse = async (
 
   const status = normalizeRazorpayStatus(subscription.status)
   const planId = normalizeString(subscription.plan_id) || 'pro'
+  const currentPeriodEnd = toMillisFromUnixSeconds(subscription.current_end)
+  const cancelAtPeriodEnd =
+    typeof subscription.has_scheduled_changes === 'boolean'
+      ? subscription.has_scheduled_changes
+      : undefined
   try {
     // Public + server-secret gated: ConvexHttpClient cannot call internal
     // functions, so the internal reference would fail at runtime.
@@ -206,6 +220,8 @@ export const createCheckoutConfirmApiResponse = async (
       planId,
       providerSubscriptionId: subscriptionId,
       providerCheckoutId: paymentId,
+      currentPeriodEnd,
+      cancelAtPeriodEnd,
     })
   } catch {
     return json({ error: 'Billing confirmation failed.' }, { status: 502 })

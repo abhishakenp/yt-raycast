@@ -115,6 +115,15 @@ export async function deleteSessionGraph(
       .query('commerceTenants')
       .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId)),
   )
+  // commerceStores are owned by the session, but the customer's
+  // commerceInstances row is not: it is keyed by Clerk owner and outlives any
+  // single session/deployment, so it must never be cascade-deleted here.
+  await deleteRows(
+    ctx,
+    ctx.db
+      .query('commerceStores')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId)),
+  )
   await deleteRows(
     ctx,
     ctx.db

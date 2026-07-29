@@ -27,6 +27,16 @@ async function insertSessionGraph(
   suffix: string,
 ) {
   return await t.run(async (ctx) => {
+    const commerceInstanceId = await ctx.db.insert('commerceInstances', {
+      ownerUserId: userId,
+      status: 'ready',
+      provider: 'medusa',
+      providerReference: `stack-${suffix}`,
+      backendUrl: `https://backend-instance-${suffix}.example`,
+      adminUrl: `https://admin-instance-${suffix}.example`,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
     const now = Date.now()
     const sessionId = await ctx.db.insert('sessions', {
       userId,
@@ -142,6 +152,17 @@ async function insertSessionGraph(
       createdAt: now,
       updatedAt: now,
     })
+    await ctx.db.insert('commerceStores', {
+      commerceInstanceId,
+      sessionId,
+      deploymentId,
+      status: 'ready',
+      syncStatus: 'ready',
+      providerStoreId: `store-${suffix}`,
+      publishableKey: `pk_${suffix}`,
+      createdAt: now,
+      updatedAt: now,
+    })
     await ctx.db.insert('genuiModules', {
       sessionId,
       moduleId: 'home',
@@ -190,14 +211,15 @@ async function insertSessionGraph(
       size: 13,
       createdAt: now,
     })
-    return sessionId
+    return { sessionId, commerceInstanceId }
   })
 }
 
 async function graphCounts(
   t: ReturnType<typeof sessionDeleteTest>,
-  sessionId: Awaited<ReturnType<typeof insertSessionGraph>>,
+  graph: Awaited<ReturnType<typeof insertSessionGraph>>,
 ) {
+  const { sessionId, commerceInstanceId } = graph
   return await t.run(async (ctx) => {
     const tasks = await ctx.db
       .query('tasks')
@@ -263,6 +285,11 @@ async function graphCounts(
       .query('commerceTenants')
       .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .collect()
+    const commerceStores = await ctx.db
+      .query('commerceStores')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
+      .collect()
+    const commerceInstance = await ctx.db.get(commerceInstanceId)
     const genuiModules = await ctx.db
       .query('genuiModules')
       .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
@@ -293,6 +320,8 @@ async function graphCounts(
       artifacts: artifacts.length,
       clonePages: clonePages.length,
       commerceConfigs: commerceConfigs.length,
+      commerceInstanceExists: commerceInstance !== null,
+      commerceStores: commerceStores.length,
       commerceTenants: commerceTenants.length,
       deployments: deployments.length,
       edits: edits.length,
@@ -318,6 +347,11 @@ const emptyGraph = {
   artifacts: 0,
   clonePages: 0,
   commerceConfigs: 0,
+  // commerceInstances is customer-owned and outlives the session/deployment
+  // it was first provisioned from, so it must survive session deletion even
+  // though every other row in the graph is gone.
+  commerceInstanceExists: true,
+  commerceStores: 0,
   commerceTenants: 0,
   deployments: 0,
   edits: 0,
@@ -340,42 +374,44 @@ describe('session deletion persistence boundaries', () => {
   it('deletes every persisted record owned by the deleted session', async () => {
     const t = sessionDeleteTest()
     const userId = `${issuer}|delete-owner`
-    const sessionId = await insertSessionGraph(t, userId, 'owned')
+    const graph = await insertSessionGraph(t, userId, 'owned')
 
     await expect(
       asUser(t, 'delete-owner').mutation(api.sessions.deleteMine, {
-        sessionId,
+        sessionId: graph.sessionId,
       }),
     ).resolves.toEqual({ deleted: 1 })
-    await expect(graphCounts(t, sessionId)).resolves.toEqual(emptyGraph)
+    await expect(graphCounts(t, graph)).resolves.toEqual(emptyGraph)
   })
 
   it('cascades only the selected owned session and preserves foreign graphs', async () => {
     const t = sessionDeleteTest()
-    const ownedId = await insertSessionGraph(
+    const owned = await insertSessionGraph(
       t,
       `${issuer}|delete-owner`,
       'selected',
     )
-    const foreignId = await insertSessionGraph(
+    const foreign = await insertSessionGraph(
       t,
       `${issuer}|foreign-owner`,
       'foreign',
     )
 
     await asUser(t, 'delete-owner').mutation(api.sessions.deleteMine, {
-      sessionId: ownedId,
+      sessionId: owned.sessionId,
     })
 
     expect({
-      foreign: await graphCounts(t, foreignId),
-      owned: await graphCounts(t, ownedId),
+      foreign: await graphCounts(t, foreign),
+      owned: await graphCounts(t, owned),
     }).toEqual({
       foreign: {
         aiCapsules: 1,
         artifacts: 1,
         clonePages: 1,
         commerceConfigs: 1,
+        commerceInstanceExists: true,
+        commerceStores: 1,
         commerceTenants: 1,
         deployments: 1,
         edits: 1,
@@ -400,7 +436,7 @@ describe('session deletion persistence boundaries', () => {
   it('makes repeated deletion a harmless no-op', async () => {
     const t = sessionDeleteTest()
     const userId = `${issuer}|delete-owner`
-    const sessionId = await insertSessionGraph(t, userId, 'replay')
+    const { sessionId } = await insertSessionGraph(t, userId, 'replay')
     const owner = asUser(t, 'delete-owner')
 
     await owner.mutation(api.sessions.deleteMine, { sessionId })

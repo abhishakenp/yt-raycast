@@ -123,6 +123,49 @@ describe('createWebhookApiResponse', () => {
     })
   })
 
+  it('normalizes Stripe current_period_end (seconds) and cancel_at_period_end into the mutation payload', async () => {
+    const body = JSON.stringify({
+      id: 'evt_period_end',
+      data: {
+        object: {
+          id: 'sub_1',
+          client_reference_id: 'user_123',
+          status: 'active',
+          current_period_end: 1_700_000_000,
+          cancel_at_period_end: true,
+          metadata: { userId: 'user_123', tier: 'pro' },
+        },
+      },
+    })
+    const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': signature },
+        body,
+      }),
+      'stripe',
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_test',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        subscription: expect.objectContaining({
+          currentPeriodEnd: 1_700_000_000_000,
+          cancelAtPeriodEnd: true,
+        }),
+      }),
+    )
+  })
+
   it('accepts signed Razorpay subscription events and writes billing state', async () => {
     const body = JSON.stringify({
       event: 'subscription.activated',
@@ -167,6 +210,51 @@ describe('createWebhookApiResponse', () => {
         providerSubscriptionId: 'sub_razorpay_1',
       },
     })
+  })
+
+  it('normalizes Razorpay current_end (seconds) into the mutation payload', async () => {
+    const body = JSON.stringify({
+      event: 'subscription.activated',
+      payload: {
+        subscription: {
+          entity: {
+            id: 'sub_razorpay_period_end',
+            notes: { tier: 'pro', userId: 'user_razorpay_period_end' },
+            plan_id: 'plan_pro',
+            status: 'active',
+            current_end: 1_700_000_000,
+            has_scheduled_changes: false,
+          },
+        },
+      },
+    })
+    const signature = await sign('rzp_secret', body)
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/razorpay/webhook', {
+        method: 'POST',
+        headers: { 'x-razorpay-signature': signature },
+        body,
+      }),
+      'razorpay',
+      {
+        RAZORPAY_WEBHOOK_SECRET: 'rzp_secret',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        subscription: expect.objectContaining({
+          currentPeriodEnd: 1_700_000_000_000,
+          cancelAtPeriodEnd: false,
+        }),
+      }),
+    )
   })
 
   it('accepts signed Razorpay credit-pack order events', async () => {

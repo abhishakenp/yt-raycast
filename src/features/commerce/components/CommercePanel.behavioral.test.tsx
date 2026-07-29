@@ -1,387 +1,141 @@
 // @vitest-environment jsdom
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CommercePanel } from './CommercePanel'
 
-type CommerceConfigState = {
-  current:
-    | {
-        adminUrl?: string
-        backendUrl?: string
-        configJson?: string
-        errorMessage?: string
-        productCount?: number
-        status?: string
-        storefrontUrl?: string
-      }
-    | undefined
+type AccessState = {
+  current: unknown
 }
 
-type FetchState = {
-  impl: null | ((input: RequestInfo | URL) => Promise<Response>)
+type MutationState = {
+  enableCommerce: (args: unknown) => Promise<unknown>
+  requestAdminSso: (args: unknown) => Promise<unknown>
 }
 
-const commerceConfig = vi.hoisted<CommerceConfigState>(() => ({
-  current: undefined,
-}))
-
-const fetchState = vi.hoisted<FetchState>(() => ({
-  impl: null,
+const accessState = vi.hoisted<AccessState>(() => ({ current: undefined }))
+const mutationState = vi.hoisted<MutationState>(() => ({
+  enableCommerce: async () => ({
+    commerceInstanceId: 'instance_1',
+    commerceStoreId: 'store_1',
+    instanceCreated: true,
+    storeCreated: true,
+  }),
+  requestAdminSso: async () => ({
+    url: 'https://admin.medusa.test/?ssoToken=token',
+  }),
 }))
 
 vi.mock('convex/react', () => ({
-  useQuery: vi.fn(() => commerceConfig.current),
-  useMutation: vi.fn(() => vi.fn()),
+  useQuery: vi.fn(() => accessState.current),
+  useMutation: vi.fn((ref: string) => {
+    if (String(ref).includes('enableCommerce')) {
+      return (args: unknown) => mutationState.enableCommerce(args)
+    }
+    return (args: unknown) => mutationState.requestAdminSso(args)
+  }),
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
   api: {
-    sessions: { getCommerceConfig: 'sessions.getCommerceConfig' },
+    commerceInstances: {
+      enableCommerce: 'commerceInstances.enableCommerce',
+      getCommerceAccess: 'commerceInstances.getCommerceAccess',
+      requestAdminSso: 'commerceInstances.requestAdminSso',
+    },
   },
 }))
 
-vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
-  readAnonymousOwnerSecret: () => undefined,
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  requestClerkSignIn: vi.fn(),
 }))
-
-function okResponse(body: unknown): Response {
-  return Response.json(body)
-}
-
-function errorResponse(body: unknown): Response {
-  return Response.json(body, { status: 500 })
-}
-
-function fillMedusaAdminCredentials() {
-  fireEvent.change(screen.getByLabelText('Admin email'), {
-    target: { value: 'owner@store.test' },
-  })
-  fireEvent.change(screen.getByLabelText('Admin password'), {
-    target: { value: 'admin-password' },
-  })
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
-function readLastFetchBody(): Record<string, unknown> {
-  const fetchCall = vi.mocked(global.fetch).mock.calls.at(-1)
-  if (fetchCall === undefined) {
-    throw new Error('Expected fetch to be called before reading request body')
-  }
-
-  const requestInit = fetchCall[1]
-  if (!isRecord(requestInit) || typeof requestInit.body !== 'string') {
-    throw new Error('Expected fetch to be called with a string JSON body')
-  }
-
-  const parsed: unknown = JSON.parse(requestInit.body)
-  if (!isRecord(parsed)) {
-    throw new Error('Expected fetch request body to parse as an object')
-  }
-
-  return parsed
-}
-
-export function fillAdminCredentials(): void {
-  fireEvent.change(screen.getByLabelText('Admin email'), {
-    target: { value: 'admin@store.test' },
-  })
-  fireEvent.change(screen.getByLabelText('Admin password'), {
-    target: { value: 'secret-password' },
-  })
-}
 
 describe('CommercePanel (behavioral)', () => {
   beforeEach(() => {
-    commerceConfig.current = undefined
-    fetchState.impl = (input) =>
-      Promise.resolve(
-        okResponse(
-          String(input) === '/api/medusa-store/config'
-            ? { enabled: false }
-            : {
-                handoff: {
-                  adminEmail: 'admin@store.test',
-                  adminPassword: 'secret-password',
-                  adminUrl: 'https://admin.medusa.test',
-                  backendUrl: 'https://backend.medusa.test',
-                  storefrontUrl: 'https://store.medusa.test',
-                  tenantId: 'session_123',
-                },
-              },
-        ),
-      )
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((...args) => {
-        void args
-        return fetchState.impl?.(args[0])
-      }),
-    )
+    accessState.current = {
+      authState: 'paid',
+      enabled: false,
+      instanceStatus: null,
+      storeStatus: null,
+    }
+    mutationState.enableCommerce = async () => ({
+      commerceInstanceId: 'instance_1',
+      commerceStoreId: 'store_1',
+      instanceCreated: true,
+      storeCreated: true,
+    })
+    mutationState.requestAdminSso = async () => ({
+      url: 'https://admin.medusa.test/?ssoToken=token',
+    })
   })
 
   afterEach(() => {
     cleanup()
-    vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 
-  it('shows the provision button when commerce is not yet provisioned', () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
+  it('calls the enableCommerce mutation with the session id when clicked', async () => {
+    const enableSpy = vi.fn(async () => ({
+      commerceInstanceId: 'instance_1',
+      commerceStoreId: 'store_1',
+      instanceCreated: true,
+      storeCreated: true,
+    }))
+    mutationState.enableCommerce = enableSpy
 
     render(<CommercePanel sessionId="session_123" />)
-
-    expect(screen.getByRole('button', { name: /Enable Commerce/ })).toBeTruthy()
-    expect(screen.queryByText('Live ready')).toBeNull()
-  })
-
-  it('shows the synced product count when provisioned', () => {
-    commerceConfig.current = {
-      adminUrl: 'https://admin.medusa.test',
-      backendUrl: 'https://backend.medusa.test',
-      productCount: 7,
-      status: 'ready',
-      storefrontUrl: 'https://store.medusa.test',
-    }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    expect(screen.getByText('Products')).toBeTruthy()
-    expect(screen.getByText('7')).toBeTruthy()
-  })
-
-  it('triggers the provision flow when the provision button is clicked', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    fillMedusaAdminCredentials()
-    fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enable Commerce' }))
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/sessions/session_123/provision/medusa',
-        expect.objectContaining({ method: 'POST' }),
-      )
+      expect(enableSpy).toHaveBeenCalledWith({ sessionId: 'session_123' })
     })
   })
 
-  it('shows handoff admin and storefront URLs after provisioning succeeds', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    fillMedusaAdminCredentials()
-    fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
-
-    expect(await screen.findByText('Medusa handoff')).toBeTruthy()
-    expect(
-      screen
-        .getByRole('link', { name: 'Open storefront' })
-        .getAttribute('href'),
-    ).toBe('https://store.medusa.test')
-    expect(
-      screen.getByRole('link', { name: 'Open admin' }).getAttribute('href'),
-    ).toBe('https://admin.medusa.test')
-  })
-
-  it('renders handoff URLs as clickable links that open in a new tab', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    fillMedusaAdminCredentials()
-    fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
-
-    const storefront = await screen.findByRole('link', {
-      name: 'Open storefront',
-    })
-    const admin = screen.getByRole('link', { name: 'Open admin' })
-
-    expect(storefront.tagName).toBe('A')
-    expect(storefront.getAttribute('target')).toBe('_blank')
-    expect(storefront.getAttribute('rel')).toBe('noreferrer')
-    expect(admin.tagName).toBe('A')
-    expect(admin.getAttribute('target')).toBe('_blank')
-  })
-
-  it('displays the live checkout warning when the config carries an error message', () => {
-    commerceConfig.current = {
-      adminUrl: 'https://admin.medusa.test',
-      backendUrl: 'https://backend.medusa.test',
-      errorMessage: 'Medusa Store API is unavailable: fetch failed',
-      productCount: 0,
-      status: 'ready',
-      storefrontUrl: 'https://store.medusa.test',
-    }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    expect(screen.getByText('Medusa Store API is unavailable.')).toBeTruthy()
-    expect(
-      screen.queryByText('Medusa Store API is unavailable: fetch failed'),
-    ).toBeNull()
-    expect(screen.getByText('Visual ready')).toBeTruthy()
-    expect(screen.queryByText('Live ready')).toBeNull()
-  })
-
-  it('shows a success indicator when the ready state has no warning', () => {
-    commerceConfig.current = {
-      adminUrl: 'https://admin.medusa.test',
-      backendUrl: 'https://backend.medusa.test',
-      productCount: 3,
-      status: 'ready',
-      storefrontUrl: 'https://store.medusa.test',
-    }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    expect(screen.getByText('Live ready')).toBeTruthy()
-    expect(screen.getByText('Live commerce ready')).toBeTruthy()
-    expect(screen.queryByText('Visual ready')).toBeNull()
-  })
-
-  it('refreshes hosted Medusa without asking for admin credentials', async () => {
-    commerceConfig.current = {
-      adminUrl: 'https://admin.medusa.test',
-      backendUrl: 'https://backend.medusa.test',
-      errorMessage: 'Medusa product sync failed.',
-      productCount: 4,
-      status: 'ready',
-      storefrontUrl: 'https://store.medusa.test',
-    }
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    expect(screen.queryByLabelText('Admin email')).toBeNull()
-    expect(screen.queryByLabelText('Admin password')).toBeNull()
-
-    const refreshButton = screen.getByRole('button', {
-      name: /Refresh Commerce/,
-    })
-    expect(refreshButton).toHaveProperty('disabled', false)
-
-    fireEvent.click(refreshButton)
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/sessions/session_123/provision/medusa',
-        expect.objectContaining({ method: 'POST' }),
-      )
-    })
-    const requestBody = readLastFetchBody()
-    expect(requestBody).not.toHaveProperty('adminEmail')
-    expect(requestBody).not.toHaveProperty('adminPassword')
-  })
-
-  it('enables hosted Medusa without asking for admin credentials when session config has no backend yet', async () => {
-    commerceConfig.current = { status: 'setup', productCount: 4 }
-    fetchState.impl = (input) =>
-      Promise.resolve(
-        okResponse(
-          String(input) === '/api/medusa-store/config'
-            ? { backendUrl: 'https://medusa.devliv.io', enabled: true }
-            : {
-                handoff: {
-                  adminUrl: 'https://medusa.devliv.io/app',
-                  backendUrl: 'https://medusa.devliv.io',
-                  storefrontUrl: 'https://ship-fast.devliv.io',
-                  tenantId: 'session_123',
-                },
-              },
-        ),
-      )
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    await waitFor(() => {
-      expect(screen.queryByLabelText('Admin email')).toBeNull()
-    })
-    expect(screen.queryByLabelText('Admin password')).toBeNull()
-
-    const enableButton = screen.getByRole('button', {
-      name: /Enable Commerce/,
-    })
-    expect(enableButton).toHaveProperty('disabled', false)
-
-    fireEvent.click(enableButton)
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/sessions/session_123/provision/medusa',
-        expect.objectContaining({ method: 'POST' }),
-      )
-    })
-    const requestBody = readLastFetchBody()
-    expect(requestBody).not.toHaveProperty('adminEmail')
-    expect(requestBody).not.toHaveProperty('adminPassword')
-  })
-
-  it('shows a provisioning progress label while the provision request is in flight', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
-    let resolveFetch!: () => void
-    fetchState.impl = () =>
-      new Promise<Response>((resolve) => {
-        resolveFetch = () => {
-          resolve(okResponse({ handoff: undefined }))
-        }
+  it('shows a provisioning progress label while enabling is in flight', async () => {
+    let resolveEnable!: () => void
+    mutationState.enableCommerce = () =>
+      new Promise((resolve) => {
+        resolveEnable = () =>
+          resolve({
+            commerceInstanceId: 'instance_1',
+            commerceStoreId: 'store_1',
+            instanceCreated: true,
+            storeCreated: true,
+          })
       })
 
     render(<CommercePanel sessionId="session_123" />)
-
-    fillMedusaAdminCredentials()
-    fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enable Commerce' }))
 
     expect(await screen.findByText('Enabling...')).toBeTruthy()
     expect(
-      screen.getByRole('button', { name: /Enabling\.\.\./ }),
+      screen.getByRole('button', { name: 'Enabling...' }),
     ).toHaveProperty('disabled', true)
 
-    resolveFetch()
-  })
-
-  it('shows the error message when provisioning fails', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
-    fetchState.impl = () =>
-      Promise.resolve(errorResponse({ error: 'Medusa provisioning blew up' }))
-
-    render(<CommercePanel sessionId="session_123" />)
-
-    fillMedusaAdminCredentials()
-    fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
-
-    expect(await screen.findByText('Medusa provisioning blew up')).toBeTruthy()
+    resolveEnable()
   })
 
   it('shows the EcommercifyTransformOverlay while transformation is in progress', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
-    let resolveFetch!: () => void
-    fetchState.impl = () =>
-      new Promise<Response>((resolve) => {
-        resolveFetch = () => {
-          resolve(okResponse({ handoff: undefined }))
-        }
+    let resolveEnable!: () => void
+    mutationState.enableCommerce = () =>
+      new Promise((resolve) => {
+        resolveEnable = () =>
+          resolve({
+            commerceInstanceId: 'instance_1',
+            commerceStoreId: 'store_1',
+            instanceCreated: true,
+            storeCreated: true,
+          })
       })
 
     render(<CommercePanel sessionId="session_123" />)
-
-    fillMedusaAdminCredentials()
-    fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enable Commerce' }))
 
     expect(
       await screen.findByTestId('ecommercify-transform', {}, { timeout: 3000 }),
     ).toBeTruthy()
 
-    resolveFetch()
+    resolveEnable()
 
     await waitFor(
       () => {
@@ -389,5 +143,75 @@ describe('CommercePanel (behavioral)', () => {
       },
       { timeout: 3000 },
     )
+  })
+
+  it('surfaces the error message when enabling commerce fails, without any admin credential fields ever appearing', async () => {
+    mutationState.enableCommerce = async () => {
+      throw new Error('A paid subscription is required to enable commerce.')
+    }
+
+    render(<CommercePanel sessionId="session_123" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Enable Commerce' }))
+
+    expect(
+      await screen.findByText(
+        'A paid subscription is required to enable commerce.',
+      ),
+    ).toBeTruthy()
+    expect(screen.queryByLabelText('Admin email')).toBeNull()
+    expect(screen.queryByLabelText('Admin password')).toBeNull()
+  })
+
+  it('requests an admin SSO URL and opens it in a new tab when Open admin is clicked', async () => {
+    accessState.current = {
+      authState: 'paid',
+      enabled: true,
+      instanceStatus: 'ready',
+      storeStatus: 'ready',
+      adminUrl: 'https://admin.medusa.test',
+      storefrontUrl: 'https://store.medusa.test',
+    }
+    const requestSpy = vi.fn(async () => ({
+      url: 'https://admin.medusa.test/?ssoToken=one-time-token',
+    }))
+    mutationState.requestAdminSso = requestSpy
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+
+    render(<CommercePanel sessionId="session_123" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Open admin' }))
+
+    await waitFor(() => {
+      expect(requestSpy).toHaveBeenCalledWith({ sessionId: 'session_123' })
+    })
+    await waitFor(() => {
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://admin.medusa.test/?ssoToken=one-time-token',
+        '_blank',
+        'noopener,noreferrer',
+      )
+    })
+  })
+
+  it('surfaces an admin SSO failure without navigating anywhere', async () => {
+    accessState.current = {
+      authState: 'paid',
+      enabled: true,
+      instanceStatus: 'ready',
+      storeStatus: 'ready',
+      adminUrl: 'https://admin.medusa.test',
+      storefrontUrl: 'https://store.medusa.test',
+    }
+    mutationState.requestAdminSso = async () => {
+      throw new Error('Admin SSO token rejected: EXPIRED')
+    }
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+
+    render(<CommercePanel sessionId="session_123" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Open admin' }))
+
+    expect(
+      await screen.findByText('Admin SSO token rejected: EXPIRED'),
+    ).toBeTruthy()
+    expect(openSpy).not.toHaveBeenCalled()
   })
 })

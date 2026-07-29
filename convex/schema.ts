@@ -135,6 +135,44 @@ const moderationField = v.union(
   v.literal('customLanguage'),
 )
 
+// One isolated Medusa stack per paid Clerk customer. Lifecycle:
+// provisioning -> ready -> degraded -> suspending -> suspended -> resuming -> ready
+// with failed/deleting/deleted as terminal states reachable from any point.
+const commerceInstanceStatus = v.union(
+  v.literal('provisioning'),
+  v.literal('ready'),
+  v.literal('degraded'),
+  v.literal('suspending'),
+  v.literal('suspended'),
+  v.literal('resuming'),
+  v.literal('failed'),
+  v.literal('deleting'),
+  v.literal('deleted'),
+)
+
+const commerceStoreSyncStatus = v.union(
+  v.literal('idle'),
+  v.literal('pulling_updates'),
+  v.literal('ready'),
+  v.literal('failed'),
+)
+
+const commerceInstanceOperationKind = v.union(
+  v.literal('provision_instance'),
+  v.literal('create_store'),
+  v.literal('suspend'),
+  v.literal('resume'),
+  v.literal('upgrade'),
+  v.literal('delete'),
+)
+
+const commerceInstanceOperationState = v.union(
+  v.literal('started'),
+  v.literal('succeeded'),
+  v.literal('failed'),
+  v.literal('unknown'),
+)
+
 export default defineSchema({
   // Singleton operational switches. `maintenance` is intentionally public to
   // read: clients need the state before rendering any product surface. Writes
@@ -600,6 +638,79 @@ export default defineSchema({
     .index('by_deploymentSlug', ['deploymentSlug'])
     .index('by_sessionId', ['sessionId']),
 
+  // Customer-isolated commerce model (one Medusa stack per paid Clerk
+  // customer, replacing the deployment-bound commerceTenants above for new
+  // provisioning). See specs/architecture/customer-isolated-medusa-dokploy-swarm.md.
+  commerceInstances: defineTable({
+    ownerUserId: v.string(), // Clerk tokenIdentifier
+    status: commerceInstanceStatus,
+    provider: v.string(),
+    providerReference: v.optional(v.string()),
+    backendUrl: v.optional(v.string()),
+    adminUrl: v.optional(v.string()),
+    secretRef: v.optional(v.string()),
+    // Mirrors the owning subscription's currentPeriodEnd so scheduled
+    // lifecycle jobs can decide when to suspend without re-joining billing.
+    entitlementExpiry: v.optional(v.number()),
+    suspendedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_ownerUserId', ['ownerUserId'])
+    .index('by_providerReference', ['providerReference'])
+    .index('by_status_and_entitlementExpiry', [
+      'status',
+      'entitlementExpiry',
+    ]),
+
+  commerceStores: defineTable({
+    commerceInstanceId: v.id('commerceInstances'),
+    sessionId: v.id('sessions'),
+    deploymentId: v.optional(v.id('deployments')),
+    status: commerceTenantStatus,
+    syncStatus: commerceStoreSyncStatus,
+    providerStoreId: v.optional(v.string()),
+    salesChannelId: v.optional(v.string()),
+    publishableKey: v.optional(v.string()),
+    storefrontUrl: v.optional(v.string()),
+    productCount: v.optional(v.number()),
+    lastPullAt: v.optional(v.number()),
+    lastWebhookAt: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_deploymentId', ['deploymentId'])
+    .index('by_commerceInstanceId', ['commerceInstanceId'])
+    .index('by_providerStoreId', ['providerStoreId']),
+
+  commerceInstanceOperations: defineTable({
+    commerceInstanceId: v.id('commerceInstances'),
+    commerceStoreId: v.optional(v.id('commerceStores')),
+    kind: commerceInstanceOperationKind,
+    idempotencyKey: v.string(),
+    requestHash: v.string(),
+    state: commerceInstanceOperationState,
+    attempt: v.number(),
+    retryable: v.optional(v.boolean()),
+    failureCode: v.optional(v.string()),
+    resultJson: v.optional(v.string()),
+    startedAt: v.number(),
+    updatedAt: v.number(),
+    leaseExpiresAt: v.number(),
+    retryAfterAt: v.optional(v.number()),
+    expiresAt: v.number(),
+  })
+    .index('by_commerceInstanceId_and_kind_and_idempotencyKey', [
+      'commerceInstanceId',
+      'kind',
+      'idempotencyKey',
+    ])
+    .index('by_expiresAt', ['expiresAt']),
+
   genuiModules: defineTable({
     sessionId: v.id('sessions'),
     moduleId: v.string(),
@@ -682,6 +793,12 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     canceledAt: v.optional(v.number()),
+    // Paid-through timestamp (ms) normalized from Stripe current_period_end /
+    // Razorpay current_end. Commerce entitlement is `now < currentPeriodEnd`,
+    // independent of `status`, so a scheduled cancellation keeps access until
+    // the period the customer already paid for actually ends.
+    currentPeriodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.optional(v.boolean()),
   })
     .index('by_userId', ['userId'])
     .index('by_userId_status', ['userId', 'status'])

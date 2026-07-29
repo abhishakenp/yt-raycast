@@ -93,6 +93,23 @@ async function requireBillingReadAccess(
   })
 }
 
+// Omit absent period fields on patches: Convex treats undefined as an unset.
+function periodEndPatchFields(source: {
+  currentPeriodEnd?: number
+  cancelAtPeriodEnd?: boolean
+}): Partial<Pick<Doc<'subscriptions'>, 'currentPeriodEnd' | 'cancelAtPeriodEnd'>> {
+  const fields: Partial<
+    Pick<Doc<'subscriptions'>, 'currentPeriodEnd' | 'cancelAtPeriodEnd'>
+  > = {}
+  if (source.currentPeriodEnd !== undefined) {
+    fields.currentPeriodEnd = source.currentPeriodEnd
+  }
+  if (source.cancelAtPeriodEnd !== undefined) {
+    fields.cancelAtPeriodEnd = source.cancelAtPeriodEnd
+  }
+  return fields
+}
+
 async function findProviderSubscription(
   ctx: QueryCtx | MutationCtx,
   provider: Doc<'subscriptions'>['provider'],
@@ -239,6 +256,8 @@ export const upsertSubscriptionForUser = internalMutation({
     planId: v.string(),
     providerSubscriptionId: v.optional(v.string()),
     providerCheckoutId: v.optional(v.string()),
+    currentPeriodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = normalizeUserId(args.userId)
@@ -258,6 +277,7 @@ export const upsertSubscriptionForUser = internalMutation({
         providerCheckoutId: args.providerCheckoutId,
         updatedAt: now,
         canceledAt: args.status === 'cancelled' ? now : undefined,
+        ...periodEndPatchFields(args),
       })
       return { subscriptionId: existing._id }
     }
@@ -272,6 +292,8 @@ export const upsertSubscriptionForUser = internalMutation({
       createdAt: now,
       updatedAt: now,
       canceledAt: args.status === 'cancelled' ? now : undefined,
+      currentPeriodEnd: args.currentPeriodEnd,
+      cancelAtPeriodEnd: args.cancelAtPeriodEnd,
     })
 
     return { subscriptionId }
@@ -305,6 +327,8 @@ const confirmCheckoutSubscriptionArgs = {
   planId: v.string(),
   providerSubscriptionId: v.string(),
   providerCheckoutId: v.optional(v.string()),
+  currentPeriodEnd: v.optional(v.number()),
+  cancelAtPeriodEnd: v.optional(v.boolean()),
 }
 
 type ConfirmCheckoutSubscriptionArgs = {
@@ -314,6 +338,8 @@ type ConfirmCheckoutSubscriptionArgs = {
   planId: string
   providerSubscriptionId: string
   providerCheckoutId?: string
+  currentPeriodEnd?: number
+  cancelAtPeriodEnd?: boolean
 }
 
 async function applyCheckoutSubscription(
@@ -348,6 +374,7 @@ async function applyCheckoutSubscription(
         providerCheckoutId: args.providerCheckoutId,
         updatedAt: now,
         canceledAt: args.status === 'cancelled' ? now : undefined,
+        ...periodEndPatchFields(args),
       })
       return { subscriptionId: existing._id }
     }
@@ -362,6 +389,8 @@ async function applyCheckoutSubscription(
       createdAt: now,
       updatedAt: now,
       canceledAt: args.status === 'cancelled' ? now : undefined,
+      currentPeriodEnd: args.currentPeriodEnd,
+      cancelAtPeriodEnd: args.cancelAtPeriodEnd,
     })
 
     return { subscriptionId }
@@ -645,6 +674,8 @@ export const applyBillingWebhook = mutation({
         planId: v.string(),
         providerSubscriptionId: v.optional(v.string()),
         providerCheckoutId: v.optional(v.string()),
+        currentPeriodEnd: v.optional(v.number()),
+        cancelAtPeriodEnd: v.optional(v.boolean()),
       }),
     ),
     credits: v.optional(v.number()),
@@ -694,6 +725,16 @@ export const applyBillingWebhook = mutation({
       throw new ConvexError({
         code: 'INVALID_BILLING_EVENT',
         message: 'Subscription identifiers must not be blank.',
+      })
+    }
+    if (
+      subscription?.currentPeriodEnd !== undefined &&
+      (!Number.isSafeInteger(subscription.currentPeriodEnd) ||
+        subscription.currentPeriodEnd <= 0)
+    ) {
+      throw new ConvexError({
+        code: 'INVALID_BILLING_EVENT',
+        message: 'currentPeriodEnd must be a positive millisecond timestamp.',
       })
     }
     if (subscription === undefined && credits === undefined) {
@@ -751,6 +792,8 @@ export const applyBillingWebhook = mutation({
           createdAt: now,
           updatedAt: now,
           canceledAt: subscription.status === 'cancelled' ? now : undefined,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
         })
       } else {
         await ctx.db.patch(existingSubscription._id, {
@@ -759,6 +802,7 @@ export const applyBillingWebhook = mutation({
           providerCheckoutId: subscription.providerCheckoutId,
           updatedAt: now,
           canceledAt: subscription.status === 'cancelled' ? now : undefined,
+          ...periodEndPatchFields(subscription),
         })
       }
 

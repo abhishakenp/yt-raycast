@@ -176,6 +176,10 @@
         "vite": "^4.0.0",
       },
     },
+    "packages/commerce-provisioner": {
+      "name": "@ship-fast/commerce-provisioner",
+      "version": "0.1.0",
+    },
     "packages/ship-fast-aeo": {
       "name": "@ship-fast/aeo",
       "version": "1.0.0",
@@ -919,6 +923,8 @@
     "@ship-fast/blocks": ["@ship-fast/blocks@workspace:packages/ship-fast-blocks"],
 
     "@ship-fast/canva": ["@ship-fast/canva@workspace:packages/canva"],
+
+    "@ship-fast/commerce-provisioner": ["@ship-fast/commerce-provisioner@workspace:packages/commerce-provisioner"],
 
     "@ship-fast/engine": ["@ship-fast/engine@workspace:packages/ship-fast-engine"],
 

@@ -62,6 +62,34 @@ const redisModules =
         },
       ]
 
+// Registered only when the Clerk-SSO keys are configured, so a stack
+// launched without them still boots with Medusa's default admin auth
+// (unaffected — see admin-sso-auth/service.ts for the "UNVERIFIED" note on
+// this provider's exact API shape).
+const adminSsoAuthModule =
+  process.env.ADMIN_SSO_PUBLIC_KEY === undefined ||
+  process.env.COMMERCE_INSTANCE_ID === undefined ||
+  process.env.ADMIN_SSO_AUDIENCE === undefined
+    ? []
+    : [
+        {
+          resolve: '@medusajs/medusa/auth',
+          options: {
+            providers: [
+              {
+                resolve: './src/modules/admin-sso-auth',
+                id: 'admin_sso',
+                options: {
+                  publicKeyBase64: process.env.ADMIN_SSO_PUBLIC_KEY,
+                  commerceInstanceId: process.env.COMMERCE_INSTANCE_ID,
+                  audience: process.env.ADMIN_SSO_AUDIENCE,
+                },
+              },
+            ],
+          },
+        },
+      ]
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
@@ -108,5 +136,5 @@ module.exports = defineConfig({
           : 'development-cookie-secret'),
     },
   },
-  modules: redisModules,
+  modules: [...redisModules, ...adminSsoAuthModule],
 })

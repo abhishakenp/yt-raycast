@@ -1,13 +1,11 @@
-import { CheckCircle2, ShoppingCart, Sparkles } from 'lucide-react'
+import { CheckCircle2, Lock, ShoppingCart, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { EcommercifyTransformOverlay } from './EcommercifyTransformOverlay'
-import {
-  useCommerceController,
-  useHostedMedusaConfig,
-} from '../hooks/useCommerceController'
+import { useCommerceAccess } from '../hooks/useCommerceAccess'
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
+import { requestClerkSignIn } from '@/shared/auth/use-optional-auth'
 
 type CommercePanelProps = {
   sessionId: string
@@ -16,119 +14,52 @@ type CommercePanelProps = {
   visualProducts?: Array<GeneratedCommerceProduct>
 }
 
-type CommerceConfig = {
-  adminUrl?: string
-  backendUrl?: string
-  configJson?: string
-  errorMessage?: string
-  status?: string
-  storefrontUrl?: string
-}
-
-type CommerceHandoff = {
-  adminUrl: string
-  backendUrl: string
-  storefrontUrl: string
-  tenantId: string
-}
-
 const minimumTransformMs = 1800
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
 }
 
-const medusaStoreApiUnavailableWarning = 'Medusa Store API is unavailable.'
+const provisioningInstanceStatuses = new Set(['provisioning', 'resuming'])
+const provisioningStoreStatuses = new Set([
+  'not_enabled',
+  'provisioning',
+  'syncing_products',
+])
 
-function normalizeCommerceWarning(
-  warning: string | undefined,
-): string | undefined {
-  const normalized = warning?.trim()
-  if (!normalized) return undefined
-  return /^Medusa Store API is unavailable:/i.test(normalized)
-    ? medusaStoreApiUnavailableWarning
-    : normalized
+function PanelShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-[var(--radius-xl)] bg-[var(--glass-bg)] p-4 shadow-[var(--glass-shadow)] border border-[var(--glass-border)] backdrop-blur-[12px]">
+      <div className="mb-3 flex items-center gap-2 border-b border-[var(--border-primary)] pb-2">
+        <ShoppingCart className="size-4 text-cyan-200" />
+        <h2 className="m-0 font-sans text-sm font-semibold uppercase tracking-[0.1em] text-[var(--text-primary)]">
+          Medusa Commerce
+        </h2>
+      </div>
+      {children}
+    </div>
+  )
 }
 
-function readCommerceWarning(
-  configJson: string | undefined,
-): string | undefined {
-  if (!configJson?.trim()) return undefined
-  try {
-    const parsed: unknown = JSON.parse(configJson)
-    if (!isRecord(parsed)) return undefined
-    const warning = parsed.warning
-    return typeof warning === 'string'
-      ? normalizeCommerceWarning(warning)
-      : undefined
-  } catch {
-    return undefined
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
-function normalizeUrlForComparison(value: string | undefined): string {
-  return value?.trim().replace(/\/+$/, '') ?? ''
-}
-
-function createGeneratedStorefrontUrl(sessionId: string): string {
-  return `/generate/${encodeURIComponent(sessionId)}`
-}
-
-function resolveStorefrontUrl(
-  sessionId: string,
-  backendUrl: string | undefined,
-  storefrontUrl: string,
-): string {
-  return normalizeUrlForComparison(backendUrl) ===
-    normalizeUrlForComparison(storefrontUrl)
-    ? createGeneratedStorefrontUrl(sessionId)
-    : storefrontUrl
-}
-
-function createVisibleCommerceHandoff(
-  sessionId: string,
-  handoff: CommerceHandoff,
-): CommerceHandoff {
-  return {
-    ...handoff,
-    storefrontUrl: resolveStorefrontUrl(
-      sessionId,
-      handoff.backendUrl,
-      handoff.storefrontUrl,
-    ),
-  }
-}
-
-function createPersistedCommerceHandoff(
-  sessionId: string,
-  config: CommerceConfig | null | undefined,
-  warning?: string,
-): CommerceHandoff | undefined {
-  if (config?.status !== 'ready' || !config.adminUrl || !config.storefrontUrl) {
-    return undefined
-  }
-
-  const isUnreachableDefaultHandoff =
-    warning !== undefined &&
-    config.adminUrl === 'http://localhost:7001' &&
-    config.storefrontUrl === 'http://localhost:9000'
-
-  if (isUnreachableDefaultHandoff) return undefined
-
-  return {
-    adminUrl: config.adminUrl,
-    backendUrl: config.backendUrl ?? '',
-    storefrontUrl: resolveStorefrontUrl(
-      sessionId,
-      config.backendUrl,
-      config.storefrontUrl,
-    ),
-    tenantId: sessionId,
-  }
+function PrimaryButton({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: React.ReactNode
+  disabled?: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-[var(--bg-secondary)] px-4 py-3 font-sans text-sm font-semibold text-[var(--text-primary)] shadow-[0_0_0_1px_var(--ring),0_8px_20px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-[var(--dur)] ease-[var(--ease-out)] hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_0_0_1px_var(--ring-strong),0_0_24px_var(--glow),0_12px_28px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.18)] active:not-disabled:translate-y-0 active:not-disabled:duration-120 disabled:cursor-not-allowed disabled:opacity-30"
+      disabled={disabled}
+      onClick={onClick}
+      type="button"
+    >
+      {children}
+    </button>
+  )
 }
 
 export function CommercePanel({
@@ -138,69 +69,91 @@ export function CommercePanel({
   visualProducts = [],
 }: CommercePanelProps) {
   const {
-    commerceError,
-    commerceHandoff,
-    config,
-    isSaving,
-    provisionCommerce,
-  } = useCommerceController(sessionId, visualProducts)
-  const { config: hostedMedusaConfig } = useHostedMedusaConfig()
-  const [adminEmail, setAdminEmail] = useState('')
-  const [adminPassword, setAdminPassword] = useState('')
+    access,
+    adminError,
+    enableCommerce,
+    enableError,
+    isEnabling,
+    isOpeningAdmin,
+    openAdmin,
+  } = useCommerceAccess(sessionId)
   const [isTransforming, setIsTransforming] = useState(false)
-  const isReady = config?.status === 'ready'
-  const hasConfiguredBackend = (config?.backendUrl?.trim().length ?? 0) > 0
-  const hasHostedMedusaBackend =
-    hostedMedusaConfig.enabled === true &&
-    (hostedMedusaConfig.backendUrl?.trim().length ?? 0) > 0
-  const requiresAdminCredentials =
-    !hasConfiguredBackend && !hasHostedMedusaBackend
-  const canSave =
-    !isSaving &&
-    (!requiresAdminCredentials ||
-      (adminEmail.trim().length > 0 && adminPassword.length >= 8))
-  const liveCheckoutWarning =
-    normalizeCommerceWarning(config?.errorMessage) ??
-    readCommerceWarning(config?.configJson)
-  const visibleCommerceHandoff =
-    commerceHandoff === undefined
-      ? createPersistedCommerceHandoff(sessionId, config, liveCheckoutWarning)
-      : createVisibleCommerceHandoff(sessionId, commerceHandoff)
-  const liveProductCount = config?.productCount ?? 0
-  const displayedProductCount =
-    liveProductCount > 0
-      ? liveProductCount
-      : (visualProductCount ?? visualProducts.length)
+  const displayedProductCount = visualProductCount ?? visualProducts.length
 
-  const handleSave = async () => {
+  const handleEnable = async () => {
     setIsTransforming(true)
     onTransformingChange?.(true)
     try {
-      const credentials = requiresAdminCredentials
-        ? { email: adminEmail, password: adminPassword }
-        : undefined
-      await Promise.all([
-        provisionCommerce(credentials),
-        wait(minimumTransformMs),
-      ])
+      await Promise.all([enableCommerce(), wait(minimumTransformMs)])
     } finally {
       setIsTransforming(false)
       onTransformingChange?.(false)
     }
   }
 
+  const transformOverlay =
+    isTransforming && typeof document !== 'undefined'
+      ? createPortal(<EcommercifyTransformOverlay fixed />, document.body)
+      : null
+
+  if (access === undefined) {
+    return (
+      <PanelShell>
+        <p className="m-0 text-xs text-[var(--text-muted)]">
+          Loading commerce status...
+        </p>
+      </PanelShell>
+    )
+  }
+
+  if (access.authState === 'signed-out') {
+    return (
+      <PanelShell>
+        <p className="m-0 mb-3 text-xs text-[var(--text-muted)]">
+          Sign in to enable commerce for this site.
+        </p>
+        <PrimaryButton onClick={() => requestClerkSignIn()}>
+          <Lock className="size-4" />
+          Sign in
+        </PrimaryButton>
+      </PanelShell>
+    )
+  }
+
+  if (access.authState === 'unpaid') {
+    return (
+      <PanelShell>
+        <p className="m-0 mb-3 text-xs text-[var(--text-muted)]">
+          Commerce is available on a paid plan. Upgrade to enable a dedicated
+          Medusa store for this site.
+        </p>
+        <a
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full border-0 bg-[var(--bg-secondary)] px-4 py-3 text-center font-sans text-sm font-semibold text-[var(--text-primary)] shadow-[0_0_0_1px_var(--ring),0_8px_20px_rgba(0,0,0,0.25)]"
+          href="/pricing"
+        >
+          <Sparkles className="size-4" />
+          Upgrade
+        </a>
+      </PanelShell>
+    )
+  }
+
+  const isProvisioning =
+    (access.instanceStatus !== null &&
+      provisioningInstanceStatuses.has(access.instanceStatus)) ||
+    (access.storeStatus !== null &&
+      provisioningStoreStatuses.has(access.storeStatus))
+  const isReady =
+    access.enabled &&
+    access.instanceStatus === 'ready' &&
+    access.storeStatus === 'ready'
+
   return (
-    <div className="rounded-[var(--radius-xl)] bg-[var(--glass-bg)] p-4 shadow-[var(--glass-shadow)] border border-[var(--glass-border)] backdrop-blur-[12px]">
-      <div className="mb-3 flex items-center gap-2 border-b border-[var(--border-primary)] pb-2">
-        <ShoppingCart className="size-4 text-cyan-200" />
-        <h2 className="m-0 font-sans text-sm font-semibold uppercase tracking-[0.1em] text-[var(--text-primary)]">
-          Medusa Commerce
-        </h2>
-      </div>
+    <PanelShell>
       <div className="mb-3 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-input)] p-3">
         <div className="flex items-center justify-between gap-3">
           <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">
-            Tenant
+            Store
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-100">
             {isReady ? (
@@ -209,10 +162,14 @@ export function CommercePanel({
               <Sparkles className="size-3.5 text-cyan-200" />
             )}
             {isReady
-              ? liveCheckoutWarning === undefined
-                ? 'Live ready'
-                : 'Visual ready'
-              : 'Setup needed'}
+              ? 'Live ready'
+              : isProvisioning
+                ? 'Provisioning...'
+                : access.enabled
+                  ? access.instanceStatus === 'degraded'
+                    ? 'Degraded'
+                    : 'Setting up'
+                  : 'Not enabled'}
           </span>
         </div>
         <div className="mt-2 h-px bg-[var(--border-primary)]" />
@@ -221,102 +178,72 @@ export function CommercePanel({
             Products
           </span>
           <span className="text-xs font-semibold text-[var(--text-primary)]">
-            {displayedProductCount}
+            {access.productCount && access.productCount > 0
+              ? access.productCount
+              : displayedProductCount}
           </span>
         </div>
       </div>
-      {requiresAdminCredentials && (
-        <div className="mb-3 grid gap-3 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-input)] p-3">
-          <p className="m-0 text-xs text-[var(--text-muted)]">
-            Create your Medusa admin account. Ship Fast uses these credentials
-            only during setup and does not store the password.
-          </p>
-          <label className="grid gap-1 text-xs font-semibold text-[var(--text-primary)]">
-            Admin email
-            <input
-              autoComplete="email"
-              className="rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2 text-sm"
-              onChange={(event) => setAdminEmail(event.target.value)}
-              required
-              type="email"
-              value={adminEmail}
-            />
-          </label>
-          <label className="grid gap-1 text-xs font-semibold text-[var(--text-primary)]">
-            Admin password
-            <input
-              autoComplete="new-password"
-              className="rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2 text-sm"
-              minLength={8}
-              onChange={(event) => setAdminPassword(event.target.value)}
-              required
-              type="password"
-              value={adminPassword}
-            />
-          </label>
-        </div>
+
+      {!access.enabled && (
+        <PrimaryButton disabled={isEnabling} onClick={handleEnable}>
+          <Sparkles className="size-4" />
+          {isEnabling ? 'Enabling...' : 'Enable Commerce'}
+        </PrimaryButton>
       )}
-      <button
-        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-[var(--bg-secondary)] px-4 py-3 font-sans text-sm font-semibold text-[var(--text-primary)] shadow-[0_0_0_1px_var(--ring),0_8px_20px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-[var(--dur)] ease-[var(--ease-out)] hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_0_0_1px_var(--ring-strong),0_0_24px_var(--glow),0_12px_28px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.18)] active:not-disabled:translate-y-0 active:not-disabled:duration-120 disabled:cursor-not-allowed disabled:opacity-30"
-        disabled={!canSave}
-        onClick={handleSave}
-        type="button"
-      >
-        <Sparkles className="size-4" />
-        {isSaving
-          ? 'Enabling...'
-          : isReady
-            ? 'Refresh Commerce'
-            : 'Enable Commerce'}
-      </button>
-      {commerceError && (
+
+      {enableError && (
         <p className="mt-3 rounded-[var(--radius-sm)] border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-400">
-          {commerceError}
+          {enableError}
         </p>
       )}
-      {isReady && liveCheckoutWarning === undefined && (
-        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.1em] text-emerald-400">
-          Live commerce ready
+
+      {access.enabled && isProvisioning && (
+        <p className="mt-3 rounded-[var(--radius-sm)] border border-white/10 bg-white/[0.04] p-3 text-xs text-[var(--text-muted)]">
+          Setting up your dedicated commerce stack. This page updates
+          automatically — no need to refresh.
         </p>
       )}
-      {isReady && liveCheckoutWarning !== undefined && (
+
+      {access.enabled && access.instanceStatus === 'degraded' && (
         <p className="mt-3 rounded-[var(--radius-sm)] border border-amber-400/30 bg-amber-400/12 p-3 text-sm text-amber-100">
-          {liveCheckoutWarning}
+          Commerce is degraded. Storefront checkout may be temporarily
+          unavailable.
         </p>
       )}
-      {visibleCommerceHandoff !== undefined && (
+
+      {isReady && (
         <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]">
           <p className="m-0 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">
             Medusa handoff
           </p>
           <div className="mt-3 grid gap-2">
-            <a
-              className="inline-flex items-center justify-center rounded-full bg-cyan-300 px-3 py-2 text-xs font-bold text-slate-950"
-              href={visibleCommerceHandoff.storefrontUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Open storefront
-            </a>
-            <a
+            {access.storefrontUrl && (
+              <a
+                className="inline-flex items-center justify-center rounded-full bg-cyan-300 px-3 py-2 text-xs font-bold text-slate-950"
+                href={access.storefrontUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Open storefront
+              </a>
+            )}
+            <button
               className="inline-flex items-center justify-center rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-[var(--text-primary)]"
-              href={visibleCommerceHandoff.adminUrl}
-              rel="noreferrer"
-              target="_blank"
+              disabled={isOpeningAdmin}
+              onClick={() => void openAdmin()}
+              type="button"
             >
-              Open admin
-            </a>
+              {isOpeningAdmin ? 'Opening admin...' : 'Open admin'}
+            </button>
           </div>
+          {adminError && (
+            <p className="m-0 mt-2 text-xs text-rose-400">{adminError}</p>
+          )}
         </div>
       )}
-      {isReady && visibleCommerceHandoff === undefined && (
-        <p className="mt-3 rounded-[var(--radius-sm)] border border-white/10 bg-white/[0.04] p-3 text-xs text-[var(--text-muted)]">
-          Set Medusa backend, admin, and storefront URLs to unlock links.
-        </p>
-      )}
-      {isTransforming && typeof document !== 'undefined'
-        ? createPortal(<EcommercifyTransformOverlay fixed />, document.body)
-        : null}
-    </div>
+
+      {transformOverlay}
+    </PanelShell>
   )
 }

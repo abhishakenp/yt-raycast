@@ -44,37 +44,65 @@ import type { MutationCtx, QueryCtx } from '../../../convex/_generated/server'
 /* Shared UI mocks                                                            */
 /* -------------------------------------------------------------------------- */
 
-const commerceConfig = vi.hoisted(() => ({
-  current: undefined as
-    | {
-        adminUrl?: string
-        backendUrl?: string
-        configJson?: string
-        errorMessage?: string
-        productCount?: number
-        status?: string
-        storefrontUrl?: string
-      }
-    | undefined,
+type CommerceAccessValue =
+  | undefined
+  | { authState: 'signed-out' }
+  | { authState: 'unpaid' }
+  | {
+      authState: 'paid'
+      enabled: boolean
+      instanceStatus: string | null
+      storeStatus: string | null
+      backendUrl?: string
+      adminUrl?: string
+      storefrontUrl?: string
+      publishableKey?: string
+      productCount?: number
+    }
+
+const accessState = vi.hoisted(() => ({
+  current: undefined as CommerceAccessValue,
 }))
 
-const fetchState = vi.hoisted(() => ({
-  impl: null as null | (() => Promise<Response>),
+const mutationState = vi.hoisted(() => ({
+  enableCommerce: (async () => ({
+    commerceInstanceId: 'instance_1',
+    commerceStoreId: 'store_1',
+    instanceCreated: true,
+    storeCreated: true,
+  })) as (args: unknown) => Promise<unknown>,
+  requestAdminSso: (async () => ({
+    url: 'https://admin.medusa.test/?ssoToken=token',
+  })) as (args: unknown) => Promise<unknown>,
 }))
 
 vi.mock('convex/react', () => ({
-  useQuery: vi.fn(() => commerceConfig.current),
-  useMutation: vi.fn(() => vi.fn()),
+  useQuery: vi.fn(() => accessState.current),
+  useMutation: vi.fn((ref: string) => {
+    if (String(ref).includes('enableCommerce')) {
+      return (args: unknown) => mutationState.enableCommerce(args)
+    }
+    return (args: unknown) => mutationState.requestAdminSso(args)
+  }),
 }))
 
 vi.mock('../../../convex/_generated/api', () => ({
   api: {
+    commerceInstances: {
+      enableCommerce: 'commerceInstances.enableCommerce',
+      getCommerceAccess: 'commerceInstances.getCommerceAccess',
+      requestAdminSso: 'commerceInstances.requestAdminSso',
+    },
     sessions: { getCommerceConfig: 'sessions.getCommerceConfig' },
   },
 }))
 
 vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: () => undefined,
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  requestClerkSignIn: vi.fn(),
 }))
 
 /* -------------------------------------------------------------------------- */
@@ -91,20 +119,6 @@ vi.mock('../../../convex/lib/session_access_helpers', () => ({
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
-
-function okResponse(body: unknown): Response {
-  return {
-    ok: true,
-    json: async () => body,
-  } as Response
-}
-
-function errorResponse(body: unknown): Response {
-  return {
-    ok: false,
-    json: async () => body,
-  } as Response
-}
 
 type CommerceConfigDoc = Doc<'commerceConfigs'>
 
@@ -214,78 +228,63 @@ function ctxFor(options: CtxOptions = {}) {
 
 describe('CommercePanel edge cases (UI)', () => {
   beforeEach(() => {
-    commerceConfig.current = undefined
-    fetchState.impl = () =>
-      Promise.resolve(
-        okResponse({
-          handoff: {
-            adminEmail: 'admin@store.test',
-            adminPassword: 'secret-password',
-            adminUrl: 'https://admin.medusa.test',
-            backendUrl: 'https://backend.medusa.test',
-            storefrontUrl: 'https://store.medusa.test',
-            tenantId: 'session_123',
-          },
-        }),
-      )
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((...args) => {
-        void args
-        return fetchState.impl?.()
-      }),
-    )
+    accessState.current = {
+      authState: 'paid',
+      enabled: false,
+      instanceStatus: null,
+      storeStatus: null,
+    }
+    mutationState.enableCommerce = async () => ({
+      commerceInstanceId: 'instance_1',
+      commerceStoreId: 'store_1',
+      instanceCreated: true,
+      storeCreated: true,
+    })
+    mutationState.requestAdminSso = async () => ({
+      url: 'https://admin.medusa.test/?ssoToken=token',
+    })
   })
 
   afterEach(() => {
     cleanup()
-    vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 
-  it('1. when already provisioned, shows a manage/refresh action (not "Provision")', () => {
-    commerceConfig.current = {
+  it('1. when already provisioned and ready, "Enable Commerce" is gone and live status/handoff are shown', () => {
+    accessState.current = {
+      authState: 'paid',
+      enabled: true,
+      instanceStatus: 'ready',
+      storeStatus: 'ready',
       adminUrl: 'https://admin.medusa.test',
       backendUrl: 'https://backend.medusa.test',
       productCount: 4,
-      status: 'ready',
       storefrontUrl: 'https://store.medusa.test',
     }
 
     render(h(CommercePanel, { sessionId: 'session_123' }))
 
-    // Once provisioned, the panel must NOT show the initial "Enable Commerce"
-    // provision button. It should show a manage/refresh equivalent instead.
+    // Once ready, the panel must NOT show the initial "Enable Commerce"
+    // button — state is reactive (Convex useQuery), so no manual
+    // refresh/manage action is needed either.
     expect(screen.queryByRole('button', { name: /Enable Commerce/ })).toBeNull()
-    // A manage/refresh action must be present so the user can re-sync.
-    const manageButton = screen.getByRole('button', {
-      name: /Refresh Commerce|Manage/,
-    })
-    expect(manageButton).toBeTruthy()
     expect(screen.getByText('Live ready')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Open admin' })).toBeTruthy()
   })
 
-  it('2. provision failure shows the error message and leaves the button retryable', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
-    fetchState.impl = () =>
-      Promise.resolve(errorResponse({ error: 'Medusa provisioning blew up' }))
+  it('2. enable failure shows the error message and leaves the button retryable', async () => {
+    mutationState.enableCommerce = async () => {
+      throw new Error('Medusa provisioning blew up')
+    }
 
     render(h(CommercePanel, { sessionId: 'session_123' }))
-
-    // Fill in required admin credentials to enable the provision button.
-    fireEvent.change(screen.getByLabelText('Admin email'), {
-      target: { value: 'admin@test.com' },
-    })
-    fireEvent.change(screen.getByLabelText('Admin password'), {
-      target: { value: 'password123' },
-    })
 
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     // The error message must be surfaced to the user.
     expect(await screen.findByText('Medusa provisioning blew up')).toBeTruthy()
 
-    // After failure, isSaving flips back to false so the user can retry.
+    // After failure, isEnabling flips back to false so the user can retry.
     await waitFor(() => {
       const retry = screen.getByRole('button', { name: /Enable Commerce/ })
       expect(retry).toBeTruthy()
@@ -294,11 +293,14 @@ describe('CommercePanel edge cases (UI)', () => {
   })
 
   it('3. product count 0 renders a zero count (empty state)', () => {
-    commerceConfig.current = {
+    accessState.current = {
+      authState: 'paid',
+      enabled: true,
+      instanceStatus: 'ready',
+      storeStatus: 'ready',
       adminUrl: 'https://admin.medusa.test',
       backendUrl: 'https://backend.medusa.test',
       productCount: 0,
-      status: 'ready',
       storefrontUrl: 'https://store.medusa.test',
     }
 
@@ -310,53 +312,61 @@ describe('CommercePanel edge cases (UI)', () => {
     expect(countCell).toBeTruthy()
   })
 
-  it('4. handoff admin and storefront URLs are present, well-formed, and open in a new tab', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
+  it('4. storefront link and admin action are present, well-formed, and never expose a static admin URL', async () => {
+    accessState.current = {
+      authState: 'paid',
+      enabled: true,
+      instanceStatus: 'ready',
+      storeStatus: 'ready',
+      adminUrl: 'https://admin.medusa.test',
+      backendUrl: 'https://backend.medusa.test',
+      storefrontUrl: 'https://store.medusa.test',
+    }
+    const requestSpy = vi.fn(async () => ({
+      url: 'https://admin.medusa.test/?ssoToken=one-time-token',
+    }))
+    mutationState.requestAdminSso = requestSpy
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
 
     render(h(CommercePanel, { sessionId: 'session_123' }))
 
-    // Fill in required admin credentials to enable the provision button.
-    fireEvent.change(screen.getByLabelText('Admin email'), {
-      target: { value: 'admin@test.com' },
-    })
-    fireEvent.change(screen.getByLabelText('Admin password'), {
-      target: { value: 'password123' },
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
-
-    expect(await screen.findByText('Medusa handoff')).toBeTruthy()
-
     const storefront = screen.getByRole('link', { name: 'Open storefront' })
-    const admin = screen.getByRole('link', { name: 'Open admin' })
-
-    // URLs are present and are absolute https URLs (correct format).
     expect(storefront.getAttribute('href')).toBe('https://store.medusa.test')
-    expect(admin.getAttribute('href')).toBe('https://admin.medusa.test')
     expect(storefront.getAttribute('href')).toMatch(/^https:\/\//)
-    expect(admin.getAttribute('href')).toMatch(/^https:\/\//)
-    // Both open in a new tab for security.
     expect(storefront.getAttribute('target')).toBe('_blank')
-    expect(admin.getAttribute('target')).toBe('_blank')
+
+    // Admin is a button that mints a fresh single-use SSO token per click —
+    // never a static href pointing straight at the Medusa admin URL.
+    const adminButton = screen.getByRole('button', { name: 'Open admin' })
+    expect(adminButton.getAttribute('href')).toBeNull()
+    fireEvent.click(adminButton)
+
+    await waitFor(() => {
+      expect(requestSpy).toHaveBeenCalledWith({ sessionId: 'session_123' })
+    })
+    await waitFor(() => {
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://admin.medusa.test/?ssoToken=one-time-token',
+        '_blank',
+        'noopener,noreferrer',
+      )
+    })
   })
 
   it('5. transform overlay appears during transformation and is removed after', async () => {
-    commerceConfig.current = { status: 'pending', productCount: 0 }
-    let resolveFetch!: () => void
-    fetchState.impl = () =>
-      new Promise<Response>((resolve) => {
-        resolveFetch = () => resolve(okResponse({ handoff: undefined })) as void
+    let resolveEnable!: () => void
+    mutationState.enableCommerce = () =>
+      new Promise((resolve) => {
+        resolveEnable = () =>
+          resolve({
+            commerceInstanceId: 'instance_1',
+            commerceStoreId: 'store_1',
+            instanceCreated: true,
+            storeCreated: true,
+          })
       })
 
     render(h(CommercePanel, { sessionId: 'session_123' }))
-
-    // Fill in required admin credentials to enable the provision button.
-    fireEvent.change(screen.getByLabelText('Admin email'), {
-      target: { value: 'admin@test.com' },
-    })
-    fireEvent.change(screen.getByLabelText('Admin password'), {
-      target: { value: 'password123' },
-    })
 
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
@@ -365,9 +375,9 @@ describe('CommercePanel edge cases (UI)', () => {
       await screen.findByTestId('ecommercify-transform', {}, { timeout: 3000 }),
     ).toBeTruthy()
 
-    resolveFetch()
+    resolveEnable()
 
-    // Once the provision promise resolves, isTransforming flips false and the
+    // Once the enable promise resolves, isTransforming flips false and the
     // overlay is unmounted.
     await waitFor(
       () => {
