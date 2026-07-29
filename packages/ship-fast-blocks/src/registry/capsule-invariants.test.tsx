@@ -53,9 +53,9 @@ import {
 import { library, componentNames } from '#/library.ts'
 import * as primitiveRegistry from '#/registry/primitives/index.ts'
 import { Button } from '#/registry/primitives/button.tsx'
-import { ChurchNavbar } from '#/registry/sections/church/ChurchNavbar.tsx'
-import { ChurchFaq } from '#/registry/sections/church/ChurchFaq.tsx'
-import { ChurchStats } from '#/registry/sections/church/ChurchStats.tsx'
+import { Navbar } from '#/motifs/index.tsx'
+import { FaqAccordion } from '#/motifs/index.tsx'
+import { StatsStrip } from '#/motifs/index.tsx'
 
 const primitiveNames = new Set(
   Object.values(primitiveRegistry)
@@ -153,20 +153,20 @@ describe('registry capsule invariants', () => {
       button.container.firstElementChild?.getAttribute('data-openui-component'),
     ).toBe('Button')
 
-    const navbar = renderCapsule(ChurchNavbar.client.component, {})
+    const navbar = renderCapsule(Navbar.client.component, {})
     expect(
       navbar.container.firstElementChild?.getAttribute('data-openui-component'),
-    ).toBe('ChurchNavbar')
+    ).toBe('Navbar')
 
-    const faq = renderCapsule(ChurchFaq.client.component, {})
+    const faq = renderCapsule(FaqAccordion.client.component, {})
     expect(
       faq.container.firstElementChild?.getAttribute('data-openui-component'),
-    ).toBe('ChurchFaq')
+    ).toBe('FaqAccordion')
 
-    const stats = renderCapsule(ChurchStats.client.component, {})
+    const stats = renderCapsule(StatsStrip.client.component, {})
     expect(
       stats.container.firstElementChild?.getAttribute('data-openui-component'),
-    ).toBe('ChurchStats')
+    ).toBe('StatsStrip')
   })
 
   it('isCapsule rejects non-capsule values', () => {

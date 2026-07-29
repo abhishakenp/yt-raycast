@@ -4,14 +4,14 @@ import { capsuleCategories, findSimilarCapsules } from './capsule-categories'
 
 describe('capsuleCategories', () => {
   it('contains entries for known capsules', () => {
-    expect(capsuleCategories['SaasHero']).toBeDefined()
-    expect(capsuleCategories['SaasHero'].category).toBe('saas')
-    expect(capsuleCategories['SaasHero'].functionalType).toBe('Hero')
+    expect(capsuleCategories['SplitHero']).toBeDefined()
+    expect(capsuleCategories['SplitHero'].category).toBe('core')
+    expect(capsuleCategories['SplitHero'].functionalType).toBe('Hero')
   })
 
-  it('categorizes ecommerce capsules under ecommerce', () => {
-    expect(capsuleCategories['EcommerceNavbar']?.category).toBe('ecommerce')
-    expect(capsuleCategories['EcommerceNavbar']?.functionalType).toBe('Navbar')
+  it('categorizes motif capsules under core', () => {
+    expect(capsuleCategories['Navbar']?.category).toBe('core')
+    expect(capsuleCategories['Navbar']?.functionalType).toBe('Navbar')
   })
 
   it('excludes primitives from the catalog (engine building blocks, not example sites)', () => {
@@ -30,17 +30,19 @@ describe('capsuleCategories', () => {
 
 describe('findSimilarCapsules', () => {
   it('finds capsules in the same category', () => {
-    const similar = findSimilarCapsules('EcommerceNavbar')
+    const similar = findSimilarCapsules('Navbar')
     expect(similar.length).toBeGreaterThan(0)
-    // Should include other ecommerce capsules
-    expect(similar.some((name) => name.startsWith('Ecommerce'))).toBe(true)
+    // Should include other core capsules
+    expect(
+      similar.some((name) => capsuleCategories[name]?.category === 'core'),
+    ).toBe(true)
   })
 
-  it('finds capsules with the same functional type (other navbars)', () => {
-    const similar = findSimilarCapsules('SaasNavbar', 20)
+  it('finds capsules with the same functional type (other heroes)', () => {
+    const similar = findSimilarCapsules('SplitHero', 20)
     expect(similar.length).toBeGreaterThan(0)
-    // Should include other Navbar capsules from different categories
-    expect(similar.some((name) => name.endsWith('Navbar'))).toBe(true)
+    // Should include other Hero capsules from the core category
+    expect(similar.some((name) => name.endsWith('Hero'))).toBe(true)
   })
 
   it('excludes the input capsule from results', () => {
@@ -62,22 +64,22 @@ describe('@ship-fast/blocks generated package subpaths', () => {
   it('imports capsule category helpers through the stable generated package export', async () => {
     const module = await import('@ship-fast/blocks/generated')
 
-    expect(module.findSimilarCapsules('SaasHero').length).toBeGreaterThan(0)
-    expect(module.capsuleCategories['SaasHero']?.functionalType).toBe('Hero')
+    expect(module.findSimilarCapsules('SplitHero').length).toBeGreaterThan(0)
+    expect(module.capsuleCategories['SplitHero']?.functionalType).toBe('Hero')
   })
 
   it('imports capsule category helpers through the package export map', async () => {
     const module =
       await import('@ship-fast/blocks/generated/capsule-categories')
 
-    expect(module.findSimilarCapsules('SaasHero').length).toBeGreaterThan(0)
-    expect(module.capsuleCategories['SaasHero']?.functionalType).toBe('Hero')
+    expect(module.findSimilarCapsules('SplitHero').length).toBeGreaterThan(0)
+    expect(module.capsuleCategories['SplitHero']?.functionalType).toBe('Hero')
   })
 
   it('imports runtime component loaders through the package export map', async () => {
     const module =
       await import('@ship-fast/blocks/generated/runtime-component-loaders')
 
-    expect(typeof module.runtimeComponentLoaders.SaasHero).toBe('function')
+    expect(typeof module.runtimeComponentLoaders.SplitHero).toBe('function')
   })
 })

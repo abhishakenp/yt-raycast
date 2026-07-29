@@ -246,6 +246,10 @@ function applyGalleryEditsToSource(
   return result
 }
 
+export type PublicGallerySession = ReturnType<
+  typeof serializePublicGallerySession
+>
+
 export function serializePublicGallerySession(
   session: Doc<'sessions'>,
   artifacts: PublicGalleryArtifacts,

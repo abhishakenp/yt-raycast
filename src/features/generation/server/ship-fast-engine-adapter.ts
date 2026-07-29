@@ -6,7 +6,7 @@ import {
 } from './engine-workspace'
 import type { EngineWorkspaceArtifacts } from './engine-workspace'
 import type { TranslationCacheClient } from '@ship-fast/engine/llm/translation-cache-client.ts'
-import type { PlanCacheClient } from '@ship-fast/engine/v3/plan-cache-client.ts'
+import type { PlanCacheClient } from '@ship-fast/engine'
 
 export type ShipFastEngineSessionEvent =
   | { type: 'log'; message: string }

@@ -58,7 +58,6 @@ function renderWithRoutes(
     <RoutesContext.Provider
       value={{
         routes,
-        targetMap: {},
         currentPage,
         setCurrentPage: vi.fn(),
         pendingSectionId: null,

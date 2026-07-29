@@ -9,7 +9,7 @@ import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { lazy, Suspense } from 'react'
-import type { CommerceRuntimeMode } from '@ship-fast/blocks/commerce'
+import type { CommerceRuntimeMode } from '@/features/commerce/contracts'
 
 type BrandLogoSelection = {
   name: string

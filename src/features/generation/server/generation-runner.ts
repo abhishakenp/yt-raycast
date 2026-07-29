@@ -14,7 +14,7 @@ import type {
   ShipFastEngineAdapterOptions,
 } from './ship-fast-engine-adapter'
 import type { TranslationCacheClient } from '@ship-fast/engine/llm/translation-cache-client.ts'
-import type { PlanCacheClient } from '@ship-fast/engine/v3/plan-cache-client.ts'
+import type { PlanCacheClient } from '@ship-fast/engine'
 
 export type PersistCompleteGenerationInput = {
   sessionId: string

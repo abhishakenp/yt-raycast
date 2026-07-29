@@ -14,7 +14,7 @@ describe('@ship-fast/blocks root exports', () => {
     expect(rootExports.componentNames).toContain('Stack')
     expect(rootExports.componentNames).toContain('Heading')
     expect(rootExports.componentNames).toContain('Button')
-    expect(rootExports.componentNames).toContain('FlightSimulator')
+    expect(rootExports.componentNames).toContain('SplitHero')
     expect(typeof rootExports.Renderer).toBeDefined()
     expect(rootExports.openUIComponentOpenPatternSource).toBeTruthy()
   })

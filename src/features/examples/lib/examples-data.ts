@@ -1,6 +1,5 @@
 import { allCapsules } from '@ship-fast/blocks'
 import {
-  buildRouteTargetMap,
   planPages,
   type PagePlan,
   type RoutePlanFamily,
@@ -1207,12 +1206,7 @@ export const buildExampleCategoryOpenUISource = (category: string): string => {
   statements.push(
     `root = PageSwitch(${JSON.stringify(pagePlans.map((page) => page.label))}, [${pagePlans
       .map(pageVariableName)
-      .join(', ')}], "", ${JSON.stringify(
-      buildRouteTargetMap({
-        pages: pagePlans,
-        pageProps: propsByRoleForPages(pagePlans, propsByRole),
-      }),
-    )})`,
+      .join(', ')}], "")`,
   )
 
   return statements.join('\n')

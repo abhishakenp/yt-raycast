@@ -136,7 +136,9 @@ afterEach(() => {
 
 describe('all exported section capsules default render', () => {
   it('collects the complete registry rather than a representative subset', () => {
-    expect(capsules.length).toBeGreaterThan(1000)
+    // The motif registry has 40 generative composition capsules (primitives
+    // are filtered out above). This guards against accidental truncation.
+    expect(capsules.length).toBeGreaterThanOrEqual(40)
   })
 
   it.each(capsuleCases)(

@@ -20,15 +20,15 @@ describe('OpenUI runtime library loading', () => {
     const names = extractOpenUIRuntimeComponentNames(`
       root = PageSwitch(routes=["Home"], pages=[home])
       anchored = SectionAnchor("home_features", home)
-      home = SaasHero(title="Launch")
+      home = SplitHero(title="Launch")
       body = Text("Ignore UnknownWidget(")
       missing = UnknownWidget()
     `)
 
     expect(names).toEqual([
       'PageSwitch',
-      'SaasHero',
       'SectionAnchor',
+      'SplitHero',
       'Stack',
       'Text',
     ])
@@ -68,14 +68,14 @@ describe('OpenUI runtime library loading', () => {
   })
 
   it('wraps static section capsules with the realtime + editable HOC', async () => {
-    // CafeHero is a static section capsule (registry/sections/**).
-    expect(runtimeSectionComponentNameSet.has('CafeHero')).toBe(true)
+    // SplitHero is a static section capsule (registry/sections/**).
+    expect(runtimeSectionComponentNameSet.has('SplitHero')).toBe(true)
 
     const capsule = await loadOpenUIRuntimeComponent(
-      'CafeHero' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
+      'SplitHero' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
     )
     const component = capsule.client.component as { displayName?: string }
-    expect(component.displayName).toBe('SectionRealtime(CafeHero)')
+    expect(component.displayName).toBe('SectionRealtime(SplitHero)')
   })
 
   it('does NOT wrap structural primitives or page capsules', async () => {
@@ -90,32 +90,30 @@ describe('OpenUI runtime library loading', () => {
   })
 
   it('does NOT wrap site chrome sections as admin-editable data', async () => {
-    expect(runtimeSectionComponentNameSet.has('BeautyStoreNavbar')).toBe(true)
-    expect(runtimeSectionComponentNameSet.has('BeautyStoreFooter')).toBe(true)
+    expect(runtimeSectionComponentNameSet.has('Navbar')).toBe(true)
+    expect(runtimeSectionComponentNameSet.has('Footer')).toBe(true)
 
     const [navbar, footer, products] = await Promise.all([
       loadOpenUIRuntimeComponent(
-        'BeautyStoreNavbar' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
+        'Navbar' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
       ),
       loadOpenUIRuntimeComponent(
-        'BeautyStoreFooter' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
+        'Footer' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
       ),
       loadOpenUIRuntimeComponent(
-        'BeautyStoreProducts' as Parameters<
-          typeof loadOpenUIRuntimeComponent
-        >[0],
+        'CardGrid' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
       ),
     ])
 
     expect(
       (navbar.client.component as { displayName?: string }).displayName,
-    ).not.toBe('SectionRealtime(BeautyStoreNavbar)')
+    ).not.toBe('SectionRealtime(Navbar)')
     expect(
       (footer.client.component as { displayName?: string }).displayName,
-    ).not.toBe('SectionRealtime(BeautyStoreFooter)')
+    ).not.toBe('SectionRealtime(Footer)')
     expect(
       (products.client.component as { displayName?: string }).displayName,
-    ).toBe('SectionRealtime(BeautyStoreProducts)')
+    ).toBe('SectionRealtime(CardGrid)')
   })
 })
 

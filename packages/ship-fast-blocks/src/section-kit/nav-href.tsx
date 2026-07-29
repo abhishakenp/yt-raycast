@@ -12,7 +12,6 @@ import { PreviewUrlBridgeContext } from '#/lib/preview-url-bridge.tsx'
 
 const DEFAULT_ROUTES_CONTEXT: RoutesContextValue = {
   routes: [],
-  targetMap: {},
   currentPage: '',
   setCurrentPage: () => {},
   pendingSectionId: null,
@@ -133,14 +132,10 @@ export function useSectionKitNavHrefResolver(): (
     (target: string | null | undefined) => {
       const rawTarget = (target ?? '').trim()
       if (!rawTarget) return undefined
-      const href = resolveRouteHref(
-        rawTarget,
-        routing.routes,
-        routing.targetMap,
-      )
+      const href = resolveRouteHref(rawTarget, routing.routes)
       return appendBasePath(href, basePath)
     },
-    [basePath, routing.routes, routing.targetMap],
+    [basePath, routing.routes],
   )
 }
 
@@ -222,11 +217,7 @@ export function useSectionKitNavClick(
         }
         return
       }
-      let resolved = resolveRouteTarget(
-        rawTarget,
-        routing.routes,
-        routing.targetMap,
-      )
+      let resolved = resolveRouteTarget(rawTarget, routing.routes)
       if (
         resolved === null &&
         urlBridge.navigateToPage !== null &&
@@ -240,16 +231,11 @@ export function useSectionKitNavClick(
         )
         if (targetUrl.origin === window.location.origin) {
           const matchedRoute = routing.routes.find((route) => {
-            const href = resolveRouteHref(
-              route,
-              routing.routes,
-              routing.targetMap,
-              {
-                currentPage: routing.currentPage,
-                currentPathname: window.location.pathname,
-                previewBase: true,
-              },
-            )
+            const href = resolveRouteHref(route, routing.routes, {
+              currentPage: routing.currentPage,
+              currentPathname: window.location.pathname,
+              previewBase: true,
+            })
             if (typeof href !== 'string') return false
             const routeUrl = new URL(href, window.location.href)
             return (

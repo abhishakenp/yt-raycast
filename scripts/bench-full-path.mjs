@@ -15,7 +15,7 @@ const prompt =
   process.argv[2] ??
   'A SaaS landing page for a project management tool called TaskFlow with pricing, features, and testimonials'
 
-const { runAllV3 } = await import('@ship-fast/engine')
+const { runComposition } = await import('@ship-fast/engine')
 
 const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-bench-full-'))
 
@@ -41,7 +41,7 @@ console.log(`   Prompt: "${prompt}"\n`)
 
 // Phase 1: Run the V3 engine
 const t_engine_start = Date.now()
-await runAllV3({ prompt, workspace, sessionCtx })
+await runComposition({ prompt, workspace, sessionCtx })
 const t_engine_end = Date.now()
 const engineMs = t_engine_end - t_engine_start
 
@@ -115,7 +115,7 @@ const allPhases = [
   ['quality_gate_retry', 'Quality gate retry'],
   ['svelte_validation', 'Svelte compile validation'],
   ['compile', 'Compile → OpenUI source'],
-  ['ssr_render', 'SSR render #1 (in runAllV3)'],
+  ['ssr_render', 'SSR render #1 (in runComposition)'],
   ['translation', 'Post-render translation'],
   ['persist', 'Persist artifacts (workspace)'],
   ['__second_ssr_import', 'SSR #2: import module'],
@@ -156,7 +156,7 @@ if (ssrError) {
 }
 
 console.log(`\n📊 Summary:`)
-console.log(`   Engine (runAllV3):     ${(engineMs / 1000).toFixed(2)}s`)
+console.log(`   Engine (runComposition):     ${(engineMs / 1000).toFixed(2)}s`)
 console.log(`   SSR #2 (completeGen):  ${(secondSsrMs / 1000).toFixed(2)}s`)
 console.log(`   Measured total:        ${(totalMs / 1000).toFixed(2)}s`)
 console.log(`   `)

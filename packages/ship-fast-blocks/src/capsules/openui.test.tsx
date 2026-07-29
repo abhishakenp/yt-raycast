@@ -9,7 +9,42 @@ import {
   withLakebed,
   type CapsuleComponentRenderer,
 } from './openui.ts'
-import { commerceCartLakebed } from '../registry/sections/commerce/cart-lakebed.ts'
+import {
+  createLakebedDefinition,
+  number,
+  string,
+  table,
+} from '@ship-fast/lakebed/server'
+
+// Inline lakebed definition replacing the deleted commerce cart-lakebed module.
+// Tests the same custom-lakebed contract: shared data key, custom queries/mutations.
+const cartDef = createLakebedDefinition({
+  items: {
+    ...table({
+      itemKey: string().default(''),
+      label: string(),
+      price: string().default(''),
+      quantity: number().default(1),
+    }),
+    seedFromProps: false,
+  },
+})
+
+const commerceCartLakebed = {
+  dataKey: 'Cart',
+  schema: cartDef.schema,
+  queries: {
+    cartSummary: cartDef.query((_ctx) => {
+      const items = _ctx.db.items.orderBy('createdAt').all()
+      return { count: items.length, items }
+    }),
+  },
+  mutations: {
+    addItem: cartDef.mutation((_ctx, input: { label: string }) => {
+      _ctx.db.items.insert({ ...input, quantity: 1 })
+    }),
+  },
+}
 
 describe('defineCapsule Lakebed contract', () => {
   it('gives every capsule default realtime data queries and mutations', async () => {

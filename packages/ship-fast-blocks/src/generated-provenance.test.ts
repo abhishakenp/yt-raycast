@@ -22,7 +22,12 @@ describe('generated OpenUI artifact provenance', () => {
   it('records the generator, source roots, output files, and input component files', () => {
     expect(provenance.generatorVersion).toBe(1)
     expect(provenance.generatedBy).toBe(generatorPath)
-    expect(provenance.sourceRoots).toEqual(['src/registry', 'src/capsules'])
+    expect(provenance.sourceRoots).toEqual([
+      'src/registry',
+      'src/capsules',
+      'src/motifs',
+      'src/primitives',
+    ])
     expect(provenance.outputs).toEqual([
       'src/generated/react-export-sources.json',
       'src/generated/react-export-sources.compressed.ts',
@@ -35,7 +40,7 @@ describe('generated OpenUI artifact provenance', () => {
       'src/generated/react-export-sources.provenance.json',
     ])
     expect(provenance.componentCount).toBe(provenance.components.length)
-    expect(provenance.componentCount).toBeGreaterThan(1_000)
+    expect(provenance.componentCount).toBeGreaterThan(100)
     // The exported runtime names (direct module import) must match the
     // provenance manifest exactly — no regex extraction from source text.
     expect(provenance.components.map(({ name }) => name)).toEqual([
@@ -47,7 +52,9 @@ describe('generated OpenUI artifact provenance', () => {
     })
 
     for (const { sourceFile } of provenance.components) {
-      expect(sourceFile).toMatch(/^src\/(?:registry|capsules)\/.+\.tsx$/)
+      expect(sourceFile).toMatch(
+        /^src\/(?:registry|capsules|motifs|primitives)\/.+\.tsx$/,
+      )
     }
   })
 })

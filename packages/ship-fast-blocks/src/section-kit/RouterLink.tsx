@@ -3,6 +3,8 @@ import { Link, useRouter } from '@tanstack/react-router'
 
 type RouterLinkProps = Omit<React.ComponentProps<'a'>, 'href'> & {
   href: string
+  /** When true, suppresses TanStack Router's auto aria-current on sub-routes. */
+  exactActive?: boolean
 }
 
 function isNativeHref(href: string): boolean {
@@ -10,7 +12,7 @@ function isNativeHref(href: string): boolean {
 }
 
 const RouterLink = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
-  ({ href, children, ...props }, ref) => {
+  ({ href, children, exactActive, ...props }, ref) => {
     if (isNativeHref(href)) {
       return (
         <a ref={ref} href={href} {...props}>
@@ -32,7 +34,12 @@ const RouterLink = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
     }
 
     return (
-      <Link ref={ref} to={href} {...props}>
+      <Link
+        ref={ref}
+        to={href}
+        activeOptions={exactActive ? { exact: true } : undefined}
+        {...props}
+      >
         {children}
       </Link>
     )

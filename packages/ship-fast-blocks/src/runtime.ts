@@ -58,8 +58,7 @@ export type {
   CreateCommerceCartInput,
   CreateCommercePaymentSessionsInput,
   UpdateCommerceItemInput,
-} from './registry/sections/commerce/commerce-contracts.ts'
-
+} from './registry/sections/commerce/commerce-contracts'
 export {
   extractAllComponentNames,
   extractOpenUIRuntimeComponentNames,

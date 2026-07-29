@@ -1,5 +1,6 @@
 import { api } from '../../../../convex/_generated/api'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
+import type { PublicGallerySession } from '../../../../convex/lib/session_gallery_helpers'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export-builder'
 
@@ -7,22 +8,25 @@ import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export
  * Serve a public session's preview as a standalone HTML document.
  * Used as the screenshot target for gallery thumbnail capture.
  * Renders from OpenUI source (moduleSource) via the HTML export builder.
+ * Shares the same PublicGallerySession contract as the gallery preview
+ * resolver — serializePublicGallerySession is the single source of truth.
  */
 export async function createSessionPreviewRawResponse(
   sessionId: string,
 ): Promise<Response> {
   try {
     const client = createRuntimeConvexHttpClient()
-    const session = await client.query(api.sessions.getPublicGallerySession, {
-      sessionId,
-    })
+    const session: PublicGallerySession | null = await client.query(
+      api.sessions.getPublicGallerySession,
+      { sessionId },
+    )
 
     if (session === null) {
       return new Response('Preview not found or not public', { status: 404 })
     }
 
     const moduleSource = session.moduleSource
-    if (typeof moduleSource !== 'string' || moduleSource.trim().length === 0) {
+    if (moduleSource === null || moduleSource.trim().length === 0) {
       return new Response('Preview not found or not public', { status: 404 })
     }
 

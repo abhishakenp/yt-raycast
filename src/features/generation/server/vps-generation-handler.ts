@@ -160,13 +160,13 @@ export async function startVpsGeneration(
     await client.mutation(api.sessions.addGenerationEventPublic, {
       sessionId: input.sessionId,
       eventType: 'status',
-      message: 'Running Ship Fast engine v3 (VPS)',
+      message: 'Running Ship Fast composition engine (VPS)',
       anonymousOwnerSecret: input.anonymousOwnerSecret,
     })
 
     // 5. Import engine (warm on VPS — near-zero after first call)
     const t_import = Date.now()
-    const { runAllV3 } = await import('@ship-fast/engine')
+    const { runComposition } = await import('@ship-fast/engine')
     stepTimings.import = Date.now() - t_import
     console.log(`[vps-gen] import ${stepTimings.import}ms`)
 
@@ -180,7 +180,7 @@ export async function startVpsGeneration(
       workspaceRoot:
         process.env.SHIP_FAST_ENGINE_WORKSPACE_ROOT ||
         '/tmp/ship-fast-engine-workspaces',
-      runAll: runAllV3,
+      runAll: runComposition,
       persistence: {
         completeGeneration: async (completeInput) => {
           const completed = await client.mutation(

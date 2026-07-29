@@ -16,13 +16,20 @@ const repoRoot = join(root, '..', '..')
 const nodeModulesRoot = join(repoRoot, 'node_modules')
 const registryRoot = join(root, 'src', 'registry')
 const capsulesRoot = join(root, 'src', 'capsules')
+const motifsRoot = join(root, 'src', 'motifs')
+const primitivesRoot = join(root, 'src', 'primitives')
 const blockSourceRoots = [
   join(root, 'src', 'components'),
   join(root, 'src', 'hooks'),
   join(root, 'src', 'lib'),
   join(root, 'src', 'section-kit'),
 ]
-const helperSourceRoots = [registryRoot, capsulesRoot]
+const helperSourceRoots = [
+  registryRoot,
+  capsulesRoot,
+  motifsRoot,
+  primitivesRoot,
+]
 const outFile = join(root, 'src', 'generated', 'react-export-sources.json')
 const compressedOutFile = join(
   root,
@@ -495,7 +502,12 @@ const hasExportedComponentFactory = (source) => {
   return componentRe.test(source)
 }
 
-for (const sourceRoot of [registryRoot, capsulesRoot]) {
+for (const sourceRoot of [
+  registryRoot,
+  capsulesRoot,
+  motifsRoot,
+  primitivesRoot,
+]) {
   for (const file of walk(sourceRoot)) {
     const source = readFileSync(file, 'utf8')
     componentRe.lastIndex = 0
@@ -509,7 +521,9 @@ for (const sourceRoot of [registryRoot, capsulesRoot]) {
       loaderEntries.push({
         name,
         sourceFile: relative(runtimeLoadersDir, file).replaceAll('\\', '/'),
-        isSection: toPosixPath(file).includes('/registry/sections/'),
+        isSection:
+          toPosixPath(file).includes('/registry/sections/') ||
+          toPosixPath(file).includes('/motifs/'),
       })
     }
   }
@@ -609,6 +623,8 @@ const provenance = {
   sourceRoots: [
     relative(root, registryRoot).replaceAll('\\', '/'),
     relative(root, capsulesRoot).replaceAll('\\', '/'),
+    relative(root, motifsRoot).replaceAll('\\', '/'),
+    relative(root, primitivesRoot).replaceAll('\\', '/'),
   ],
   outputs: generatedOutputs,
   componentCount: runtimeEntries.length,
@@ -659,6 +675,10 @@ const runtimeLoadersSource = [
   "  '!../registry/primitives/**/*.test.tsx',",
   "  '../registry/sections/**/*.tsx',",
   "  '!../registry/sections/**/*.test.tsx',",
+  "  '../motifs/**/*.tsx',",
+  "  '!../motifs/**/*.test.tsx',",
+  "  '../primitives/**/*.tsx',",
+  "  '!../primitives/**/*.test.tsx',",
   '])',
   '',
   'const toCapsule = (module: RuntimeComponentModule, name: string): ShipFastCapsule => {',
