@@ -46,7 +46,8 @@ const MOTIF_SIGNATURES: Record<string, string> = {
   NewsletterCta: 'heading? subheading? cta? variant? chrome? watermark?',
   ContactForm: 'heading? subheading?',
   BookingForm: 'heading? subheading?',
-  Navbar: 'brand? links>Home, About, Contact cta?',
+  Navbar:
+    'brand? links>Home, About, Contact cta? variant>default, centered, minimal, split?',
   Footer: 'brand? columns>title~links social>Twitter, Instagram, Facebook',
   MediaSplit:
     'heading? text? imageAlt? imageSrc? reversed? variant? chrome? index?',
@@ -66,6 +67,12 @@ const MOTIF_SIGNATURES: Record<string, string> = {
   TeamShowcase: 'heading? people>name~role~bio~imageAlt~imageSrc? cols?',
   ProjectGallery: 'heading? projects>title~category~imageAlt~imageSrc? cols?',
   DonationBand: 'heading? subheading? amounts>name?',
+  ProductDetail:
+    'title? price? comparePrice? rating? reviewCount? description? imageAlt? imageSrc? variants>name? primaryCta? specs>label~value?',
+  BlogPost:
+    'title? author? date? readTime? imageAlt? imageSrc? excerpt? sections>heading~body? pullQuote? authorBio? authorImageAlt?',
+  SidebarNav:
+    'heading? groups>label~items>name? contentTitle? contentBody?',
 }
 
 function buildMotifList(availableMotifs: string[]): string {
@@ -127,6 +134,7 @@ export function buildCompositionPrompt(
 @rhythm ${rhythm}
 @sectionCount ${sectionCount}
 @pageCount ${pageCount}
+@navbarVariant ${genome.navbarVariant}
 
 PRIORITY RULE (CRITICAL — read this carefully):
 - The USER'S PROMPT is the primary design authority. If the user's prompt specifies ANY design preference, you MUST use the user's preference for that axis.
@@ -134,25 +142,43 @@ PRIORITY RULE (CRITICAL — read this carefully):
 - This means: user preferences win on axes they specified, genome fills the rest.
 
 DESIGN AXIS OVERRIDE GUIDE — map user language to design axes:
-- "square buttons" / "sharp corners" / "no rounding" → radius:sharp (overrides genome)
-- "rounded" / "soft corners" / "pill shaped" → radius:rounded or radius:pill (overrides genome)
-- "no shadows" / "flat" / "minimal" → shadow:none (overrides genome)
-- "soft shadows" / "subtle depth" → shadow:soft (overrides genome)
-- "hard shadows" / "brutalist" / "bold" → shadow:brutalist (overrides genome)
-- "no gradient" / "flat colors" → gradient:none (overrides genome)
-- "gradient" / "colorful background" / "vibrant" → gradient:vibrant (overrides genome)
-- "compact" / "dense" / "tight" → density:compact (overrides genome)
-- "spacious" / "airy" / "breathing room" → density:airy (overrides genome)
-- "elegant" / "editorial" / "magazine" / "serif" → typography:editorial (overrides genome)
-- "technical" / "mono" / "code-like" / "data" → typography:technical (overrides genome)
-- "bold" / "display" / "large type" / "poster" → typography:display (overrides genome)
-- "humanist" / "friendly" / "warm" → typography:humanist (overrides genome)
-- "split hero" / "asymmetric hero" → hero:SplitHero (overrides genome)
-- "centered hero" / "symmetric hero" → hero:CenteredHero (overrides genome)
-- "poster hero" / "full-bleed hero" / "image hero" → hero:PosterHero (overrides genome)
-- "retro" / "vintage" → typography:editorial + consider radius:sharp (overrides genome)
-- "minimal" / "clean" → gradient:none + shadow:none + density:balanced (overrides genome)
-- "brutalist" / "raw" → radius:sharp + shadow:brutalist + typography:display (overrides genome)
+- "square buttons" / "sharp corners" / "no rounding" / "hard edges" / "geometric" / "angular" → radius:sharp (overrides genome)
+- "rounded" / "soft corners" / "pill shaped" / "bubbly" / "smooth" / "organic shapes" → radius:rounded or radius:pill (overrides genome)
+- "no shadows" / "flat" / "minimal shadows" / "no depth" / "2D" → shadow:none (overrides genome)
+- "soft shadows" / "subtle depth" / "gentle shadows" / "airy shadows" / "diffused" → shadow:soft (overrides genome)
+- "hard shadows" / "brutalist" / "bold shadows" / "offset shadows" / "stamped" → shadow:brutalist (overrides genome)
+- "no gradient" / "flat colors" / "solid colors" / "no blends" → gradient:none (overrides genome)
+- "gradient" / "colorful background" / "vibrant" / "blended" / "mesh gradient" / "aurora" → gradient:vibrant or gradient:mesh (overrides genome)
+- "subtle gradient" / "soft gradient" / "washed" → gradient:subtle (overrides genome)
+- "compact" / "dense" / "tight" / "packed" / "information-rich" → density:compact (overrides genome)
+- "spacious" / "airy" / "breathing room" / "generous spacing" / "luxurious spacing" → density:airy (overrides genome)
+- "elegant" / "editorial" / "magazine" / "serif" / "refined" / "sophisticated" / "classic" / "literary" / "newspaper" → typography:editorial (overrides genome)
+- "technical" / "mono" / "code-like" / "data" / "developer" / "terminal" / "cyberpunk" / "hacker" → typography:technical (overrides genome)
+- "bold" / "display" / "large type" / "poster" / "impactful" / "loud" / "statement" / "oversized" → typography:display (overrides genome)
+- "humanist" / "friendly" / "warm" / "approachable" / "casual" / "handcrafted" / "inviting" → typography:humanist (overrides genome)
+- "split hero" / "asymmetric hero" / "side-by-side hero" → hero:SplitHero (overrides genome)
+- "centered hero" / "symmetric hero" / "focused hero" → hero:CenteredHero (overrides genome)
+- "poster hero" / "full-bleed hero" / "image hero" / "cinematic hero" / "background hero" → hero:PosterHero (overrides genome)
+- "retro" / "vintage" / "nostalgic" / "classic" / "old-school" → typography:editorial + consider radius:sharp (overrides genome)
+- "minimal" / "clean" / "stripped" / "bare" / "no-frills" → gradient:none + shadow:none + density:balanced (overrides genome)
+- "brutalist" / "raw" / "stark" / "unpolished" / "punk" → radius:sharp + shadow:brutalist + typography:display (overrides genome)
+- "playful" / "fun" / "joyful" / "whimsical" / "quirky" → typography:humanist + radius:rounded + gradient:subtle (overrides genome)
+- "corporate" / "professional" / "business" / "enterprise" / "trustworthy" → typography:humanist + shadow:soft + density:balanced (overrides genome)
+- "luxury" / "premium" / "high-end" / "exclusive" / "boutique" → typography:editorial + shadow:soft + density:airy + gradient:subtle (overrides genome)
+- "scandinavian" / "nordic" / "hygge" / "danish" → typography:humanist + radius:soft + shadow:none + density:airy + gradient:none (overrides genome)
+- "futuristic" / "sci-fi" / "space" / "cyber" / "neo" → typography:technical + gradient:mesh + shadow:soft (overrides genome)
+- "organic" / "natural" / "earthy" / "botanical" / "sustainable" → typography:humanist + radius:rounded + gradient:subtle + shadow:soft (overrides genome)
+- "gaming" / "esports" / "arcade" / "retro game" → typography:display + gradient:vibrant + shadow:brutalist (overrides genome)
+- "fashion" / "runway" / "couture" / "style" → typography:editorial + density:airy + shadow:none + gradient:none (overrides genome)
+- "startup" / "modern" / "tech startup" / "silicon valley" → typography:humanist + radius:soft + gradient:subtle + shadow:soft (overrides genome)
+- "dark mode" / "dark theme" / "night" → (this is a theme choice, not a design axis — the theme system handles it)
+NEGATIVE CONSTRAINTS (user says "no X" or "avoid X"):
+- "no gradients" / "avoid gradients" → gradient:none
+- "no shadows" / "avoid shadows" → shadow:none
+- "no rounding" / "avoid rounded" → radius:sharp
+- "no animations" / "no motion" / "static" → motion:none
+- "no serif" / "avoid serif" → do NOT use typography:editorial
+- "no mono" / "avoid monospace" → do NOT use typography:technical
 
 GENOME DEFAULTS (use these ONLY when the user did not specify a preference for that axis):
 - Default hero: ${genome!.hero} (use this unless user says "split hero", "centered hero", etc.)
@@ -164,6 +190,7 @@ GENOME DEFAULTS (use these ONLY when the user did not specify a preference for t
 
 STRUCTURAL RULES (these always apply regardless of user preferences):
 - Always include Navbar (first) and Footer (last) on every page.
+- Use the genome's @navbarVariant value as the Navbar variant prop. This ensures navbar layout varies across sessions. Only override if the user's prompt explicitly requests a specific navbar layout (e.g. "centered logo navbar" → centered, "minimal navbar" → minimal).
 - Target ~${sectionCount} content sections on the home page (not counting Navbar and Footer). If the user's prompt clearly implies more or fewer sections, follow the user.
 - Assign chromes to 3-5 key sections. Vary them — don't use the same chrome on every section.
 - Generate ~${pageCount} pages total (including home). Pick page themes that fit the content. If the user's prompt implies more or fewer pages, follow the user.
@@ -171,12 +198,16 @@ STRUCTURAL RULES (these always apply regardless of user preferences):
 PER-PAGE CONTENT RULES (CRITICAL — each page must have unique, relevant content):
 - EVERY page must have its own UNIQUE sections with content relevant to that page's purpose.
 - Do NOT reuse sections from the home page on other pages. Each page gets its own @section blocks with page-specific content.
+- Do NOT repeat the same motif across multiple pages. If the home page uses CardGrid, sub-pages should use DIFFERENT motifs (e.g. PersonGrid, Timeline, ArticlePreview, ContentTabs, MediaSplit). Visual variety across pages is essential.
 - A "menu" page should have menu items (GroupedList, SimpleList, ProductGrid). NOT a copy of the home page's ValueProps.
 - A "contact" page should have a ContactForm or BookingForm with real contact details. NOT a copy of the home page's ValueProps.
 - An "about" page should have team/story content (PersonGrid, TeamShowcase, Timeline, MediaSplit). NOT a copy of the home page's PersonGrid.
 - An "events" page should have event listings (EventSchedule, Timeline, CardGrid with events). NOT a copy of the home page's ValueProps.
 - A "pricing" page should have a PricingTable with real tiers. NOT a copy of the home page.
-- A "blog" page should have ArticlePreview or CardGrid with blog posts. NOT a copy of the home page.
+- A "blog" page should have ArticlePreview or ContentTabs with blog posts. NOT a CardGrid — use ArticlePreview for blog post listings.
+- A "product" or "product detail" page should use ProductDetail (single product with buy box, specs, variants). NOT a ProductGrid — ProductGrid is for listing multiple products.
+- A "post", "article", or "story" page (individual blog post) should use BlogPost (hero image, article body with headings, pull quote, author bio). NOT ArticlePreview — ArticlePreview is for listing multiple posts.
+- A "docs", "documentation", "help", "dashboard", or "admin" page should use SidebarNav (sidebar navigation + main content area). NOT a CardGrid.
 - Each sub-page should have 3-5 content sections (plus Navbar and Footer).
 - Write REAL, specific content for each page — different from the home page content.`
     : `DESIGN AXES (pick what fits the brand):
@@ -331,6 +362,10 @@ ASYMMETRY RULES (CRITICAL — avoid uniform, predictable layouts):
 IMAGE RULES (CRITICAL — images make sections beautiful):
 - ALWAYS provide imageAlt for SplitHero, MediaSplit, ImageGallery, ProjectGallery, ProductGrid, PersonGrid, TeamShowcase. The hero image panel is the visual anchor — without it, sections look empty.
 - imageAlt is used as the stock photo search query. Write descriptive English phrases: "Modern office with natural light" not "hero.jpg".
+- NEVER use "imageAlt" as the literal value — that is the FIELD NAME, not a value. Always write a real description.
+- NEVER use generic values like "image", "photo", "picture", "placeholder". Always write specific, descriptive phrases.
+- BAD: imageAlt="imageAlt", imageAlt="image", imageAlt="photo"
+- GOOD: imageAlt="Minimalist office workspace with natural wood finishes", imageAlt="Professional headshot of woman in blazer"
 - SplitHero with chrome:editorial renders a portrait image with caption bar. SplitHero with chrome:brutalist renders a border-2 image with rotated sticker. SplitHero with chrome:gradient renders a glowing photo. SplitHero with chrome:terminal renders a dashboard panel with spark bars.
 - ImageGallery with chrome:editorial renders image-zoom hover with caption bars and figure indices. ImageGallery with chrome:brutalist renders border-2 images with hard shadows.
 - MediaSplit with chrome:editorial renders a floating stat card overlapping the photo. MediaSplit with chrome:brutalist renders a border-2 image with rotated sticker.

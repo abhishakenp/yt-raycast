@@ -8,8 +8,12 @@ import type { CapsuleTextChange } from '@/features/editing/hooks/useCapsulePropR
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import type { CommerceRuntimeMode } from '@/features/commerce/contracts'
+import {
+  parseDesignLine,
+  type DesignIntent,
+} from '@ship-fast/blocks/runtime'
 
 type BrandLogoSelection = {
   name: string
@@ -115,6 +119,22 @@ function parseSiteSpecTheme(
   }
 }
 
+/** Parse the @design intent from the site-spec JSON.
+ *  The composition runner stores it as a serialized `@design radius:sharp ...` string. */
+function parseSiteSpecDesignIntent(
+  siteSpecJson: string | undefined,
+): DesignIntent | null {
+  if (!siteSpecJson) return null
+  try {
+    const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
+    const design = parsed?.design
+    if (typeof design !== 'string' || !design.trim()) return null
+    return parseDesignLine(design)
+  } catch {
+    return null
+  }
+}
+
 export function OpenUIModuleRenderer({
   commerceMode = 'disabled',
   source,
@@ -127,12 +147,23 @@ export function OpenUIModuleRenderer({
   anonymousOwnerSecret,
 }: GeneratedModulePreviewProps) {
   const brandContext = parseSiteSpecBrand(siteSpecJson)
+  const designIntent = parseSiteSpecDesignIntent(siteSpecJson)
   const hasOverrides =
     !!imageOverrides && Object.keys(imageOverrides).length > 0
   const imageContext =
     prompt || brandContext || hasOverrides
       ? { prompt, brandContext, overrides: imageOverrides }
       : null
+
+  // Set the document title from the brand name so the browser tab reflects
+  // the generated site's brand, not the generic "Ship Fast" title.
+  useEffect(() => {
+    const brandName = brandContext?.split(/\s+/).slice(0, 3).join(' ').trim()
+    if (brandName && brandName.length > 0) {
+      document.title = brandName
+    }
+  }, [brandContext])
+
   return (
     <Suspense
       fallback={<div className="size-full bg-background" aria-hidden="true" />}
@@ -154,6 +185,7 @@ export function OpenUIModuleRenderer({
         imageContext={imageContext}
         selectedBrandLogo={selectedBrandLogo}
         anonymousOwnerSecret={anonymousOwnerSecret}
+        designIntent={designIntent}
       />
     </Suspense>
   )

@@ -1,3 +1,5 @@
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import {
   generateContextAwareQuery,
   type ImageContext,
@@ -8,6 +10,7 @@ import {
   searchQueryFromAlt,
   seedFromAlt,
 } from '../../../lib/image-query'
+import { createRuntimeConvexHttpClient } from '../../../shared/convex/http-client'
 
 type PexelsPhoto = {
   src?: {
@@ -30,9 +33,26 @@ type UnsplashResponse = { results?: UnsplashPhoto[] }
 
 type PreviewImageEnv = Record<string, string | undefined>
 
+type PollinationsCachedImage = {
+  bytes: Uint8Array
+  contentType: string
+}
+
 type PreviewImageDeps = {
   env?: PreviewImageEnv
   fetch?: typeof fetch
+  /** Read cached image bytes for a cacheKey (Convex storage). Defaults to the
+   *  real Convex-backed implementation. Inject in tests to avoid network. */
+  readCachedImage?: (
+    cacheKey: string,
+  ) => Promise<PollinationsCachedImage | null>
+  /** Write image bytes to the Convex-storage cache. Defaults to the real
+   *  Convex-backed implementation. Inject in tests to avoid network. */
+  writeCachedImage?: (
+    cacheKey: string,
+    bytes: Uint8Array,
+    contentType: string,
+  ) => Promise<void>
 }
 
 const providerTimeoutMs = 8_000
@@ -133,7 +153,7 @@ function progressiveQueries(query: string): string[] {
   return [...new Set(variants)]
 }
 
-async function searchPexels(
+export async function searchPexels(
   searchQuery: string,
   w: number,
   h: number,
@@ -193,7 +213,7 @@ function resizeUnsplashUrl(
   }
 }
 
-async function searchUnsplash(
+export async function searchUnsplash(
   searchQuery: string,
   w: number,
   h: number,
@@ -249,17 +269,191 @@ async function searchUnsplash(
   return null
 }
 
-export async function resolvePexelsPreviewImageUrl(
+// ---------------------------------------------------------------------------
+// Pollinations.ai integration
+//
+// Replaces the Pexels/Unsplash fetch path for the /api/pexels preview-image
+// route. The query/prompt generation logic above (generateContextAwareQuery,
+// resolvePexelsSearchQuery) is reused unchanged; instead of searching a stock
+// provider we build a deterministic Pollinations image URL and proxy the
+// returned bytes through a two-layer cache (in-memory LRU + Convex file
+// storage) to avoid Pollinations' aggressive rate limits.
+//
+// The original Pexels/Unsplash search functions (searchPexels, searchUnsplash)
+// are kept above for reference but are no longer called from the resolution
+// path — the fetch calls were commented out per the provider switch.
+// ---------------------------------------------------------------------------
+
+const pollinationsMemoryCacheMaxEntries = 128
+const pollinationsProviderTimeoutMs = 5_000
+const pollinationsMaxDimension = 1024
+const pollinationsModel = 'flux'
+
+const pollinationsMemoryCache = new Map<string, PollinationsCachedImage>()
+const pollinationsFetchRequests = new Map<
+  string,
+  Promise<PollinationsCachedImage>
+>()
+
+// Sticky fallback cache: once Pollinations fails for a cacheKey and we fall
+// back to Pexels/Unsplash/Picsum, we remember the fallback URL so subsequent
+// requests for the same key return the SAME image — not a different one from
+// a retry. This prevents images from flickering between Pollinations and
+// Pexels on every page load.
+const fallbackUrlCache = new Map<string, string>()
+
+export function buildPollinationsCacheKey(
+  prompt: string,
+  w: number,
+  h: number,
+  seed: number,
+  model: string,
+): string {
+  return `${prompt}|${w}x${h}|${seed}|${model}`
+}
+
+export function buildPollinationsUrl(
+  prompt: string,
+  w: number,
+  h: number,
+  seed: number,
+  model = pollinationsModel,
+): string {
+  const width = Math.min(w, pollinationsMaxDimension)
+  const height = Math.min(h, pollinationsMaxDimension)
+  const url = new URL(
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`,
+  )
+  url.searchParams.set('width', String(width))
+  url.searchParams.set('height', String(height))
+  url.searchParams.set('seed', String(seed))
+  url.searchParams.set('model', model)
+  url.searchParams.set('nologo', 'true')
+  url.searchParams.set('enhance', 'true')
+  url.searchParams.set('referrer', 'ship-fast.ai')
+  return url.toString()
+}
+
+function rememberPollinationsImage(
+  cacheKey: string,
+  bytes: Uint8Array,
+  contentType: string,
+) {
+  pollinationsMemoryCache.delete(cacheKey)
+  pollinationsMemoryCache.set(cacheKey, { bytes, contentType })
+  while (pollinationsMemoryCache.size > pollinationsMemoryCacheMaxEntries) {
+    const oldestKey = pollinationsMemoryCache.keys().next().value
+    if (oldestKey === undefined) break
+    pollinationsMemoryCache.delete(oldestKey)
+  }
+}
+
+const toArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
+  const buffer = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+  return buffer
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const readStorageId = (value: unknown): Id<'_storage'> | null => {
+  if (!isRecord(value)) return null
+  return typeof value.storageId === 'string'
+    ? (value.storageId as Id<'_storage'>)
+    : null
+}
+
+async function readCachedPollinationsImage(
+  cacheKey: string,
+): Promise<PollinationsCachedImage | null> {
+  try {
+    const client = createRuntimeConvexHttpClient(10_000)
+    const cached = await client.query(api.pollinations_image_cache.get, {
+      cacheKey,
+    })
+    if (cached === null) return null
+    const response = await fetch(cached.url)
+    if (!response.ok) return null
+    return {
+      bytes: new Uint8Array(await response.arrayBuffer()),
+      contentType: cached.contentType,
+    }
+  } catch {
+    return null
+  }
+}
+
+async function writeCachedPollinationsImage(
+  cacheKey: string,
+  bytes: Uint8Array,
+  contentType: string,
+): Promise<void> {
+  try {
+    const client = createRuntimeConvexHttpClient(10_000)
+    const uploadUrl = await client.mutation(
+      api.pollinations_image_cache.generateUploadUrl,
+      {},
+    )
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': contentType },
+      body: new Blob([toArrayBuffer(bytes)], { type: contentType }),
+    })
+    if (!uploadResponse.ok) return
+    const storageId = readStorageId(await uploadResponse.json())
+    if (storageId === null) return
+    await client.mutation(api.pollinations_image_cache.commit, {
+      cacheKey,
+      contentType,
+      size: bytes.byteLength,
+      storageId,
+    })
+  } catch {
+    // Cache writes are an optimization; the image response remains valid.
+  }
+}
+
+async function fetchPollinationsImage(
+  pollinationsUrl: string,
+  deps: PreviewImageDeps,
+): Promise<PollinationsCachedImage> {
+  const runtimeFetch = deps.fetch ?? fetch
+  const init: RequestInit = {}
+  Object.defineProperty(init, 'signal', {
+    enumerable: false,
+    value: AbortSignal.timeout(pollinationsProviderTimeoutMs),
+  })
+  const response = await runtimeFetch(pollinationsUrl, init)
+  if (!response.ok) {
+    throw new Error(`Pollinations responded ${response.status}`)
+  }
+  const contentType =
+    response.headers.get('Content-Type')?.split(';')[0]?.trim() ||
+    'image/jpeg'
+  const bytes = new Uint8Array(await response.arrayBuffer())
+  return { bytes, contentType }
+}
+
+/** Resolve the alt-text-derived prompt + dimensions + numeric seed for a
+ *  Pollinations generation. Reuses the existing context-aware query logic. */
+export function resolvePollinationsPrompt(
   parsed: URL,
   deps: PreviewImageDeps = {},
-): Promise<string> {
+): {
+  prompt: string
+  width: number
+  height: number
+  seed: number
+  cacheKey: string
+} {
   const query =
     (
       parsed.searchParams.get('query') ??
       parsed.searchParams.get('q') ??
       ''
     ).trim() || 'nature'
-  const seed = parsed.searchParams.get('seed')
+  const seedParam = parsed.searchParams.get('seed')
   const width = readImageDimension(parsed.searchParams.get('w'), 800, 100, 2400)
   const height = readImageDimension(
     parsed.searchParams.get('h'),
@@ -286,15 +480,31 @@ export async function resolvePexelsPreviewImageUrl(
     context.prompt ||
     context.brandContext
       ? generateContextAwareQuery(asciiQuery, context)
-      : resolvePexelsSearchQuery(asciiQuery, seed)
-  const fallback = picsumUrl(seed || searchQuery, width, height)
-  const seedKey = seed ?? searchQuery
+      : resolvePexelsSearchQuery(asciiQuery, seedParam)
+  const seedKey = seedParam ?? searchQuery
+  const numericSeed = seedFromAlt(seedKey)
+  const cacheKey = buildPollinationsCacheKey(
+    searchQuery,
+    width,
+    height,
+    numericSeed,
+    pollinationsModel,
+  )
+  void deps
+  return { prompt: searchQuery, width, height, seed: numericSeed, cacheKey }
+}
 
-  const resolved =
-    (await searchPexels(searchQuery, width, height, seedKey, deps)) ??
-    (await searchUnsplash(searchQuery, width, height, seedKey, deps)) ??
-    fallback
-  return resolved
+/** Build the Pollinations URL for a request (kept for backwards-compatible
+ *  export; the response path now proxies bytes rather than redirecting). */
+export async function resolvePexelsPreviewImageUrl(
+  parsed: URL,
+  deps: PreviewImageDeps = {},
+): Promise<string> {
+  const { prompt, width, height, seed } = resolvePollinationsPrompt(
+    parsed,
+    deps,
+  )
+  return buildPollinationsUrl(prompt, width, height, seed)
 }
 
 function redirect(url: string, status = 302) {
@@ -307,10 +517,107 @@ function redirect(url: string, status = 302) {
   })
 }
 
+function createImageResponse(
+  bytes: Uint8Array,
+  contentType: string,
+): Response {
+  return new Response(toArrayBuffer(bytes), {
+    status: 200,
+    headers: {
+      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Content-Type': contentType,
+      'X-Image-Source': 'pollinations',
+      'X-Robots-Tag': 'noindex',
+    },
+  })
+}
+
 export async function createPexelsPreviewImageResponse(
   request: Request,
   deps: PreviewImageDeps = {},
 ): Promise<Response> {
-  const url = await resolvePexelsPreviewImageUrl(new URL(request.url), deps)
-  return redirect(url)
+  const parsed = new URL(request.url)
+  const { prompt, width, height, seed, cacheKey } = resolvePollinationsPrompt(
+    parsed,
+    deps,
+  )
+  const readCachedImage = deps.readCachedImage ?? readCachedPollinationsImage
+  const writeCachedImage =
+    deps.writeCachedImage ?? writeCachedPollinationsImage
+  const seedKey = parsed.searchParams.get('seed') ?? prompt
+
+  // 0. Sticky result cache — once we've resolved a provider for this cacheKey
+  // (Pexels URL or Pollinations bytes), return the SAME result so the image
+  // never flickers between providers on repeated page loads.
+  const stickyUrl = fallbackUrlCache.get(cacheKey)
+  if (stickyUrl !== undefined) {
+    const resp = redirect(stickyUrl)
+    resp.headers.set('X-Image-Source', 'sticky-fallback')
+    return resp
+  }
+  const memoryCached = pollinationsMemoryCache.get(cacheKey)
+  if (memoryCached !== undefined) {
+    return createImageResponse(memoryCached.bytes, memoryCached.contentType)
+  }
+  const stored = await readCachedImage(cacheKey)
+  if (stored !== null) {
+    rememberPollinationsImage(cacheKey, stored.bytes, stored.contentType)
+    return createImageResponse(stored.bytes, stored.contentType)
+  }
+
+  // 1. Pexels first — fast, not rate-limited. If Pexels has a good match,
+  // cache the redirect URL and serve it.
+  const pexelsUrl = await searchPexels(prompt, width, height, seedKey, deps)
+  if (pexelsUrl) {
+    fallbackUrlCache.set(cacheKey, pexelsUrl)
+    const resp = redirect(pexelsUrl)
+    resp.headers.set('X-Image-Source', 'pexels')
+    return resp
+  }
+
+  // 2. No Pexels match → generate with Pollinations. Dedupe concurrent
+  // requests for the same cacheKey.
+  const pollinationsUrl = buildPollinationsUrl(prompt, width, height, seed)
+  const pending = pollinationsFetchRequests.get(cacheKey)
+  if (pending !== undefined) {
+    const result = await pending
+    return createImageResponse(result.bytes, result.contentType)
+  }
+
+  const capture = (async () => {
+    const result = await fetchPollinationsImage(pollinationsUrl, deps)
+    rememberPollinationsImage(cacheKey, result.bytes, result.contentType)
+    await writeCachedImage(cacheKey, result.bytes, result.contentType)
+    return result
+  })().finally(() => {
+    pollinationsFetchRequests.delete(cacheKey)
+  })
+  pollinationsFetchRequests.set(cacheKey, capture)
+
+  try {
+    const result = await capture
+    return createImageResponse(result.bytes, result.contentType)
+  } catch (error) {
+    console.error('[pollinations] fetch failed, falling back to Unsplash/Picsum:', error)
+    // 3. Pollinations failed (rate limited / down) → Unsplash, then Picsum.
+    // Cached as sticky URL so it doesn't change on retry.
+    const unsplashUrl = await searchUnsplash(
+      prompt,
+      width,
+      height,
+      seedKey,
+      deps,
+    )
+    if (unsplashUrl) {
+      fallbackUrlCache.set(cacheKey, unsplashUrl)
+      const resp = redirect(unsplashUrl)
+      resp.headers.set('X-Image-Source', 'unsplash-fallback')
+      return resp
+    }
+    const picsum = picsumUrl(prompt, width, height)
+    fallbackUrlCache.set(cacheKey, picsum)
+    const resp = redirect(picsum)
+    resp.headers.set('X-Image-Source', 'picsum-fallback')
+    return resp
+  }
 }

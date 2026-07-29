@@ -360,4 +360,26 @@ describe('FaqAccordion compound composition', () => {
       'text-muted-foreground',
     )
   })
+
+  it('FaqQuestion has padding so items are not cramped', () => {
+    render(
+      <FaqItem data-testid="item">
+        <FaqQuestion data-testid="q">Is this padded?</FaqQuestion>
+        <FaqAnswer>Yes</FaqAnswer>
+      </FaqItem>,
+    )
+    expect(screen.getByTestId('q').className).toContain('px-5')
+    expect(screen.getByTestId('q').className).toContain('py-4')
+  })
+
+  it('FaqAnswer has bottom padding so text is not cramped', () => {
+    render(
+      <FaqItem>
+        <FaqQuestion>Is this padded?</FaqQuestion>
+        <FaqAnswer data-testid="a">Yes, padded</FaqAnswer>
+      </FaqItem>,
+    )
+    expect(screen.getByTestId('a').className).toContain('px-5')
+    expect(screen.getByTestId('a').className).toContain('pb-5')
+  })
 })

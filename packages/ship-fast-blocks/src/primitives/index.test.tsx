@@ -163,14 +163,17 @@ describe('Card', () => {
 
   it('applies rounded radius from @design', () => {
     const { container } = renderWithDesign(ROUNDED, <Card title="X" />)
-    expect((container.firstChild as HTMLElement).className).toContain(
-      'rounded-xl',
-    )
+    // DesignSystemProvider wraps in a div — find the Card by its content
+    const card = container.querySelector('[class*="bg-card"]') as HTMLElement
+    expect(card).toBeTruthy()
+    expect(card.className).toContain('rounded-xl')
   })
 
   it('applies airy density padding from @design', () => {
     const { container } = renderWithDesign(ROUNDED, <Card title="X" />)
-    expect((container.firstChild as HTMLElement).className).toContain('p-8')
+    const card = container.querySelector('[class*="bg-card"]') as HTMLElement
+    expect(card).toBeTruthy()
+    expect(card.className).toContain('p-8')
   })
 })
 

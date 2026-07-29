@@ -78,13 +78,13 @@ const stepBadgeVariants = cva('flex items-center justify-center', {
       'filled-square':
         'size-12 rounded-xl bg-primary font-bold text-primary-foreground',
       'filled-circle':
-        'size-16 rounded-full bg-primary text-2xl font-light text-primary-foreground',
+        'size-16 rounded-full d-radius-lock bg-primary text-2xl font-light text-primary-foreground',
       'filled-circle-bold':
-        'size-16 rounded-full bg-primary text-2xl font-semibold text-primary-foreground',
+        'size-16 rounded-full d-radius-lock bg-primary text-2xl font-semibold text-primary-foreground',
       'gradient-square':
         'size-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-2xl font-extrabold text-primary-foreground shadow-lg ring-4 ring-background',
       'outlined-circle':
-        'size-16 rounded-full border border-background/20 bg-background/10',
+        'size-16 rounded-full d-radius-lock border border-background/20 bg-background/10',
       'faded-ordinal': '',
     },
   },

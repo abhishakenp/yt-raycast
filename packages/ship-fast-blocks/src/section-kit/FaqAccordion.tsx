@@ -80,7 +80,7 @@ const FaqQuestion = React.forwardRef<
     <Comp
       data-slot="faq-question"
       className={cn(
-        'flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold text-foreground [&::-webkit-details-marker]:hidden',
+        'flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-base font-semibold text-foreground [&::-webkit-details-marker]:hidden',
         className,
       )}
       ref={ref}
@@ -98,7 +98,7 @@ const faqQuestionIconVariants = cva(
         chevron: 'group-open:rotate-180',
         plus: 'group-open:rotate-45',
         'chevron-badge':
-          'flex size-8 items-center justify-center rounded-full border border-border bg-background group-open:rotate-180',
+          'flex size-8 items-center justify-center rounded-full d-radius-lock border border-border bg-background group-open:rotate-180',
       },
     },
     defaultVariants: {
@@ -188,7 +188,7 @@ const FaqAnswer = React.forwardRef<
     <Comp
       data-slot="faq-answer"
       className={cn(
-        'text-base leading-relaxed text-muted-foreground',
+        'px-5 pb-5 text-base leading-relaxed text-muted-foreground',
         className,
       )}
       ref={ref}

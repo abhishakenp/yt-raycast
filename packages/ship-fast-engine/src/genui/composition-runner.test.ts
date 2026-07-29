@@ -142,6 +142,16 @@ describe('runComposition', () => {
     expect(result.parsed.design.shadow).toBe('soft')
   })
 
+  it('includes serialized design intent in the saved site-spec', async () => {
+    const { saveSiteSpec } = await import('../spec/index.ts')
+    await runComposition({ prompt: 'coffee shop' })
+    const spec = vi.mocked(saveSiteSpec).mock.calls[0]?.[1]
+    expect(spec).toBeTruthy()
+    expect(typeof spec?.design).toBe('string')
+    expect(spec?.design).toContain('radius:rounded')
+    expect(spec?.design).toContain('shadow:soft')
+  })
+
   it('compiles all sections into source', async () => {
     const result = await runComposition({ prompt: 'coffee shop' })
     expect(result.compiled.source).toContain('Navbar')

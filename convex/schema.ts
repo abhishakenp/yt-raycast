@@ -736,6 +736,20 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
 
+  // Pollinations.ai generated image cache. Keyed by a deterministic
+  // cacheKey (prompt|w|h|seed|model) so repeated requests for the same
+  // alt-text-derived prompt are served from Convex file storage instead of
+  // hitting the rate-limited Pollinations API. The blob lives in file storage;
+  // this row is upserted in-place by cacheKey.
+  pollinationsImageCache: defineTable({
+    cacheKey: v.string(),
+    storageId: v.id('_storage'),
+    contentType: v.string(),
+    size: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_cacheKey', ['cacheKey']),
+
   // AI-generated custom languages created from the dashboard language picker.
   // When a user types a language not in the static KNOWN_LANGUAGES list, the
   // AI generates a native-script name + font family and stores it here so all

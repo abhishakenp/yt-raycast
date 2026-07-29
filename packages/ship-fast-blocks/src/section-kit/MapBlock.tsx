@@ -70,7 +70,7 @@ const MapPin = React.forwardRef<
       aria-hidden="true"
       data-slot="map-pin"
       className={cn(
-        'absolute bottom-4 left-4 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_24px_rgba(0,0,0,0.5)]',
+        'absolute bottom-4 left-4 grid size-10 place-items-center rounded-full d-radius-lock bg-primary text-primary-foreground shadow-[0_8px_24px_rgba(0,0,0,0.5)]',
         className,
       )}
       ref={ref}

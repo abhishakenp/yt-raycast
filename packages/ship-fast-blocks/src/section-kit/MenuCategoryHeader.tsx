@@ -29,7 +29,7 @@ const MenuCategoryIcon = React.forwardRef<
       ref={ref}
       data-slot="menu-category-icon"
       className={cn(
-        'grid size-12 place-items-center rounded-full bg-primary/10 text-primary',
+        'grid size-12 place-items-center rounded-full d-radius-lock bg-primary/10 text-primary',
         className,
       )}
       {...props}

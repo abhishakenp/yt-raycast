@@ -124,7 +124,7 @@ const AccountDropdownTrigger = React.forwardRef<
       ref={ref}
       data-slot="account-dropdown-trigger"
       className={cn(
-        'inline-flex size-9 items-center justify-center rounded-full transition-opacity hover:opacity-80',
+        'inline-flex size-9 items-center justify-center rounded-full d-radius-lock transition-opacity hover:opacity-80',
         className,
       )}
       {...props}

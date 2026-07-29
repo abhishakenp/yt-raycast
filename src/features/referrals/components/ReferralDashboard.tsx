@@ -12,7 +12,7 @@ function buildReferralLink(code: string | null): string {
 
 const statusLabel: Record<string, string> = {
   qualified: 'Paid',
-  pending: 'Signed up',
+  pending: 'Pending payment',
   disqualified: 'Not eligible',
 }
 

@@ -20,9 +20,11 @@ export const PageSwitch = defineCapsule({
     routes: z.array(z.string()),
     pages: z.array(z.any()),
     className: z.string().optional(),
+    pageIds: z.array(z.string()).optional(),
   }),
   component: ({ props, renderNode }) => {
     const routes = props.routes ?? []
+    const pageIds = props.pageIds ?? []
     const page = useStateField<string>('page', routes[0])
     const [currentPage, setCurrentPage] = useState(
       page.value || routes[0] || '',
@@ -49,7 +51,13 @@ export const PageSwitch = defineCapsule({
         }
         return
       }
-      const matched = routes.find((route) => slugifyRoute(route) === targetSlug)
+      // Match by nav label slug first (e.g. "About" → "about")
+      let matched = routes.find((route) => slugifyRoute(route) === targetSlug)
+      // Fall back to matching by page ID (e.g. "pricing" when nav label is "Plans")
+      if (!matched) {
+        const idx = pageIds.findIndex((id) => slugifyRoute(id) === targetSlug)
+        if (idx >= 0 && routes[idx]) matched = routes[idx]
+      }
       if (matched && matched !== currentPage) {
         setCurrentPage(matched)
         page.setValue(matched)
@@ -58,6 +66,7 @@ export const PageSwitch = defineCapsule({
       urlBridge.pageFromUrl,
       urlBridge.navigateToPage,
       routes,
+      pageIds,
       currentPage,
       page,
     ])
@@ -72,8 +81,9 @@ export const PageSwitch = defineCapsule({
         setCurrentPage,
         pendingSectionId,
         setPendingSectionId,
+        pageIds,
       }),
-      [currentPage, pendingSectionId, routes],
+      [currentPage, pendingSectionId, routes, pageIds],
     )
     const pageStateValue = useMemo(() => ({ setPage: page.setValue }), [page])
     return (

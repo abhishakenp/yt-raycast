@@ -12,6 +12,8 @@ export type RoutesContextValue = {
   setCurrentPage: (page: string) => void
   pendingSectionId: string | null
   setPendingSectionId: Dispatch<SetStateAction<string | null>>
+  /** Page IDs parallel to routes — used for URL slug generation. */
+  pageIds: string[]
 }
 
 export const RoutesContext = createContext<RoutesContextValue>({
@@ -20,6 +22,7 @@ export const RoutesContext = createContext<RoutesContextValue>({
   setCurrentPage: () => {},
   pendingSectionId: null,
   setPendingSectionId: () => {},
+  pageIds: [],
 })
 
 /**
@@ -119,6 +122,7 @@ export function resolveRouteHref(
     currentPage?: string
     currentPathname?: string
     previewBase?: boolean
+    pageIds?: string[]
   } = {},
 ): string | undefined {
   const rawTarget = (target ?? '').trim()
@@ -141,7 +145,11 @@ export function resolveRouteHref(
   const page = routes.find(isResolvedPage) ?? resolved.page
   if (!page || !routes.includes(page)) return fallbackHref(rawTarget)
 
-  const path = routePath(page, routes)
+  // Use page ID slug when available (stable identifier), fall back to
+  // nav label slug for backward compatibility.
+  const routeIdx = routes.indexOf(page)
+  const pageId = options.pageIds?.[routeIdx]
+  const path = page === routes[0] ? '/' : `/${slugifyRoute(pageId ?? page)}`
   const hash =
     resolved.type === 'section' && resolved.sectionId
       ? `#${resolved.sectionId}`

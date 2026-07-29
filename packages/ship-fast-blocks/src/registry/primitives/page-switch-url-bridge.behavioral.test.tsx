@@ -94,20 +94,27 @@ function PageSwitchHost({
   routes,
   pages,
   bridgeValue,
+  pageIds,
 }: {
   routes: string[]
   pages: ReturnType<typeof makePageNode>[]
   bridgeValue: PreviewUrlBridgeValue
+  pageIds?: string[]
 }) {
   return (
     <PreviewUrlBridgeContext.Provider value={bridgeValue}>
       {createElement(
         PageSwitch.component as ComponentType<{
-          props: { routes: string[]; pages: unknown[]; className?: string }
+          props: {
+            routes: string[]
+            pages: unknown[]
+            className?: string
+            pageIds?: string[]
+          }
           renderNode: (node: unknown) => ReactNode
         }>,
         {
-          props: { routes, pages, className: '' },
+          props: { routes, pages, className: '', pageIds },
           renderNode,
         },
       )}
@@ -219,5 +226,38 @@ describe('PageSwitch URL bridge sync behavior', () => {
     })
     expect(screen.queryByTestId('page-Gallery')).toBeNull()
     expect(openUiState.setValue).toHaveBeenCalledWith('Home')
+  })
+
+  it('matches URL slug by page ID when nav label slug differs', () => {
+    // Page ID "pricing" but nav label "Plans" — URL slug is "pricing"
+    render(
+      <PageSwitchHost
+        routes={['Home', 'About', 'Plans', 'Contact']}
+        pages={[
+          makePageNode('Home'),
+          makePageNode('About'),
+          makePageNode('Plans'),
+          makePageNode('Contact'),
+        ]}
+        pageIds={['home', 'about', 'pricing', 'contact']}
+        bridgeValue={{ navigateToPage: vi.fn(), pageFromUrl: 'pricing' }}
+      />,
+    )
+
+    // Should render the "Plans" page (index 2), not fall back to Home
+    expect(screen.getByTestId('page-Plans')).toBeTruthy()
+    expect(screen.queryByTestId('page-Home')).toBeNull()
+  })
+
+  it('still matches by nav label slug when pageIds are not provided', () => {
+    render(
+      <PageSwitchHost
+        routes={['Home', 'About']}
+        pages={[makePageNode('Home'), makePageNode('About')]}
+        bridgeValue={{ navigateToPage: vi.fn(), pageFromUrl: 'about' }}
+      />,
+    )
+
+    expect(screen.getByTestId('page-About')).toBeTruthy()
   })
 })

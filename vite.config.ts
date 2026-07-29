@@ -374,6 +374,34 @@ function pexelsDevApi(): Plugin {
           return
         }
 
+        // Delegate to the real route handler so the Pollinations proxy +
+        // caching path runs in dev too. The inline Pexels/Unsplash resolver
+        // below is kept only as a fallback if the route handler import fails
+        // (e.g. during a broken HMR state).
+        try {
+          const { createPexelsPreviewImageResponse } = await import(
+            './src/features/images/server/pexels-preview-image'
+          )
+          const host = req.headers.host ?? 'localhost:3000'
+          const request = new Request(
+            new URL(req.url ?? '', `http://${host}/api/pexels`),
+            { method: req.method },
+          )
+          const response = await createPexelsPreviewImageResponse(request)
+          res.statusCode = response.status
+          response.headers.forEach((value, key) => {
+            res.setHeader(key, value)
+          })
+          if (req.method === 'HEAD') {
+            res.end()
+            return
+          }
+          res.end(Buffer.from(await response.arrayBuffer()))
+          return
+        } catch (error) {
+          console.error('[pexels-dev-api] route handler failed, falling back to inline resolver:', error)
+        }
+
         const photoUrl = await resolvePexelsUrl(req.url ?? '')
         res.statusCode = 302
         res.setHeader('Location', photoUrl)

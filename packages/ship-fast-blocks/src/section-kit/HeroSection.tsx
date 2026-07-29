@@ -4,6 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { useDesign } from '#/primitives/design-context.tsx'
 
 /* ---------- HeroSection ---------- */
 
@@ -244,7 +245,7 @@ HeroSubheading.displayName = 'HeroSubheading'
 /* ---------- HeroCta ---------- */
 
 const heroCtaVariants = cva(
-  'inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-medium transition-colors',
+  'inline-flex items-center justify-center px-5 py-3 text-sm font-medium transition-colors',
   {
     variants: {
       variant: {
@@ -264,12 +265,13 @@ const HeroCta = React.forwardRef<
   React.ComponentProps<'a'> &
     VariantProps<typeof heroCtaVariants> & { asChild?: boolean }
 >(({ className, variant, asChild = false, ...props }, ref) => {
+  const d = useDesign()
   const Comp = asChild ? Slot : 'a'
   return (
     <Comp
       ref={ref as never}
       data-slot="hero-cta"
-      className={cn(heroCtaVariants({ variant }), className)}
+      className={cn(heroCtaVariants({ variant }), d.radius.btn, d.shadow.btn, className)}
       {...props}
     />
   )
@@ -306,12 +308,13 @@ const HeroMediaPanel = React.forwardRef<
   HTMLDivElement,
   HeroImageProps & { asChild?: boolean }
 >(({ className, alt, w = 1200, h = 1200, asChild = false, ...props }, ref) => {
+  const d = useDesign()
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
       ref={ref}
       data-slot="hero-image"
-      className={cn('overflow-hidden rounded-2xl', className)}
+      className={cn('overflow-hidden', d.radius.container, className)}
       {...props}
     >
       <Image alt={alt} w={w} h={h} className="size-full object-cover" />

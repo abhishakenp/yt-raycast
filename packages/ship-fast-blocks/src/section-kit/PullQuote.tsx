@@ -43,7 +43,7 @@ const PullQuoteIcon = React.forwardRef<
     <Comp
       data-slot="pull-quote-icon"
       className={cn(
-        'mx-auto mb-5 grid place-items-center rounded-full bg-primary/10 text-primary',
+        'mx-auto mb-5 grid place-items-center rounded-full d-radius-lock bg-primary/10 text-primary',
         size === 'sm' && 'size-12',
         size === 'lg' && 'mb-8 size-16',
         className,
@@ -99,7 +99,7 @@ const PullQuoteAvatar = React.forwardRef<
     <Comp
       data-slot="pull-quote-avatar"
       className={cn(
-        'grid size-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-base font-bold text-primary-foreground',
+        'grid size-12 shrink-0 place-items-center rounded-full d-radius-lock bg-gradient-to-br from-primary to-accent text-base font-bold text-primary-foreground',
         className,
       )}
       ref={ref}

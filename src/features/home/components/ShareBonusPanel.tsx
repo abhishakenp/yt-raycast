@@ -71,7 +71,7 @@ export function ShareBonusPanel({
   visible,
   onShareClick,
   referralCode,
-  label = 'Share for +1 free preview · bring 2 people for 50% discount for life',
+  label = 'Share for +1 free preview · bring 2 paying subscribers for 50% discount for life',
   className,
 }: {
   visible: boolean

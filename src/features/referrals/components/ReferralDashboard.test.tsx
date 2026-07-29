@@ -103,7 +103,7 @@ describe('ReferralDashboard', () => {
     render(<ReferralDashboard />)
     expect(screen.getByText('jo****@gmail.com')).toBeTruthy()
     expect(screen.getByText('Paid')).toBeTruthy()
-    expect(screen.getByText('Signed up')).toBeTruthy()
+    expect(screen.getByText('Pending payment')).toBeTruthy()
   })
 
   it('surfaces a load error message', () => {

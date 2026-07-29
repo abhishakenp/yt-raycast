@@ -132,10 +132,12 @@ export function useSectionKitNavHrefResolver(): (
     (target: string | null | undefined) => {
       const rawTarget = (target ?? '').trim()
       if (!rawTarget) return undefined
-      const href = resolveRouteHref(rawTarget, routing.routes)
+      const href = resolveRouteHref(rawTarget, routing.routes, {
+        pageIds: routing.pageIds,
+      })
       return appendBasePath(href, basePath)
     },
-    [basePath, routing.routes],
+    [basePath, routing.routes, routing.pageIds],
   )
 }
 
@@ -235,6 +237,7 @@ export function useSectionKitNavClick(
               currentPage: routing.currentPage,
               currentPathname: window.location.pathname,
               previewBase: true,
+              pageIds: routing.pageIds,
             })
             if (typeof href !== 'string') return false
             const routeUrl = new URL(href, window.location.href)
@@ -270,7 +273,12 @@ export function useSectionKitNavClick(
       routing.setCurrentPage(nextPage)
       setPage(nextPage)
       const isHome = nextPage === routing.routes[0]
-      urlBridge.navigateToPage?.(isHome ? null : slugifyRoute(nextPage))
+      // Use page ID slug for URL when available (stable identifier),
+      // fall back to nav label slug for backward compatibility.
+      const routeIdx = routing.routes.indexOf(nextPage)
+      const pageId = routing.pageIds?.[routeIdx]
+      const urlSlug = pageId ? slugifyRoute(pageId) : slugifyRoute(nextPage)
+      urlBridge.navigateToPage?.(isHome ? null : urlSlug)
     },
     [routing, setPage, target, urlBridge],
   )

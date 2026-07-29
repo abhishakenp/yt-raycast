@@ -15,6 +15,7 @@
  */
 import * as React from 'react'
 import { cn } from '#/lib/utils.ts'
+import { useFormSubmit } from '#/lib/use-form-submit.ts'
 import {
   DotGrid,
   GraphPaper,
@@ -122,8 +123,8 @@ export function GlowOrbs({ className }: { className?: string }) {
       aria-hidden="true"
       className={cn('absolute inset-0 opacity-20', className)}
     >
-      <div className="absolute left-1/4 top-1/4 size-96 animate-pulse rounded-full bg-primary/30 blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 size-80 animate-pulse rounded-full bg-accent/20 blur-3xl [animation-delay:2s]" />
+      <div className="absolute left-1/4 top-1/4 size-96 animate-pulse rounded-full d-radius-lock bg-primary/30 blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 size-80 animate-pulse rounded-full d-radius-lock bg-accent/20 blur-3xl [animation-delay:2s]" />
     </div>
   )
 }
@@ -682,9 +683,19 @@ export function InlineEmailCapture({
   className?: string
   formClassName?: string
 }) {
+  const { status, handleSubmit } = useFormSubmit()
+  if (status === 'success') {
+    return (
+      <div className={cn('mx-auto max-w-md text-center', className)}>
+        <p className="text-sm font-medium text-foreground">
+          You're subscribed! Check your inbox to confirm.
+        </p>
+      </div>
+    )
+  }
   return (
     <div className={cn('mx-auto max-w-md', className)}>
-      <form className={cn('flex flex-col gap-3 sm:flex-row', formClassName)}>
+      <form className={cn('flex flex-col gap-3 sm:flex-row', formClassName)} onSubmit={handleSubmit}>
         <label htmlFor="email-capture" className="sr-only">
           Email address
         </label>
@@ -698,9 +709,10 @@ export function InlineEmailCapture({
         />
         <button
           type="submit"
-          className="whitespace-nowrap bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          disabled={status === 'pending'}
+          className="whitespace-nowrap bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-70"
         >
-          {submitLabel}
+          {status === 'pending' ? 'Subscribing...' : submitLabel}
         </button>
       </form>
       {disclaimer && (
@@ -766,7 +778,7 @@ export function QuoteMark({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'mb-4 grid size-12 place-items-center rounded-full bg-primary/10',
+        'mb-4 grid size-12 place-items-center rounded-full d-radius-lock bg-primary/10',
         className,
       )}
     >
@@ -1016,7 +1028,7 @@ export function StickerPill({
       {pulse && (
         <span
           aria-hidden="true"
-          className="size-2 animate-pulse rounded-full bg-primary"
+          className="size-2 animate-pulse rounded-full d-radius-lock bg-primary"
         />
       )}
       {children}

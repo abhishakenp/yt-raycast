@@ -58,6 +58,9 @@ const CONTENT_MOTIFS = [
   'TeamShowcase',
   'ProjectGallery',
   'DonationBand',
+  'ProductDetail',
+  'BlogPost',
+  'SidebarNav',
 ] as const
 
 const CHROMES = [
@@ -77,6 +80,8 @@ const GRADIENTS = ['none', 'subtle', 'vibrant'] as const
 const DENSITIES = ['compact', 'balanced', 'airy'] as const
 const TYPOGRAPHIES = ['editorial', 'technical', 'display', 'humanist'] as const
 
+const NAVBAR_VARIANTS = ['default', 'centered', 'minimal', 'split'] as const
+
 // ── Genome type ────────────────────────────────────────────────────────────
 
 export interface StructuralGenome {
@@ -94,6 +99,7 @@ export interface StructuralGenome {
   rhythm: string
   sectionCount: number
   pageCount: number
+  navbarVariant: string
 }
 
 // ── Seeded RNG (FNV-1a) ────────────────────────────────────────────────────
@@ -179,6 +185,7 @@ export function generateGenome(seed: string): StructuralGenome {
   const rhythm = pickOne(rng, RHYTHMS)
   const sectionCount = randomInt(rng, 5, 9)
   const pageCount = randomInt(rng, 1, 6)
+  const navbarVariant = pickOne(rng, NAVBAR_VARIANTS)
 
   return {
     hero,
@@ -189,5 +196,6 @@ export function generateGenome(seed: string): StructuralGenome {
     rhythm,
     sectionCount,
     pageCount,
+    navbarVariant,
   }
 }

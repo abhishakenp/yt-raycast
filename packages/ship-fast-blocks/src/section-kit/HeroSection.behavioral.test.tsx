@@ -24,6 +24,17 @@ import {
   HeroStatValue,
   HeroStatLabel,
 } from './HeroSection.tsx'
+import { DesignSystemProvider } from '#/primitives/design-context.tsx'
+import type { DesignIntent } from '#/primitives/design-system.ts'
+
+const ROUNDED_DESIGN: DesignIntent = {
+  radius: 'rounded',
+  shadow: 'soft',
+  gradient: 'none',
+  density: 'balanced',
+  typography: 'editorial',
+  motion: 'subtle',
+}
 describe('HeroSection', () => {
   it('renders as section with data-slot', () => {
     render(
@@ -283,7 +294,9 @@ describe('HeroActions', () => {
 describe('HeroMediaPanel', () => {
   it('renders with image inside rounded container', () => {
     const { container } = render(
-      <HeroMediaPanel alt="Product" data-testid="img" />,
+      <DesignSystemProvider intent={ROUNDED_DESIGN}>
+        <HeroMediaPanel alt="Product" data-testid="img" />
+      </DesignSystemProvider>,
     )
     const el = screen.getByTestId('img')
     expect(el.tagName).toBe('DIV')

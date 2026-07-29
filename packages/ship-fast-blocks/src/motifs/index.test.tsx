@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, act } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 afterEach(() => {
@@ -47,7 +47,15 @@ import {
   TeamShowcase,
   ProjectGallery,
   DonationBand,
+  ProductDetail,
+  BlogPost,
+  SidebarNav,
 } from './index.tsx'
+import { DesignSystemProvider } from '#/primitives/design-context.tsx'
+import { DEFAULT_DESIGN, type DesignIntent } from '#/primitives/design-system.ts'
+
+const SHARP_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'sharp' }
+const ROUNDED_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'rounded' }
 
 // Helper: render a capsule with props
 function renderCapsule(
@@ -460,5 +468,213 @@ describe('PosterHero', () => {
       cta: 'Explore',
     })
     expect(screen.getByText('Explore').tagName).toBe('A')
+  })
+
+  it('inherits parent DesignSystemProvider context when props.design is absent', () => {
+    // When props.design is not set, the motif should NOT override the parent
+    // DesignSystemProvider. The CTA should get the parent's radius class.
+    render(
+      <DesignSystemProvider intent={SHARP_DESIGN}>
+        <PosterHero.component
+          props={{ heading: 'Test', cta: 'Click me' }}
+        />
+      </DesignSystemProvider>,
+    )
+    const cta = screen.getByText('Click me')
+    // radius:sharp → rounded-none on the CTA
+    expect(cta.className).toContain('rounded-none')
+  })
+
+  it('overrides parent context when props.design is explicitly set', () => {
+    render(
+      <DesignSystemProvider intent={SHARP_DESIGN}>
+        <PosterHero.component
+          props={{
+            heading: 'Test',
+            cta: 'Click me',
+            design: '@design radius:rounded shadow:soft gradient:none density:balanced typography:editorial motion:subtle',
+          }}
+        />
+      </DesignSystemProvider>,
+    )
+    const cta = screen.getByText('Click me')
+    // Explicit design overrides parent → rounded-xl (radius:rounded)
+    expect(cta.className).toContain('rounded-xl')
+  })
+})
+
+describe('ProductDetail', () => {
+  it('renders product title and price', () => {
+    renderCapsule(ProductDetail, {
+      title: 'Aurora Headphones',
+      price: '$299',
+    })
+    expect(screen.getByText('Aurora Headphones')).toBeTruthy()
+    expect(screen.getByText('$299')).toBeTruthy()
+  })
+
+  it('renders compare price with line-through', () => {
+    renderCapsule(ProductDetail, {
+      title: 'Test Product',
+      price: '$199',
+      comparePrice: '$299',
+    })
+    const compare = screen.getByText('$299')
+    expect(compare.className).toContain('line-through')
+  })
+
+  it('renders star rating from numeric rating', () => {
+    renderCapsule(ProductDetail, { rating: 5, reviewCount: 100 })
+    // 5 filled stars
+    const stars = document.querySelectorAll('[aria-label="Rated 5 out of 5"] span')
+    expect(stars.length).toBe(5)
+  })
+
+  it('renders variant selector buttons', () => {
+    renderCapsule(ProductDetail, {
+      variants: ['Black', 'Silver', 'Gold'],
+    })
+    expect(screen.getByText('Black')).toBeTruthy()
+    expect(screen.getByText('Silver')).toBeTruthy()
+    expect(screen.getByText('Gold')).toBeTruthy()
+  })
+
+  it('renders specs grid', () => {
+    renderCapsule(ProductDetail, {
+      specs: [
+        { label: 'Weight', value: '250g' },
+        { label: 'Battery', value: '40h' },
+      ],
+    })
+    expect(screen.getByText('Weight')).toBeTruthy()
+    expect(screen.getByText('250g')).toBeTruthy()
+    expect(screen.getByText('Battery')).toBeTruthy()
+    expect(screen.getByText('40h')).toBeTruthy()
+  })
+
+  it('renders add to cart CTA', () => {
+    renderCapsule(ProductDetail, { primaryCta: 'Buy Now' })
+    expect(screen.getByText('Buy Now')).toBeTruthy()
+  })
+
+  it('renders with defaults when no props provided', () => {
+    renderCapsule(ProductDetail, {})
+    expect(screen.getByText('Premium Product')).toBeTruthy()
+    expect(screen.getByText('$199')).toBeTruthy()
+  })
+})
+
+describe('BlogPost', () => {
+  it('renders article title and excerpt', () => {
+    renderCapsule(BlogPost, {
+      title: 'The Future of Design',
+      excerpt: 'A deep dive into token-driven systems.',
+    })
+    expect(screen.getByText('The Future of Design')).toBeTruthy()
+    expect(
+      screen.getByText('A deep dive into token-driven systems.'),
+    ).toBeTruthy()
+  })
+
+  it('renders author, date, and read time meta', () => {
+    renderCapsule(BlogPost, {
+      title: 'Test Post',
+      author: 'Jane Doe',
+      date: 'July 28, 2026',
+      readTime: '5 min read',
+    })
+    // Author appears in both meta and bio footer
+    expect(screen.getAllByText('Jane Doe').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('July 28, 2026')).toBeTruthy()
+    expect(screen.getByText('5 min read')).toBeTruthy()
+  })
+
+  it('renders article sections with headings and body', () => {
+    renderCapsule(BlogPost, {
+      title: 'Test',
+      sections: [
+        { heading: 'Introduction', body: 'This is the intro.' },
+        { heading: 'Conclusion', body: 'This is the end.' },
+      ],
+    })
+    expect(screen.getByText('Introduction')).toBeTruthy()
+    expect(screen.getByText('This is the intro.')).toBeTruthy()
+    expect(screen.getByText('Conclusion')).toBeTruthy()
+    expect(screen.getByText('This is the end.')).toBeTruthy()
+  })
+
+  it('renders pull quote as blockquote', () => {
+    renderCapsule(BlogPost, {
+      title: 'Test',
+      sections: [
+        { heading: 'S1', body: 'B1' },
+        { heading: 'S2', body: 'B2' },
+        { heading: 'S3', body: 'B3' },
+      ],
+      pullQuote: 'Design tokens are the future.',
+    })
+    const quote = screen.getByText('Design tokens are the future.')
+    expect(quote.tagName).toBe('P')
+    expect(quote.closest('blockquote')).toBeTruthy()
+  })
+
+  it('renders author bio in footer', () => {
+    renderCapsule(BlogPost, {
+      title: 'Test',
+      author: 'John Smith',
+      authorBio: 'John is a design systems expert.',
+    })
+    expect(screen.getByText('John is a design systems expert.')).toBeTruthy()
+  })
+
+  it('renders with defaults when no props provided', () => {
+    renderCapsule(BlogPost, {})
+    expect(screen.getByText('The Future of Design Systems')).toBeTruthy()
+    expect(screen.getAllByText('Jane Doe').length).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('SidebarNav', () => {
+  it('renders sidebar heading and nav groups', () => {
+    renderCapsule(SidebarNav, {
+      heading: 'Documentation',
+      groups: [
+        { label: 'Getting Started', items: ['Intro', 'Install'] },
+        { label: 'Guides', items: ['Auth', 'Deploy'] },
+      ],
+    })
+    expect(screen.getByText('Documentation')).toBeTruthy()
+    expect(screen.getByText('Getting Started')).toBeTruthy()
+    expect(screen.getByText('Guides')).toBeTruthy()
+    expect(screen.getByText('Intro')).toBeTruthy()
+    expect(screen.getByText('Deploy')).toBeTruthy()
+  })
+
+  it('renders content title and body in main area', () => {
+    renderCapsule(SidebarNav, {
+      contentTitle: 'Getting Started Guide',
+      contentBody: 'Welcome to the docs.',
+    })
+    expect(screen.getByText('Getting Started Guide')).toBeTruthy()
+    expect(screen.getByText('Welcome to the docs.')).toBeTruthy()
+  })
+
+  it('clicking a nav item updates active state', () => {
+    renderCapsule(SidebarNav, {
+      groups: [{ label: 'Nav', items: ['Page A', 'Page B'] }],
+    })
+    const itemB = screen.getByText('Page B')
+    act(() => {
+      itemB.click()
+    })
+    // After click, Page B should have the active styling
+    expect(itemB.className).toContain('bg-primary')
+  })
+
+  it('renders with defaults when no props provided', () => {
+    renderCapsule(SidebarNav, {})
+    expect(screen.getByText('Documentation')).toBeTruthy()
+    // "Introduction" appears as both a nav item and the content title
+    expect(screen.getAllByText('Introduction').length).toBeGreaterThanOrEqual(1)
   })
 })

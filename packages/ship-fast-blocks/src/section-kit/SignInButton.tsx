@@ -120,16 +120,16 @@ const SignInButton = React.forwardRef<
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="inline-flex items-center gap-2 rounded-full border border-border bg-background py-1 pl-1 pr-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+        className="inline-flex items-center gap-2 rounded-full d-radius-lock border border-border bg-background py-1 pl-1 pr-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
       >
         {avatar ? (
           <img
             src={avatar}
             alt=""
-            className="h-7 w-7 rounded-full object-cover"
+            className="h-7 w-7 rounded-full d-radius-lock object-cover"
           />
         ) : (
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full d-radius-lock bg-primary text-xs font-semibold text-primary-foreground">
             {initial}
           </span>
         )}

@@ -21,6 +21,12 @@ export {
   PreviewUrlBridgeContext,
   type PreviewUrlBridgeValue,
 } from './lib/preview-url-bridge.tsx'
+export { DesignSystemProvider } from './primitives/design-context.tsx'
+export {
+  parseDesignLine,
+  type DesignIntent,
+  DEFAULT_DESIGN,
+} from './primitives/design-system.ts'
 
 export {
   IntegrationProvider,

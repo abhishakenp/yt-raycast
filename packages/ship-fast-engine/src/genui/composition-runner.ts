@@ -169,10 +169,24 @@ export async function runComposition(
     )
   }
 
+  // ── Validate & repair page structure ──────────────────────────────
+  // Ensures sub-pages use different motifs from home and from each other,
+  // and that page-type-specific content requirements are met (e.g. about
+  // page has PersonGrid, blog page has ArticlePreview).
+  const { repairPageStructure } = await import('./page-structure-validator.ts')
+  const { repaired, violations } = repairPageStructure(parsed)
+  if (repaired) {
+    opts.sessionCtx?.broadcast?.({
+      type: 'log',
+      message: `Page structure repaired: ${violations.map((v) => v.message).join('; ')}`,
+    })
+  }
+
   // ── Compile ───────────────────────────────────────────────────────
   const compiled = await compileComposition(parsed, {
     brand: parsed.brand,
     title: parsed.title,
+    navbarVariant: genome.navbarVariant,
   })
 
   // ── Validate svelte blocks (if any) ───────────────────────────────
@@ -221,6 +235,9 @@ export async function runComposition(
     })),
     siteType: 'composition',
     userPrompt,
+    // Design intent — the @design axis values (radius, shadow, gradient, etc.)
+    // The renderer reads this to wrap the site in <DesignSystemProvider intent={...}>
+    design: compiled.design,
     // Fullstack wiring — lakebed, convex backend, data bindings
     lakebed: compiled.lakebed,
     convexBackend: compiled.convexBackend,
@@ -437,9 +454,24 @@ export async function streamComposition(
     )
   }
 
+  // ── Validate & repair page structure ──────────────────────────────
+  {
+    const { repairPageStructure } = await import(
+      './page-structure-validator.ts'
+    )
+    const { repaired, violations } = repairPageStructure(parsed)
+    if (repaired) {
+      opts.sessionCtx?.broadcast?.({
+        type: 'log',
+        message: `Page structure repaired: ${violations.map((v) => v.message).join('; ')}`,
+      })
+    }
+  }
+
   const compiled = await compileComposition(parsed, {
     brand: parsed.brand,
     title: parsed.title,
+    navbarVariant: genome.navbarVariant,
   })
 
   // Persist artifacts
@@ -464,6 +496,9 @@ export async function streamComposition(
     })),
     siteType: 'composition',
     userPrompt,
+    // Design intent — the @design axis values (radius, shadow, gradient, etc.)
+    // The renderer reads this to wrap the site in <DesignSystemProvider intent={...}>
+    design: compiled.design,
     // Fullstack wiring — lakebed, convex backend, data bindings
     lakebed: compiled.lakebed,
     convexBackend: compiled.convexBackend,

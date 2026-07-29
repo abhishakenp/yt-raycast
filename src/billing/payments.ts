@@ -208,6 +208,20 @@ export const getEarlyAdopterStatus = async () => {
   }
 }
 
+const FREE_PLAN = {
+  name: 'Free',
+  priceId: '',
+  features: [
+    '3 generations/day without login',
+    '5 generations/day when logged in',
+    '10 free generations/month',
+  ],
+  pricing: {
+    inr: { amount: 0, display: '₹0/forever' },
+    usd: { amount: 0, display: '$0/forever' },
+  },
+}
+
 const PRO_PLAN = {
   name: 'Pro',
   priceId: process.env.RAZORPAY_PRO_PLAN_ID || '',
@@ -216,6 +230,7 @@ const PRO_PLAN = {
     'Unlimited ZIP downloads',
     'Full template library',
     'AI iteration & refinement',
+    'Better image generation',
     'Community access',
     'Monthly template drops',
   ],

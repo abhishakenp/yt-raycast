@@ -14,6 +14,8 @@ export interface SiteSpecProject extends Record<string, unknown> {
   pages?: Array<Record<string, unknown>>
   siteType?: string
   userPrompt?: string
+  /** Serialized @design intent (e.g. "@design radius:sharp shadow:none ...") */
+  design?: string
 }
 
 export function loadSiteSpec(workspace: string): SiteSpecProject | null {

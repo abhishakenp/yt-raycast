@@ -883,14 +883,16 @@ export function Form({
   fields,
   submitLabel = 'Submit',
   className,
+  onSubmit,
 }: {
   fields: FormField[]
   submitLabel?: string
   className?: string
+  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void
 }) {
   const d = useDesign()
   return (
-    <form className={cn('flex flex-col gap-4', className)}>
+    <form className={cn('flex flex-col gap-4', className)} onSubmit={onSubmit}>
       {fields.map((field, i) => (
         <div key={i} className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-foreground">
@@ -898,6 +900,7 @@ export function Form({
           </label>
           {field.type === 'textarea' ? (
             <textarea
+              name={field.label.toLowerCase().replace(/\s+/g, '_')}
               placeholder={field.placeholder}
               className={cn(
                 'min-h-24 border border-border bg-background px-4 py-2 text-sm text-foreground',
@@ -907,6 +910,7 @@ export function Form({
             />
           ) : field.type === 'select' ? (
             <select
+              name={field.label.toLowerCase().replace(/\s+/g, '_')}
               className={cn(
                 'min-h-12 border border-border bg-background px-4 text-sm text-foreground',
                 d.radius.input,
@@ -919,6 +923,7 @@ export function Form({
           ) : (
             <input
               type={field.type ?? 'text'}
+              name={field.label.toLowerCase().replace(/\s+/g, '_')}
               placeholder={field.placeholder}
               className={cn(
                 'min-h-12 border border-border bg-background px-4 text-sm text-foreground',

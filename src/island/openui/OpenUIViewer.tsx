@@ -6,6 +6,10 @@ import {
   QueryClient,
   QueryClientProvider,
   Renderer,
+  DesignSystemProvider,
+  parseDesignLine,
+  DEFAULT_DESIGN,
+  type DesignIntent,
   getOpenUIRuntimeLibraryCacheKey,
   loadOpenUIRuntimeLibrary,
   type AiCapsuleRecord,
@@ -234,6 +238,7 @@ export default function OpenUIViewer({
   selectedBrandLogo,
   anonymousOwnerSecret,
   commerce,
+  designIntent,
   onFirstPaint,
 }: {
   response: string
@@ -253,6 +258,8 @@ export default function OpenUIViewer({
     scope: CommerceScope
     tenant: string
   }
+  /** Design intent from @design axis — wraps the site in DesignSystemProvider */
+  designIntent?: DesignIntent | null
   /** Full-bleed session iframe: no rounded corners, no streaming border/dot overlay */
   embed?: boolean
   /** Session id used by integration providers (for storefront and CMS scope). */
@@ -514,22 +521,24 @@ export default function OpenUIViewer({
                   <T>
                     <BrandLogoProvider value={selectedBrandLogo}>
                       <ImageContextProvider value={imageContext}>
-                        {runtimeLibrary ? (
-                          <Renderer
-                            response={preparedResponse}
-                            library={runtimeLibrary}
-                            isStreaming={isStreaming}
-                          />
-                        ) : (
-                          <OpenUIRenderFallback
-                            isStreaming={isStreaming}
-                            message={
-                              runtimeLibraryState.error
-                                ? 'Unable to load preview components.'
-                                : undefined
-                            }
-                          />
-                        )}
+                        <DesignSystemProvider intent={designIntent ?? DEFAULT_DESIGN}>
+                          {runtimeLibrary ? (
+                            <Renderer
+                              response={preparedResponse}
+                              library={runtimeLibrary}
+                              isStreaming={isStreaming}
+                            />
+                          ) : (
+                            <OpenUIRenderFallback
+                              isStreaming={isStreaming}
+                              message={
+                                runtimeLibraryState.error
+                                  ? 'Unable to load preview components.'
+                                  : undefined
+                              }
+                            />
+                          )}
+                        </DesignSystemProvider>
                       </ImageContextProvider>
                     </BrandLogoProvider>
                   </T>

@@ -13,9 +13,12 @@
  */
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { useState } from 'react'
 import { cn } from '#/lib/utils.ts'
+import { useFormSubmit } from '#/lib/use-form-submit.ts'
 import * as P from '#/primitives/index.tsx'
 import { DesignSystemProvider } from '#/primitives/design-context.tsx'
+import { useDesign } from '#/primitives/design-context.tsx'
 import type { DesignIntent } from '#/primitives/design-system.ts'
 import { DEFAULT_DESIGN, parseDesignLine } from '#/primitives/design-system.ts'
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
@@ -194,9 +197,23 @@ import {
   slantedSeamClass,
 } from './chrome.tsx'
 
-// Helper: wrap children in DesignSystemProvider so motifs work standalone
+// Helper: wrap children in DesignSystemProvider so motifs work standalone.
+// Only wraps when an explicit design string is provided — otherwise inherits
+// the parent DesignSystemProvider context (set by the renderer/export).
 function withDesign(intent: DesignIntent, children: React.ReactNode) {
   return <DesignSystemProvider intent={intent}>{children}</DesignSystemProvider>
+}
+
+// Helper for motifs: only override design context when props.design is explicit.
+// Without this, every motif would replace the parent's design intent with
+// DEFAULT_DESIGN, ignoring the @design axis from the composition.
+function withOptionalDesign(
+  design: string | undefined,
+  children: React.ReactNode,
+) {
+  return design
+    ? withDesign(parseDesignFromString(design), children)
+    : <>{children}</>
 }
 
 // ─── 1. splitHero ────────────────────────────────────────────────────────
@@ -237,10 +254,7 @@ export const SplitHero = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <SplitHeroInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <SplitHeroInner {...props} />)
   },
 })
 
@@ -807,10 +821,7 @@ export const CenteredHero = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <CenteredHeroInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <CenteredHeroInner {...props} />)
   },
 })
 
@@ -867,10 +878,7 @@ export const PosterHero = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <PosterHeroInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <PosterHeroInner {...props} />)
   },
 })
 
@@ -911,10 +919,7 @@ export const ComingSoonHero = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ComingSoonHeroInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ComingSoonHeroInner {...props} />)
   },
 })
 
@@ -976,10 +981,7 @@ export const CardGrid = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <CardGridInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <CardGridInner {...props} />)
   },
 })
 
@@ -1268,10 +1270,7 @@ export const BentoGrid = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <BentoGridInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <BentoGridInner {...props} />)
   },
 })
 
@@ -1481,10 +1480,7 @@ export const ImageGallery = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ImageGalleryInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ImageGalleryInner {...props} />)
   },
 })
 
@@ -1603,10 +1599,7 @@ export const LogoStrip = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <LogoStripInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <LogoStripInner {...props} />)
   },
 })
 
@@ -1655,10 +1648,7 @@ export const TestimonialRow = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <TestimonialRowInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <TestimonialRowInner {...props} />)
   },
 })
 
@@ -1861,10 +1851,7 @@ export const PersonGrid = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <PersonGridInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <PersonGridInner {...props} />)
   },
 })
 
@@ -2091,10 +2078,7 @@ export const PricingTable = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <PricingTableInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <PricingTableInner {...props} />)
   },
 })
 
@@ -2366,10 +2350,7 @@ export const StatsStrip = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <StatsStripInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <StatsStripInner {...props} />)
   },
 })
 
@@ -2603,10 +2584,7 @@ export const FeatureList = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <FeatureListInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <FeatureListInner {...props} />)
   },
 })
 
@@ -2778,10 +2756,7 @@ export const GroupedList = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <GroupedListInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <GroupedListInner {...props} />)
   },
 })
 
@@ -2862,10 +2837,7 @@ export const NumberedList = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <NumberedListInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <NumberedListInner {...props} />)
   },
 })
 
@@ -3134,10 +3106,7 @@ export const SimpleList = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <SimpleListInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <SimpleListInner {...props} />)
   },
 })
 
@@ -3203,10 +3172,7 @@ export const FaqAccordion = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <FaqAccordionInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <FaqAccordionInner {...props} />)
   },
 })
 
@@ -3314,10 +3280,7 @@ export const Timeline = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <TimelineInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <TimelineInner {...props} />)
   },
 })
 
@@ -3442,10 +3405,7 @@ export const CtaBand = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <CtaBandInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <CtaBandInner {...props} />)
   },
 })
 
@@ -3609,10 +3569,7 @@ export const NewsletterCta = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <NewsletterCtaInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <NewsletterCtaInner {...props} />)
   },
 })
 
@@ -3764,12 +3721,9 @@ function NewsletterCtaInner(props: Record<string, unknown>) {
         {subheading && (
           <NewsletterCtaDescription>{subheading}</NewsletterCtaDescription>
         )}
-        <P.Form
-          fields={[
-            { label: 'Email', type: 'email', placeholder: 'you@example.com' },
-          ]}
+        <InlineEmailCapture
+          placeholder="you@example.com"
           submitLabel={cta}
-          className="w-full max-w-md"
         />
       </Container>
     </KitNewsletterCta>
@@ -3790,14 +3744,12 @@ export const ContactForm = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ContactFormInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ContactFormInner {...props} />)
   },
 })
 
 function ContactFormInner(props: Record<string, unknown>) {
+  const { status, errorMessage, handleSubmit } = useFormSubmit()
   return (
     <P.Section>
       <Container size="md" className="py-20">
@@ -3806,21 +3758,33 @@ function ContactFormInner(props: Record<string, unknown>) {
           subtitle={props.subheading as string | undefined}
           align="left"
         />
-        <KitContactForm className="mt-10">
-          <ContactFormField>
-            <ContactFormLabel>Name</ContactFormLabel>
-            <ContactFormInput type="text" placeholder="Your name" />
-          </ContactFormField>
-          <ContactFormField>
-            <ContactFormLabel>Email</ContactFormLabel>
-            <ContactFormInput type="email" placeholder="you@example.com" />
-          </ContactFormField>
-          <ContactFormField>
-            <ContactFormLabel>Message</ContactFormLabel>
-            <ContactFormTextarea placeholder="Your message" />
-          </ContactFormField>
-          <ContactFormSubmit>Send message</ContactFormSubmit>
-        </KitContactForm>
+        {status === 'success' ? (
+          <div className="mt-10 rounded-lg border border-border bg-card p-8 text-center">
+            <p className="text-lg font-semibold text-foreground">Thank you! Your message has been sent.</p>
+            <p className="mt-2 text-sm text-muted-foreground">We'll get back to you within 24 hours.</p>
+          </div>
+        ) : (
+          <KitContactForm className="mt-10" onSubmit={handleSubmit}>
+            <ContactFormField>
+              <ContactFormLabel>Name</ContactFormLabel>
+              <ContactFormInput type="text" name="name" placeholder="Your name" required />
+            </ContactFormField>
+            <ContactFormField>
+              <ContactFormLabel>Email</ContactFormLabel>
+              <ContactFormInput type="email" name="email" placeholder="you@example.com" required />
+            </ContactFormField>
+            <ContactFormField>
+              <ContactFormLabel>Message</ContactFormLabel>
+              <ContactFormTextarea name="message" placeholder="Your message" required />
+            </ContactFormField>
+            {status === 'error' && (
+              <p className="mb-4 text-sm text-destructive">{errorMessage}</p>
+            )}
+            <ContactFormSubmit disabled={status === 'pending'}>
+              {status === 'pending' ? 'Sending...' : 'Send message'}
+            </ContactFormSubmit>
+          </KitContactForm>
+        )}
       </Container>
     </P.Section>
   )
@@ -3840,14 +3804,12 @@ export const BookingForm = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <BookingFormInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <BookingFormInner {...props} />)
   },
 })
 
 function BookingFormInner(props: Record<string, unknown>) {
+  const { status, errorMessage, handleSubmit } = useFormSubmit()
   return (
     <P.Section>
       <P.Container size="sm" className="flex flex-col gap-12">
@@ -3860,23 +3822,36 @@ function BookingFormInner(props: Record<string, unknown>) {
             <P.Text variant="lead" text={props.subheading as string} />
           )}
         </div>
-        <P.Form
-          fields={[
-            { label: 'Name', type: 'text', placeholder: 'Your name' },
-            { label: 'Date', type: 'text', placeholder: 'MM/DD/YYYY' },
-            {
-              label: 'Time',
-              type: 'select',
-              options: ['12:00 PM', '1:00 PM', '6:00 PM', '7:00 PM'],
-            },
-            {
-              label: 'Party size',
-              type: 'select',
-              options: ['1', '2', '3', '4', '5+'],
-            },
-          ]}
-          submitLabel="Book"
-        />
+        {status === 'success' ? (
+          <div className="rounded-lg border border-border bg-card p-8 text-center">
+            <p className="text-lg font-semibold text-foreground">Booking confirmed!</p>
+            <p className="mt-2 text-sm text-muted-foreground">We've sent a confirmation to your email.</p>
+          </div>
+        ) : (
+          <>
+            {status === 'error' && (
+              <p className="text-sm text-destructive">{errorMessage}</p>
+            )}
+            <P.Form
+              fields={[
+                { label: 'Name', type: 'text', placeholder: 'Your name' },
+                { label: 'Date', type: 'text', placeholder: 'MM/DD/YYYY' },
+                {
+                  label: 'Time',
+                  type: 'select',
+                  options: ['12:00 PM', '1:00 PM', '6:00 PM', '7:00 PM'],
+                },
+                {
+                  label: 'Party size',
+                  type: 'select',
+                  options: ['1', '2', '3', '4', '5+'],
+                },
+              ]}
+              submitLabel={status === 'pending' ? 'Booking...' : 'Book'}
+              onSubmit={handleSubmit}
+            />
+          </>
+        )}
       </P.Container>
     </P.Section>
   )
@@ -3887,20 +3862,21 @@ function BookingFormInner(props: Record<string, unknown>) {
 
 export const Navbar = defineCapsule({
   name: 'Navbar',
-  description: 'Navbar: brand name + nav links + optional CTA. Sticky top.',
+  description:
+    'Navbar: brand name + nav links + optional CTA. Sticky top. variant: default|centered|minimal|split',
   props: z.object({
     brand: z.string().optional(),
     links: z.array(z.string()).optional(),
     cta: z.string().optional(),
+    variant: z
+      .enum(['default', 'centered', 'minimal', 'split'])
+      .optional(),
     className: z.string().optional(),
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(
-      intent,
+    return withOptionalDesign(
+      props.design as string | undefined,
       <SiteNav
         brand={(props.brand as string) ?? 'Brand'}
         nav={(props.links as string[]) ?? ['Home', 'About', 'Contact']}
@@ -3909,6 +3885,7 @@ export const Navbar = defineCapsule({
             ? { label: props.cta as string, variant: 'primary' }
             : undefined
         }
+        variant={(props.variant as SiteNavProps['variant']) ?? 'default'}
         sticky
       />,
     )
@@ -3937,9 +3914,6 @@ export const Footer = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
     const columns = (props.columns as Array<{
       title: string
       links: string[]
@@ -3949,8 +3923,8 @@ export const Footer = defineCapsule({
       { title: 'Legal', links: ['Privacy', 'Terms'] },
     ]
     const social = props.social as string[] | undefined
-    return withDesign(
-      intent,
+    return withOptionalDesign(
+      props.design as string | undefined,
       <SiteFooter>
         <FooterContent>
           <FooterGrid>
@@ -4005,10 +3979,7 @@ export const MediaSplit = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <MediaSplitInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <MediaSplitInner {...props} />)
   },
 })
 
@@ -4164,10 +4135,7 @@ export const MapBlock = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <MapBlockInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <MapBlockInner {...props} />)
   },
 })
 
@@ -4222,10 +4190,7 @@ export const ArticlePreview = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ArticlePreviewInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ArticlePreviewInner {...props} />)
   },
 })
 
@@ -4305,10 +4270,7 @@ export const CategoryNav = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <CategoryNavInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <CategoryNavInner {...props} />)
   },
 })
 
@@ -4366,10 +4328,7 @@ export const ComparisonTable = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ComparisonTableInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ComparisonTableInner {...props} />)
   },
 })
 
@@ -4443,10 +4402,7 @@ export const StepProcess = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <StepProcessInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <StepProcessInner {...props} />)
   },
 })
 
@@ -4521,10 +4477,7 @@ export const ValueProps = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ValuePropsInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ValuePropsInner {...props} />)
   },
 })
 
@@ -4707,10 +4660,7 @@ export const QuoteBand = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <QuoteBandInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <QuoteBandInner {...props} />)
   },
 })
 
@@ -4811,10 +4761,7 @@ export const LogosMarquee = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <LogosMarqueeInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <LogosMarqueeInner {...props} />)
   },
 })
 
@@ -4854,10 +4801,7 @@ export const ContentTabs = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ContentTabsInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ContentTabsInner {...props} />)
   },
 })
 
@@ -4907,10 +4851,7 @@ export const SearchBar = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <SearchBarInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <SearchBarInner {...props} />)
   },
 })
 
@@ -4964,10 +4905,7 @@ export const EventSchedule = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <EventScheduleInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <EventScheduleInner {...props} />)
   },
 })
 
@@ -5037,10 +4975,7 @@ export const ProductGrid = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ProductGridInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ProductGridInner {...props} />)
   },
 })
 
@@ -5129,10 +5064,7 @@ export const TeamShowcase = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <TeamShowcaseInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <TeamShowcaseInner {...props} />)
   },
 })
 
@@ -5334,10 +5266,7 @@ export const ProjectGallery = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <ProjectGalleryInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <ProjectGalleryInner {...props} />)
   },
 })
 
@@ -5540,10 +5469,7 @@ export const DonationBand = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    const intent = props.design
-      ? parseDesignFromString(props.design)
-      : DEFAULT_DESIGN
-    return withDesign(intent, <DonationBandInner {...props} />)
+    return withOptionalDesign(props.design as string | undefined, <DonationBandInner {...props} />)
   },
 })
 
@@ -5588,4 +5514,407 @@ function DonationBandInner(props: Record<string, unknown>) {
 
 function parseDesignFromString(s: string): DesignIntent {
   return parseDesignLine(s.startsWith('@design') ? s : `@design ${s}`)
+}
+
+// ─── 41. productDetail ───────────────────────────────────────────────────
+// Single product detail page with image gallery, buy box, and specs.
+
+export const ProductDetail = defineCapsule({
+  name: 'ProductDetail',
+  description:
+    'Product detail page: large product image + buy box with title, price, rating, description, variant selector, and add-to-cart CTA. Below: specs grid and related products. For ecommerce product pages.',
+  props: z.object({
+    title: z.string().optional(),
+    price: z.string().optional(),
+    comparePrice: z.string().optional(),
+    rating: z.number().optional(),
+    reviewCount: z.number().optional(),
+    description: z.string().optional(),
+    imageAlt: z.string().optional(),
+    imageSrc: z.string().optional(),
+    variants: z.array(z.string()).optional(),
+    primaryCta: z.string().optional(),
+    specs: z
+      .array(z.object({ label: z.string(), value: z.string() }))
+      .optional(),
+    className: z.string().optional(),
+    design: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ProductDetailInner {...props} />,
+    )
+  },
+})
+
+function ProductDetailInner(props: Record<string, unknown>) {
+  const d = useDesign()
+  const title = (props.title as string) ?? 'Premium Product'
+  const price = (props.price as string) ?? '$199'
+  const comparePrice = props.comparePrice as string | undefined
+  const rating = (props.rating as number) ?? 4.8
+  const reviewCount = (props.reviewCount as number) ?? 320
+  const description =
+    (props.description as string) ??
+    'Crafted with premium materials and engineered for performance. Built to last, designed to impress.'
+  const imageAlt =
+    (props.imageAlt as string) ?? `${title} product photo on clean background`
+  const imageSrc = props.imageSrc as string | undefined
+  const variants = (props.variants as string[]) ?? [
+    'Standard',
+    'Pro',
+    'Max',
+  ]
+  const primaryCta = (props.primaryCta as string) ?? 'Add to Cart'
+  const specs = (props.specs as Array<{ label: string; value: string }>) ?? [
+    { label: 'Material', value: 'Aerospace-grade aluminum' },
+    { label: 'Weight', value: '248g' },
+    { label: 'Battery', value: '40 hours' },
+    { label: 'Warranty', value: '2 years' },
+  ]
+  const [sel, setSel] = useState(0)
+  return (
+    <P.Section>
+      <P.Container size="xl" className="py-12 sm:py-16">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
+          <div>
+            <P.ImageBlock
+              alt={imageAlt}
+              src={imageSrc}
+              w={800}
+              h={800}
+              className="aspect-square"
+            />
+          </div>
+          <div className="flex flex-col gap-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                {title}
+              </h1>
+              <div className="mt-3 flex items-center gap-3">
+                <div className="flex" aria-label={`Rated ${rating} out of 5`}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={
+                        i < Math.round(rating)
+                          ? 'text-amber-400'
+                          : 'text-muted-foreground/30'
+                      }
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {rating} ({reviewCount} reviews)
+                </span>
+              </div>
+            </div>
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-bold text-foreground">{price}</span>
+              {comparePrice && (
+                <span className="text-lg text-muted-foreground line-through">
+                  {comparePrice}
+                </span>
+              )}
+            </div>
+            <p className="text-base leading-relaxed text-muted-foreground">
+              {description}
+            </p>
+            <div>
+              <p className="mb-2 text-sm font-medium text-foreground">
+                Variant
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {variants.map((v, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSel(i)}
+                    className={cn(
+                      'border px-4 py-2 text-sm font-medium transition-colors',
+                      d.radius.input,
+                      sel === i
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-background text-foreground hover:border-primary/50',
+                    )}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <P.Button label={primaryCta} variant="primary" />
+            <div className="border-t border-border pt-6">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Specifications
+              </h3>
+              <dl className="grid grid-cols-2 gap-4">
+                {specs.map((s, i) => (
+                  <div key={i}>
+                    <dt className="text-xs text-muted-foreground">{s.label}</dt>
+                    <dd className="text-sm font-medium text-foreground">
+                      {s.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+        </div>
+      </P.Container>
+    </P.Section>
+  )
+}
+
+// ─── 42. blogPost ────────────────────────────────────────────────────────
+// Single blog post layout with hero image, article body, and author bio.
+
+export const BlogPost = defineCapsule({
+  name: 'BlogPost',
+  description:
+    'Blog post layout: hero image + article title + meta (author, date, read time) + body paragraphs with headings + pull quote + author bio card. For individual blog posts, articles, news stories.',
+  props: z.object({
+    title: z.string().optional(),
+    author: z.string().optional(),
+    date: z.string().optional(),
+    readTime: z.string().optional(),
+    imageAlt: z.string().optional(),
+    imageSrc: z.string().optional(),
+    excerpt: z.string().optional(),
+    sections: z
+      .array(
+        z.object({
+          heading: z.string(),
+          body: z.string(),
+        }),
+      )
+      .optional(),
+    pullQuote: z.string().optional(),
+    authorBio: z.string().optional(),
+    authorImageAlt: z.string().optional(),
+    className: z.string().optional(),
+    design: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <BlogPostInner {...props} />,
+    )
+  },
+})
+
+function BlogPostInner(props: Record<string, unknown>) {
+  const title =
+    (props.title as string) ?? 'The Future of Design Systems'
+  const author = (props.author as string) ?? 'Jane Doe'
+  const date = (props.date as string) ?? 'July 28, 2026'
+  const readTime = (props.readTime as string) ?? '8 min read'
+  const imageAlt =
+    (props.imageAlt as string) ??
+    'Editorial hero image for the article'
+  const imageSrc = props.imageSrc as string | undefined
+  const excerpt =
+    (props.excerpt as string) ??
+    'Why token-driven design systems are replacing hardcoded palettes, and what it means for your team.'
+  const sections = (props.sections as Array<{
+    heading: string
+    body: string
+  }>) ?? [
+    {
+      heading: 'The problem with hardcoded colors',
+      body: 'For years, design teams have hardcoded color values directly into components. This approach scales poorly — a single brand color change can require updating hundreds of files.',
+    },
+    {
+      heading: 'Tokens as the single source of truth',
+      body: 'Design tokens solve this by centralizing design decisions into a single, authoritative source. Components reference tokens, not raw values, so changes propagate automatically.',
+    },
+    {
+      heading: 'What this means for your team',
+      body: 'Adopting a token-driven approach requires upfront investment but pays dividends in consistency, velocity, and maintainability. Teams ship faster with fewer visual regressions.',
+    },
+  ]
+  const pullQuote = (props.pullQuote as string) ??
+    'Design tokens are not just a technical pattern — they are a cultural shift in how teams think about design systems.'
+  const authorBio = (props.authorBio as string) ??
+    'Jane Doe is a design systems lead with 10+ years building token-driven component libraries for enterprise teams.'
+  const authorImageAlt =
+    (props.authorImageAlt as string) ??
+    'Professional headshot of the article author'
+  return (
+    <P.Section>
+      <P.Container size="md" className="py-12 sm:py-16">
+        <article>
+          <header className="flex flex-col gap-4">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+              {title}
+            </h1>
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {excerpt}
+            </p>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{author}</span>
+              <span aria-hidden="true">·</span>
+              <span>{date}</span>
+              <span aria-hidden="true">·</span>
+              <span>{readTime}</span>
+            </div>
+          </header>
+          <div className="mt-8">
+            <P.ImageBlock alt={imageAlt} src={imageSrc} w={1200} h={630} />
+          </div>
+          <div className="mt-10 flex flex-col gap-8">
+            {sections.map((s, i) => (
+              <section key={i}>
+                <h2 className="mb-3 text-2xl font-bold tracking-tight text-foreground">
+                  {s.heading}
+                </h2>
+                <p className="text-base leading-relaxed text-foreground/80">
+                  {s.body}
+                </p>
+                {i === 1 && pullQuote && (
+                  <blockquote className="my-8 border-l-4 border-primary pl-6">
+                    <p className="text-xl font-medium italic text-foreground">
+                      {pullQuote}
+                    </p>
+                  </blockquote>
+                )}
+              </section>
+            ))}
+          </div>
+          <footer className="mt-12 border-t border-border pt-8">
+            <div className="flex gap-4">
+              <div className="size-12 shrink-0 overflow-hidden rounded-full bg-muted">
+                <P.ImageBlock
+                  alt={authorImageAlt}
+                  w={96}
+                  h={96}
+                  rounded={false}
+                  className="size-12 rounded-full"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {author}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {authorBio}
+                </p>
+              </div>
+            </div>
+          </footer>
+        </article>
+      </P.Container>
+    </P.Section>
+  )
+}
+
+// ─── 43. sidebarNav ─────────────────────────────────────────────────────
+// Sidebar navigation for docs, dashboards, and content-heavy apps.
+
+export const SidebarNav = defineCapsule({
+  name: 'SidebarNav',
+  description:
+    'Sidebar navigation: fixed left sidebar with grouped nav links + main content area. For docs sites, dashboards, admin panels, knowledge bases, and content-heavy apps with deep navigation.',
+  props: z.object({
+    heading: z.string().optional(),
+    groups: z
+      .array(
+        z.object({
+          label: z.string(),
+          items: z.array(z.string()),
+        }),
+      )
+      .optional(),
+    contentTitle: z.string().optional(),
+    contentBody: z.string().optional(),
+    className: z.string().optional(),
+    design: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <SidebarNavInner {...props} />,
+    )
+  },
+})
+
+function SidebarNavInner(props: Record<string, unknown>) {
+  const d = useDesign()
+  const heading = (props.heading as string) ?? 'Documentation'
+  const groups = (props.groups as Array<{
+    label: string
+    items: string[]
+  }>) ?? [
+    {
+      label: 'Getting Started',
+      items: ['Introduction', 'Installation', 'Quick Start'],
+    },
+    {
+      label: 'Core Concepts',
+      items: ['Architecture', 'Components', 'Theming'],
+    },
+    {
+      label: 'Guides',
+      items: ['Authentication', 'Deployment', 'Testing'],
+    },
+  ]
+  const contentTitle =
+    (props.contentTitle as string) ?? 'Introduction'
+  const contentBody =
+    (props.contentBody as string) ??
+    'Welcome to the documentation. This is the main content area where the selected page content is displayed. Use the sidebar to navigate between sections.'
+  const [active, setActive] = useState('Introduction')
+  return (
+    <P.Section className="bg-background">
+      <P.Container
+        size="xl"
+        className="flex gap-8 py-12"
+      >
+        <aside className="hidden w-64 shrink-0 lg:block">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {heading}
+          </p>
+          <nav className="flex flex-col gap-6">
+            {groups.map((g, gi) => (
+              <div key={gi}>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
+                  {g.label}
+                </p>
+                <ul className="flex flex-col gap-0.5">
+                  {g.items.map((item, ii) => (
+                    <li key={ii}>
+                      <button
+                        onClick={() => setActive(item)}
+                        className={cn(
+                          'w-full px-3 py-1.5 text-left text-sm transition-colors',
+                          d.radius.input,
+                          active === item
+                            ? 'bg-primary/10 font-medium text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                        )}
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </aside>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            {contentTitle}
+          </h1>
+          <div className="mt-6 max-w-2xl">
+            <p className="text-base leading-relaxed text-foreground/80">
+              {contentBody}
+            </p>
+          </div>
+        </div>
+      </P.Container>
+    </P.Section>
+  )
 }

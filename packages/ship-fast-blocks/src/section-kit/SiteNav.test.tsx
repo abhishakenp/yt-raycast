@@ -53,6 +53,7 @@ describe('SiteNav', () => {
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
           setPendingSectionId: vi.fn(),
+          pageIds: [],
         }}
       >
         {node}
@@ -170,5 +171,117 @@ describe('SiteNav', () => {
     // No spacer div should follow
     const spacer = header?.nextElementSibling
     expect(spacer?.tagName).not.toBe('DIV')
+  })
+})
+
+describe('SiteNav variant layouts', () => {
+  function renderWithRoutes(node: ReactElement) {
+    return render(
+      <RoutesContext.Provider
+        value={{
+          routes: ['Home', 'About', 'Contact'],
+          currentPage: 'Home',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+          pageIds: [],
+        }}
+      >
+        {node}
+      </RoutesContext.Provider>,
+    )
+  }
+
+  it('default variant: brand, links, and CTA in a single row', () => {
+    renderWithRoutes(
+      <SiteNav
+        brand="Acme"
+        nav={['About', 'Contact']}
+        cta={{ label: 'Sign Up' }}
+        variant="default"
+      />,
+    )
+    const header = document.querySelector('header')
+    expect(header).toBeTruthy()
+    // Single nav row
+    const nav = header?.querySelector('nav')
+    expect(nav).toBeTruthy()
+    // Links visible in the row
+    expect(screen.getByText('About')).toBeTruthy()
+    expect(screen.getByText('Sign Up')).toBeTruthy()
+  })
+
+  it('centered variant: brand centered, links in a second row below', () => {
+    renderWithRoutes(
+      <SiteNav
+        brand="Acme"
+        nav={['About', 'Contact']}
+        cta={{ label: 'Sign Up' }}
+        variant="centered"
+      />,
+    )
+    const header = document.querySelector('header')
+    expect(header).toBeTruthy()
+    // Centered variant has no <nav> — uses divs instead
+    const nav = header?.querySelector('nav')
+    expect(nav).toBeNull()
+    // Brand row has justify-center
+    const brandRow = header?.querySelector('div > div')
+    expect(brandRow?.className).toContain('justify-center')
+    // Links in a second row with border-t
+    const linkRow = header?.querySelector('.border-t')
+    expect(linkRow).toBeTruthy()
+    expect(screen.getByText('About')).toBeTruthy()
+  })
+
+  it('minimal variant: brand and CTA only, no visible desktop links', () => {
+    renderWithRoutes(
+      <SiteNav
+        brand="Acme"
+        nav={['About', 'Contact']}
+        cta={{ label: 'Sign Up' }}
+        variant="minimal"
+      />,
+    )
+    const header = document.querySelector('header')
+    expect(header).toBeTruthy()
+    const nav = header?.querySelector('nav')
+    expect(nav).toBeTruthy()
+    // The nav row should have brand and CTA but no visible links div
+    // (links are only in the mobile drawer)
+    const linksDiv = nav?.querySelector('.hidden.items-center.gap-8.md\\:flex')
+    expect(linksDiv).toBeNull()
+    // CTA still visible
+    expect(screen.getByText('Sign Up')).toBeTruthy()
+  })
+
+  it('split variant: brand left, links right, CTA far right', () => {
+    renderWithRoutes(
+      <SiteNav
+        brand="Acme"
+        nav={['About', 'Contact']}
+        cta={{ label: 'Sign Up' }}
+        variant="split"
+      />,
+    )
+    const header = document.querySelector('header')
+    expect(header).toBeTruthy()
+    const nav = header?.querySelector('nav')
+    expect(nav).toBeTruthy()
+    // Split variant uses ml-auto for links and CTA
+    const mlAutoDivs = nav?.querySelectorAll('.ml-auto')
+    expect(mlAutoDivs?.length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('About')).toBeTruthy()
+  })
+
+  it('defaults to default variant when variant not specified', () => {
+    renderWithRoutes(
+      <SiteNav brand="Acme" nav={['About']} cta={{ label: 'Sign Up' }} />,
+    )
+    const header = document.querySelector('header')
+    const nav = header?.querySelector('nav')
+    expect(nav).toBeTruthy()
+    // Default has justify-between on the nav
+    expect(nav?.className).toContain('justify-between')
   })
 })

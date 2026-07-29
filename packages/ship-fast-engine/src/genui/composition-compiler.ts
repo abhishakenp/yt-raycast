@@ -64,6 +64,8 @@ export interface CompositionCompileOptions {
   brand?: string
   /** Override title. */
   title?: string
+  /** Fallback navbar variant if the LLM didn't specify one. */
+  navbarVariant?: string
 }
 
 /**
@@ -104,6 +106,7 @@ export async function compileComposition(
       'home',
       brand,
       navLinkLabels,
+      opts.navbarVariant,
     )
     if (ref) {
       homeStmts.push(...statements)
@@ -141,6 +144,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
+        opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -155,6 +159,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
+        opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -170,6 +175,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
+        opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -194,6 +200,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
+        opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -208,6 +215,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
+        opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -222,6 +230,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
+        opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -238,7 +247,7 @@ export async function compileComposition(
   // ── Skeleton ──────────────────────────────────────────────────────
   const validAllPageIds = ['home', ...validPageIds]
 
-  const skeleton = `root = PageSwitch(${JSON.stringify(navLinkLabels)}, [${validAllPageIds.join(', ')}], "")`
+  const skeleton = `root = PageSwitch(${JSON.stringify(navLinkLabels)}, [${validAllPageIds.join(', ')}], "", ${JSON.stringify(validAllPageIds)})`
 
   const source = `${allStmts.join('\n')}\n${skeleton}`
 
@@ -345,9 +354,15 @@ async function compileCompositionSection(
   pageId: string,
   brand: string,
   nav: string[],
+  navbarVariant?: string,
 ): { statements: string[]; ref: string | null } {
   const id = `${pageId}_${section.motif.toLowerCase().replace(/[^a-z0-9]/g, '')}`
   const props = sectionToProps(section)
+
+  // Fix placeholder imageAlt values — the LLM sometimes passes "imageAlt"
+  // (the field name) instead of a real description. Replace with a generic
+  // but useful query based on the motif type.
+  fixPlaceholderImageAlt(props, section.motif)
 
   // Inject brand for Navbar/Footer motifs
   if (section.motif === 'Navbar' && !props.brand) {
@@ -364,6 +379,10 @@ async function compileCompositionSection(
   // custom links in the Navbar section.
   if (section.motif === 'Navbar') {
     props.links = nav
+    // Inject navbar variant from genome if the LLM didn't specify one
+    if (!props.variant && navbarVariant) {
+      props.variant = navbarVariant
+    }
   }
   // Inject nav links for Footer only when the LLM didn't provide columns.
   // Footer columns are intentionally different from Navbar links (Product,
@@ -448,7 +467,17 @@ function findFocusedSection(
     products: ['ProductGrid'],
     shop: ['ProductGrid'],
     store: ['ProductGrid'],
-    blog: ['ArticlePreview'],
+    product: ['ProductDetail', 'ProductGrid'],
+    blog: ['ArticlePreview', 'BlogPost'],
+    post: ['BlogPost'],
+    article: ['BlogPost'],
+    story: ['BlogPost'],
+    news: ['ArticlePreview', 'BlogPost'],
+    docs: ['SidebarNav'],
+    documentation: ['SidebarNav'],
+    help: ['SidebarNav'],
+    dashboard: ['SidebarNav'],
+    admin: ['SidebarNav'],
     faq: ['FaqAccordion'],
     newsletter: ['NewsletterCta'],
   }
@@ -489,6 +518,73 @@ function defaultNavLabels(pages: string[]): Record<string, string> {
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+// ─── Image alt text repair ────────────────────────────────────────────────
+//
+// The LLM sometimes passes "imageAlt" (the field name) or generic placeholders
+// like "image", "photo", "picture" as the alt value. Since imageAlt is used as
+// the Pexels stock photo search query, these produce irrelevant images.
+// This function detects and replaces them with motif-appropriate fallbacks.
+
+const PLACEHOLDER_ALT_VALUES = new Set([
+  'imagealt',
+  'image',
+  'photo',
+  'picture',
+  'placeholder',
+  'img',
+  'alt',
+  'src',
+  'imagesrc',
+])
+
+const MOTIF_FALLBACK_ALT: Record<string, string> = {
+  SplitHero: 'Modern product hero shot on clean background',
+  PosterHero: 'Cinematic hero background image',
+  CenteredHero: 'Abstract gradient background',
+  ComingSoonHero: 'Minimalist product teaser image',
+  CardGrid: 'Modern product card imagery',
+  BentoGrid: 'Editorial bento grid layout image',
+  ImageGallery: 'Professional photography gallery image',
+  MediaSplit: 'Editorial split layout photograph',
+  PersonGrid: 'Professional headshot portrait',
+  TeamShowcase: 'Professional team headshot portrait',
+  ProductGrid: 'Product photography on clean background',
+  ProjectGallery: 'Creative project portfolio showcase image',
+  CategoryNav: 'Category navigation thumbnail image',
+  FeatureList: 'Feature illustration on clean background',
+  ProductDetail: 'Product photo on clean white background',
+  BlogPost: 'Editorial article hero image',
+}
+
+function fixPlaceholderImageAlt(
+  props: Record<string, unknown>,
+  motif: string,
+): void {
+  const fixValue = (val: unknown): unknown => {
+    if (typeof val !== 'string') return val
+    if (PLACEHOLDER_ALT_VALUES.has(val.toLowerCase().trim())) {
+      return MOTIF_FALLBACK_ALT[motif] ?? 'Professional editorial photograph'
+    }
+    return val
+  }
+
+  // Fix top-level imageAlt
+  if ('imageAlt' in props) {
+    props.imageAlt = fixValue(props.imageAlt)
+  }
+
+  // Fix imageAlt inside nested arrays (cards, people, products, etc.)
+  for (const value of Object.values(props)) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item && typeof item === 'object' && 'imageAlt' in item) {
+          item.imageAlt = fixValue(item.imageAlt)
+        }
+      }
+    }
+  }
 }
 
 // ─── Motif call builder ──────────────────────────────────────────────────

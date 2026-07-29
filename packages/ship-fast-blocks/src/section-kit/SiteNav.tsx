@@ -257,6 +257,8 @@ export type SiteNavProps = {
   homeTarget?: string
   sticky?: boolean
   brandClassName?: string
+  /** Layout variant — controls brand/link/CTA arrangement. */
+  variant?: 'default' | 'centered' | 'minimal' | 'split'
   // Compound props
   position?: 'sticky' | 'fixed'
   height?: 'compact' | 'default' | 'responsive' | 'outlier'
@@ -290,6 +292,7 @@ function LegacySiteNav(props: SiteNavProps) {
   )
   const homeHref = useSectionKitNavHref(props.homeTarget ?? 'Home')
   const ctaHref = useSectionKitNavHref(cta?.target ?? cta?.label)
+  const variant = props.variant ?? 'default'
 
   // Design-aware nav height: compact=h-16, balanced=h-20, airy=h-24
   const heightClass = d.density.section.includes('py-10')
@@ -327,6 +330,169 @@ function LegacySiteNav(props: SiteNavProps) {
     props.homeTarget ?? 'Home',
   )
 
+  // Shared sub-elements
+  const brandLink = (
+    <RouterLink
+      href={homeHref ?? '/'}
+      exactActive
+      aria-current={isHomeActive ? 'page' : undefined}
+      className="flex items-center gap-3"
+    >
+      <Logo brand={props.brand ?? ''}>
+        <LogoImage className="size-8" fallback={props.brandMark} />
+        <LogoLabel
+          className={cn(
+            'text-xl font-medium text-foreground',
+            brandFontClass,
+            props.brandClassName,
+          )}
+        />
+      </Logo>
+    </RouterLink>
+  )
+
+  const navLinks = (
+    <div className="hidden items-center gap-8 md:flex">
+      {props.nav?.map((label) => (
+        <NavbarNavLink key={label} href={label}>
+          {label}
+        </NavbarNavLink>
+      ))}
+    </div>
+  )
+
+  const ctaButton = cta && ctaIsAuth ? (
+    <SignInButton
+      label={cta.label}
+      variant={cta.variant}
+      className="hidden sm:inline-flex"
+    />
+  ) : cta ? (
+    <RouterLink
+      href={ctaHref ?? '#'}
+      className={cn(
+        kitActionClasses(cta.variant),
+        d.radius.btn,
+        'hidden sm:inline-flex',
+      )}
+    >
+      {cta.label}
+    </RouterLink>
+  ) : null
+
+  const mobileDrawer = (
+    <MobileNavDrawer
+      brand={props.brand ?? ''}
+      nav={props.nav ?? []}
+      homeTarget={props.homeTarget}
+      cta={cta && !ctaIsAuth ? cta : undefined}
+      buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+      footer={
+        cta && ctaIsAuth ? (
+          <SignInButton
+            label={cta.label}
+            variant={cta.variant}
+            className="min-h-11 w-full"
+          />
+        ) : null
+      }
+    />
+  )
+
+  const phoneLink =
+    typeof props.phone === 'string' && props.phone.trim() ? (
+      <a
+        href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
+        className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+      >
+        {props.phone}
+      </a>
+    ) : null
+
+  // ── Variant: centered — brand centered on top row, links on bottom row ──
+  if (variant === 'centered') {
+    return (
+      <>
+        <header className={cn(headerClasses, props.className)}>
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className={cn('flex items-center justify-center', heightClass)}>
+              {brandLink}
+            </div>
+            <div className="hidden items-center justify-center gap-8 border-t border-border py-3 md:flex">
+              {props.nav?.map((label) => (
+                <NavbarNavLink key={label} href={label}>
+                  {label}
+                </NavbarNavLink>
+              ))}
+              {ctaButton}
+              {phoneLink}
+            </div>
+          </div>
+          <div className="flex items-center justify-end px-6 lg:px-8 md:hidden">
+            {mobileDrawer}
+          </div>
+        </header>
+        {sticky && <div aria-hidden="true" className="h-20" />}
+      </>
+    )
+  }
+
+  // ── Variant: minimal — brand left, CTA right, no visible links ──
+  if (variant === 'minimal') {
+    return (
+      <>
+        <header className={cn(headerClasses, props.className)}>
+          <nav
+            className={cn(
+              'mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8',
+              heightClass,
+            )}
+          >
+            {brandLink}
+            <div className="flex items-center gap-4">
+              {phoneLink}
+              {ctaButton}
+              {mobileDrawer}
+            </div>
+          </nav>
+        </header>
+        {sticky && <div aria-hidden="true" className="h-20" />}
+      </>
+    )
+  }
+
+  // ── Variant: split — brand left, links right, CTA far right ──
+  if (variant === 'split') {
+    return (
+      <>
+        <header className={cn(headerClasses, props.className)}>
+          <nav
+            className={cn(
+              'mx-auto flex max-w-7xl items-center gap-8 px-6 lg:px-8',
+              heightClass,
+            )}
+          >
+            {brandLink}
+            <div className="ml-auto hidden items-center gap-8 md:flex">
+              {props.nav?.map((label) => (
+                <NavbarNavLink key={label} href={label}>
+                  {label}
+                </NavbarNavLink>
+              ))}
+            </div>
+            <div className="ml-auto flex items-center gap-4">
+              {phoneLink}
+              {ctaButton}
+              {mobileDrawer}
+            </div>
+          </nav>
+        </header>
+        {sticky && <div aria-hidden="true" className="h-20" />}
+      </>
+    )
+  }
+
+  // ── Variant: default — brand left, links center, CTA right ──
   return (
     <>
       <header className={cn(headerClasses, props.className)}>
@@ -336,77 +502,12 @@ function LegacySiteNav(props: SiteNavProps) {
             heightClass,
           )}
         >
-          <RouterLink
-            href={homeHref ?? '/'}
-            exactActive
-            aria-current={isHomeActive ? 'page' : undefined}
-            className="flex items-center gap-3"
-          >
-            <Logo brand={props.brand ?? ''}>
-              <LogoImage className="size-8" fallback={props.brandMark} />
-              <LogoLabel
-                className={cn(
-                  'text-xl font-medium text-foreground',
-                  brandFontClass,
-                  props.brandClassName,
-                )}
-              />
-            </Logo>
-          </RouterLink>
-
-          <div className="hidden items-center gap-8 md:flex">
-            {props.nav?.map((label) => (
-              <NavbarNavLink key={label} href={label}>
-                {label}
-              </NavbarNavLink>
-            ))}
-          </div>
-
+          {brandLink}
+          {navLinks}
           <div className="flex items-center gap-4">
-            {typeof props.phone === 'string' && props.phone.trim() ? (
-              <a
-                href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
-                className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
-              >
-                {props.phone}
-              </a>
-            ) : null}
-
-            {cta && ctaIsAuth ? (
-              <SignInButton
-                label={cta.label}
-                variant={cta.variant}
-                className="hidden sm:inline-flex"
-              />
-            ) : cta ? (
-              <RouterLink
-                href={ctaHref ?? '#'}
-                className={cn(
-                  kitActionClasses(cta.variant),
-                  d.radius.btn,
-                  'hidden sm:inline-flex',
-                )}
-              >
-                {cta.label}
-              </RouterLink>
-            ) : null}
-
-            <MobileNavDrawer
-              brand={props.brand ?? ''}
-              nav={props.nav ?? []}
-              homeTarget={props.homeTarget}
-              cta={cta && !ctaIsAuth ? cta : undefined}
-              buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              footer={
-                cta && ctaIsAuth ? (
-                  <SignInButton
-                    label={cta.label}
-                    variant={cta.variant}
-                    className="min-h-11 w-full"
-                  />
-                ) : null
-              }
-            />
+            {phoneLink}
+            {ctaButton}
+            {mobileDrawer}
           </div>
         </nav>
       </header>

@@ -34,8 +34,12 @@
       "description": "Small status/label pill. Mirrors shadcn variant."
     },
     "BentoGrid": {
-      "signature": "BentoGrid(heading?: string, cells?: {title: string, description?: string, imageAlt?: string, imageSrc?: string, span?: \"wide\" | \"tall\" | \"normal\"}[], className?: string, design?: string)",
-      "description": "Bento grid: asymmetric cells of varying sizes. Each cell has a title, description, and optional image. Visually dynamic."
+      "signature": "BentoGrid(heading?: string, cells?: {title: string, description?: string, imageAlt?: string, imageSrc?: string, span?: \"wide\" | \"tall\" | \"normal\"}[], layout?: \"2-lg-3\" | \"2-lg-4\" | \"2-md-4\" | \"1-md-2-3\" | \"1-md-2-4\" | \"1-md-3\" | \"1-sm-2\" | \"1-sm-2-lg-3\", chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, className?: string, design?: string)",
+      "description": "Bento grid: asymmetric cells of varying sizes. Chrome: hairline (collapsed-border + mono figure indices + ghost numerals + tick bars), brutalist (border-2 + hard shadows)."
+    },
+    "BlogPost": {
+      "signature": "BlogPost(title?: string, author?: string, date?: string, readTime?: string, imageAlt?: string, imageSrc?: string, excerpt?: string, sections?: {heading: string, body: string}[], pullQuote?: string, authorBio?: string, authorImageAlt?: string, className?: string, design?: string)",
+      "description": "Blog post layout: hero image + article title + meta (author, date, read time) + body paragraphs with headings + pull quote + author bio card. For individual blog posts, articles, news stories."
     },
     "BookingForm": {
       "signature": "BookingForm(heading?: string, subheading?: string, className?: string, design?: string)",
@@ -70,8 +74,8 @@
       "description": "Bordered content container with optional title, description, body (children) and footer."
     },
     "CardGrid": {
-      "signature": "CardGrid(eyebrow?: string, heading?: string, subheading?: string, cards?: {title: string, description?: string, imageAlt?: string, imageSrc?: string}[], cols?: number, variant?: \"standard\" | \"collapsed-border\" | \"asymmetric\", className?: string, design?: string)",
-      "description": "Section with eyebrow + heading + grid of cards. Each card has an optional index, title, and description. Collapsed-border or standard grid."
+      "signature": "CardGrid(eyebrow?: string, heading?: string, subheading?: string, cards?: {title: string, description?: string, imageAlt?: string, imageSrc?: string}[], cols?: number, variant?: \"standard\" | \"collapsed-border\" | \"asymmetric\", chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, watermark?: string, decor?: \"none\" | \"dot-grid\" | \"graph-paper\" | \"glow\", className?: string, design?: string)",
+      "description": "Section with eyebrow + heading + grid of cards. Each card has an optional index, title, and description. Chrome: hairline (collapsed-border + mono indices + tick bars), brutalist (border-2 + hard shadows), terminal (mono $ labels), editorial (serif + figure indices)."
     },
     "Carousel": {
       "signature": "Carousel(slides?: any[][], orientation?: \"horizontal\" | \"vertical\", basis?: \"full\" | \"half\" | \"third\", className?: string)",
@@ -126,8 +130,8 @@
       "description": "Right-click context menu. `items` are the menu rows (variant 'destructive' for dangerous, separator true for a divider). Shows the trigger area and an inline preview of the menu."
     },
     "CtaBand": {
-      "signature": "CtaBand(heading?: string, subheading?: string, cta?: string, className?: string, design?: string)",
-      "description": "CTA band: centered heading + subheading + button. Versatile call-to-action section."
+      "signature": "CtaBand(heading?: string, subheading?: string, cta?: string, variant?: \"primary\" | \"muted\" | \"card\", chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\" | \"gradient\", watermark?: string, className?: string, design?: string)",
+      "description": "CTA band: centered heading + subheading + button. Chrome: brutalist (inverted dark + slanted seam + uppercase), gradient (glow orbs), terminal (mono $ prompt)."
     },
     "Dialog": {
       "signature": "Dialog(title: string, description?: string, children?: any[], footer?: any[], triggerLabel?: string, className?: string)",
@@ -154,12 +158,12 @@
       "description": "Event schedule: time + title + optional description rows. For agendas, schedules, lineups."
     },
     "FaqAccordion": {
-      "signature": "FaqAccordion(heading?: string, items?: {question: string, answer: string}[], className?: string, design?: string)",
-      "description": "FAQ accordion: collapsible question/answer pairs. Optional heading."
+      "signature": "FaqAccordion(heading?: string, items?: {question: string, answer: string}[], chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, className?: string, design?: string)",
+      "description": "FAQ accordion: collapsible question/answer pairs. Chrome: hairline (collapsed-border + mono indices), terminal (mono $ prompts)."
     },
     "FeatureList": {
-      "signature": "FeatureList(features?: {heading: string, description: string, imageAlt?: string, imageSrc?: string}[], className?: string, design?: string)",
-      "description": "Feature list: alternating left/right rows with image on one side and heading + text on the other. Editorial."
+      "signature": "FeatureList(features?: {heading: string, description: string, imageAlt?: string, imageSrc?: string}[], chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, watermark?: string, className?: string, design?: string)",
+      "description": "Feature list: alternating left/right rows with image on one side and heading + text on the other. Chrome: editorial (serif + watermark + image caption bars + figure indices), hairline (collapsed-border + mono indices)."
     },
     "Field": {
       "signature": "Field(label?: string, children?: any[], description?: string, error?: string, orientation?: \"vertical\" | \"horizontal\" | \"responsive\", className?: string)",
@@ -198,8 +202,8 @@
       "description": "Standalone image. `alt` describes the subject and drives automatic stock-photo resolution; pass an explicit `src` URL to bypass it. Rounded by default via className."
     },
     "ImageGallery": {
-      "signature": "ImageGallery(heading?: string, images?: {alt: string, src?: string}[], cols?: number, className?: string, design?: string)",
-      "description": "Image gallery: grid of image tiles with alt text. Optional heading above."
+      "signature": "ImageGallery(heading?: string, images?: {alt: string, src?: string}[], cols?: number, chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, className?: string, design?: string)",
+      "description": "Image gallery: grid of image tiles with alt text. Chrome: editorial (image-zoom hover + caption bar), brutalist (border-2 + hard shadows). Optional heading above."
     },
     "Input": {
       "signature": "Input(placeholder?: string, type?: \"text\" | \"email\" | \"password\" | \"number\" | \"search\" | \"tel\" | \"url\", defaultValue?: string, disabled?: boolean, className?: string)",
@@ -246,8 +250,8 @@
       "description": "Map block: heading + address/location info. Placeholder map area."
     },
     "MediaSplit": {
-      "signature": "MediaSplit(heading?: string, text?: string, imageAlt?: string, imageSrc?: string, reversed?: boolean, className?: string, design?: string)",
-      "description": "Media split: image on one side, heading + text on the other. 7/5 or 5/7 ratio. For about sections, story sections."
+      "signature": "MediaSplit(heading?: string, text?: string, imageAlt?: string, imageSrc?: string, reversed?: boolean, variant?: \"split\" | \"story\", chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, className?: string, design?: string)",
+      "description": "Media split: image on one side, heading + text on the other. Chrome: editorial (serif + image caption bar + figure index), brutalist (border-2 + hard shadows)."
     },
     "Menubar": {
       "signature": "Menubar(menus?: {label: string, items: {label: string, variant?: \"default\" | \"destructive\", shortcut?: string, separator?: boolean, inset?: boolean}[]}[], className?: string)",
@@ -258,23 +262,23 @@
       "description": "Native dropdown select. `items` is an array of { value, label }. Mirrors shadcn NativeSelect."
     },
     "Navbar": {
-      "signature": "Navbar(brand?: string, links?: string[], cta?: string, className?: string, design?: string)",
-      "description": "Navbar: brand name + nav links + optional CTA. Sticky top."
+      "signature": "Navbar(brand?: string, links?: string[], cta?: string, variant?: \"default\" | \"centered\" | \"minimal\" | \"split\", className?: string, design?: string)",
+      "description": "Navbar: brand name + nav links + optional CTA. Sticky top. variant: default|centered|minimal|split"
     },
     "NavigationMenu": {
       "signature": "NavigationMenu(items?: {label: string, href?: string, links?: {label: string, href?: string, description?: string}[]}[], className?: string)",
       "description": "Top navigation menu. Each `items` entry is a top-level label; entries with `links` show a labelled list of links (with optional descriptions) inline beneath them."
     },
     "NewsletterCta": {
-      "signature": "NewsletterCta(heading?: string, subheading?: string, cta?: string, className?: string, design?: string)",
-      "description": "Newsletter CTA: heading + email signup form. For newsletter, waitlist, subscribe sections."
+      "signature": "NewsletterCta(heading?: string, subheading?: string, cta?: string, variant?: \"default\" | \"primary-tint\" | \"muted\" | \"inverted\", chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\" | \"gradient\", watermark?: string, className?: string, design?: string)",
+      "description": "Newsletter CTA: heading + email signup form. Chrome: terminal (mono $ prompt + inline capture), brutalist (inverted dark + rotated sticker + uppercase), editorial (serif + watermark). For newsletter, waitlist, subscribe sections."
     },
     "NumberedList": {
-      "signature": "NumberedList(heading?: string, subheading?: string, steps?: {title: string, description?: string}[], className?: string, design?: string)",
-      "description": "Numbered list: sequential steps with index, title, and description. For processes, how-it-works, getting started."
+      "signature": "NumberedList(heading?: string, subheading?: string, steps?: {title: string, description?: string}[], chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, className?: string, design?: string)",
+      "description": "Numbered list: sequential steps with index, title, and description. Chrome: terminal (terminal window chrome + $ prompts + ghost numerals + exit 0), hairline (collapsed-border + mono indices), brutalist (border-2 + hard shadows)."
     },
     "PageSwitch": {
-      "signature": "PageSwitch(routes: string[], pages: any[], className?: string",
+      "signature": "PageSwitch(routes: string[], pages: any[], className?: string, pageIds?: string[])",
       "description": "INTERNAL site router — do not select this directly. Renders one page at a time, switched by the shared $page state."
     },
     "Pagination": {
@@ -282,7 +286,7 @@
       "description": "Page navigation control with previous/next, numbered page links and an optional trailing ellipsis."
     },
     "PersonGrid": {
-      "signature": "PersonGrid(heading?: string, people?: {name: string, role?: string, imageAlt?: string, imageSrc?: string}[], cols?: number, className?: string, design?: string)",
+      "signature": "PersonGrid(heading?: string, people?: {name: string, role?: string, imageAlt?: string, imageSrc?: string}[], cols?: number, chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", className?: string, design?: string)",
       "description": "Person grid: cards with photo, name, and role. For team, attorneys, chefs, etc."
     },
     "Popover": {
@@ -294,8 +298,12 @@
       "description": "Full-bleed poster hero: giant display heading over a background image with minimal copy and a single CTA. Cinematic, bold."
     },
     "PricingTable": {
-      "signature": "PricingTable(heading?: string, tiers?: {name: string, price: string, features: string[], cta?: string, highlighted?: boolean}[], className?: string, design?: string)",
-      "description": "Pricing table: tiered pricing cards with name, price, features list, and CTA. One tier can be highlighted."
+      "signature": "PricingTable(heading?: string, subheading?: string, tiers?: {name: string, price: string, features: string[], cta?: string, highlighted?: boolean}[], chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, watermark?: string, className?: string, design?: string)",
+      "description": "Pricing table: tiered pricing cards with name, price, features list, and CTA. Chrome: hairline (collapsed-border comparison strip), brutalist (border-2 + hard shadows + rotated sticker), terminal (mono $ labels + inverted highlighted tier)."
+    },
+    "ProductDetail": {
+      "signature": "ProductDetail(title?: string, price?: string, comparePrice?: string, rating?: number, reviewCount?: number, description?: string, imageAlt?: string, imageSrc?: string, variants?: string[], primaryCta?: string, specs?: {label: string, value: string}[], className?: string, design?: string)",
+      "description": "Product detail page: large product image + buy box with title, price, rating, description, variant selector, and add-to-cart CTA. Below: specs grid and related products. For ecommerce product pages."
     },
     "ProductGrid": {
       "signature": "ProductGrid(heading?: string, products?: {name: string, price: string, imageAlt?: string, imageSrc?: string}[], cols?: number, className?: string, design?: string)",
@@ -306,12 +314,12 @@
       "description": "Horizontal progress bar. `value` 0-100."
     },
     "ProjectGallery": {
-      "signature": "ProjectGallery(heading?: string, projects?: {title: string, category?: string, imageAlt?: string, imageSrc?: string}[], cols?: number, className?: string, design?: string)",
+      "signature": "ProjectGallery(heading?: string, projects?: {title: string, category?: string, imageAlt?: string, imageSrc?: string}[], cols?: number, chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\" | \"gradient\", index?: string, className?: string, design?: string)",
       "description": "Project gallery: grid of project cards with image, title, and optional category. For portfolios, work showcases."
     },
     "QuoteBand": {
-      "signature": "QuoteBand(quote?: string, author?: string, role?: string, className?: string, design?: string)",
-      "description": "Quote band: large centered pull quote with optional author. Editorial emphasis."
+      "signature": "QuoteBand(quote?: string, author?: string, role?: string, variant?: \"default\" | \"gradient\" | \"muted\", chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\" | \"gradient\", watermark?: string, className?: string, design?: string)",
+      "description": "Quote band: large centered pull quote with optional author. Chrome: brutalist (inverted dark + slanted seam + watermark), editorial (serif + watermark), gradient (glow orbs)."
     },
     "RadioGroup": {
       "signature": "RadioGroup(items: {value: string, label: string}[], defaultValue?: string, disabled?: boolean, className?: string)",
@@ -349,6 +357,10 @@
       "signature": "Sheet(title: string, description?: string, children?: any[], footer?: any[], side?: \"top\" | \"right\" | \"bottom\" | \"left\", triggerLabel?: string, className?: string)",
       "description": "Side panel that slides in from an edge. side top|right|bottom|left. Has a title, description, body (children) and footer. Open by default in preview."
     },
+    "SidebarNav": {
+      "signature": "SidebarNav(heading?: string, groups?: {label: string, items: string[]}[], contentTitle?: string, contentBody?: string, className?: string, design?: string)",
+      "description": "Sidebar navigation: fixed left sidebar with grouped nav links + main content area. For docs sites, dashboards, admin panels, knowledge bases, and content-heavy apps with deep navigation."
+    },
     "SignIn": {
       "signature": "SignIn(label?: string, variant?: \"primary\" | \"outline\" | \"ghost\", className?: string)",
       "description": "A REAL working sign-in button wired to the site's Shoo/lakebed auth — shows 'Sign in' for guests and an account menu with Sign out when authenticated. Use anywhere a site needs real login (nav CTA, hero, account area). NOT a dummy/page-switch button."
@@ -374,8 +386,8 @@
       "description": "Animated loading spinner. Size/color with className, e.g. 'size-8 text-primary'."
     },
     "SplitHero": {
-      "signature": "SplitHero(badge?: string, heading?: string, highlight?: string, subheading?: string, primaryCta?: string, secondaryCta?: string, stats?: {value: string, label: string}[], watermark?: string, className?: string, design?: string)",
-      "description": "Asymmetric 7/5 split hero: mono badge + display heading with highlighted phrase + lead text + dual CTAs + collapsed-border KPI strip. Decor: ghost watermark + dot grid. A tilted marquee strip sits between copy and KPIs."
+      "signature": "SplitHero(badge?: string, heading?: string, highlight?: string, subheading?: string, primaryCta?: string, secondaryCta?: string, stats?: {value: string, label: string}[], watermark?: string, imageAlt?: string, imageSrc?: string, variant?: \"split\" | \"default\" | \"full-bleed\" | \"gradient\", chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\" | \"gradient\", index?: string, decor?: \"none\" | \"dot-grid\" | \"graph-paper\" | \"glow\", className?: string, design?: string)",
+      "description": "Asymmetric 7/5 split hero: mono badge + display heading with highlighted phrase + lead text + dual CTAs + collapsed-border KPI strip. Chrome: hairline (graph paper + collapsed-border KPIs + tick bars), brutalist (border-2 + hard shadows + uppercase), gradient (glow orbs + pulsing dots), terminal (mono labels + dashboard panel + spark bars)."
     },
     "Stack": {
       "signature": "Stack(children?: any[], direction?: \"col\" | \"row\", gap?: \"none\" | \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\", align?: \"start\" | \"center\" | \"end\" | \"stretch\", justify?: \"start\" | \"center\" | \"end\" | \"between\" | \"around\", wrap?: boolean, className?: string)",
@@ -394,8 +406,8 @@
       "description": "Live text bound to a named shared state field — displays the CURRENT value of that field and updates instantly when it changes. Use the `field` string as the state key and `initial` to seed it. Pair with StateButton/StateInput to build any stateful UI (counter readouts, running totals, toggle labels). NOT a static label."
     },
     "StatsStrip": {
-      "signature": "StatsStrip(heading?: string, stats?: {value: string, label: string, sparkBars?: number[]}[], cols?: number, className?: string, design?: string)",
-      "description": "Stats strip: collapsed-border KPI cells with large numerals and mono labels. Optional spark bars."
+      "signature": "StatsStrip(heading?: string, stats?: {value: string, label: string, sparkBars?: number[]}[], cols?: number, chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\" | \"gradient\", index?: string, watermark?: string, decor?: \"none\" | \"dot-grid\" | \"graph-paper\" | \"glow\", className?: string, design?: string)",
+      "description": "Stats strip: KPI cells with large numerals and mono labels. Chrome: hairline (collapsed-border + tick bars), brutalist (inverted dark band + slanted seam), terminal (mono $ labels + spark bars)."
     },
     "StepProcess": {
       "signature": "StepProcess(heading?: string, steps?: {title: string, description?: string}[], className?: string, design?: string)",
@@ -418,12 +430,12 @@
       "description": "Tabbed panels. items:[{value,label,content?}]. First tab active by default. variant 'line' for underlined tabs."
     },
     "TeamShowcase": {
-      "signature": "TeamShowcase(heading?: string, people?: {name: string, role?: string, bio?: string, imageAlt?: string, imageSrc?: string}[], cols?: number, className?: string, design?: string)",
+      "signature": "TeamShowcase(heading?: string, people?: {name: string, role?: string, bio?: string, imageAlt?: string, imageSrc?: string}[], cols?: number, chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", className?: string, design?: string)",
       "description": "Team showcase: larger person cards with photo, name, role, and bio. More detail than personGrid."
     },
     "TestimonialRow": {
-      "signature": "TestimonialRow(heading?: string, testimonials?: {quote: string, author: string, role?: string}[], cols?: number, className?: string, design?: string)",
-      "description": "Testimonial row: grid of quote cards with author name and optional role. Social proof."
+      "signature": "TestimonialRow(heading?: string, testimonials?: {quote: string, author: string, role?: string}[], cols?: number, chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, className?: string, design?: string)",
+      "description": "Testimonial row: grid of quote cards with author name and optional role. Chrome: hairline (collapsed-border + mono indices), brutalist (border-2 + hard shadows + rotated stickers)."
     },
     "Text": {
       "signature": "Text(text: string, tone?: \"default\" | \"muted\", className?: string)",
@@ -434,8 +446,8 @@
       "description": "Multi-line text input. Mirrors shadcn Textarea."
     },
     "Timeline": {
-      "signature": "Timeline(heading?: string, events?: {date: string, title: string, description?: string}[], className?: string, design?: string)",
-      "description": "Timeline: vertical sequence of events with date, title, and description. For roadmaps, history, project phases."
+      "signature": "Timeline(heading?: string, events?: {date: string, title: string, description?: string}[], chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, className?: string, design?: string)",
+      "description": "Timeline: vertical sequence of events with date, title, and description. Chrome: hairline (collapsed-border + mono dates), terminal (mono $ prompts + ghost numerals)."
     },
     "Toggle": {
       "signature": "Toggle(label: string, pressed?: boolean, variant?: \"default\" | \"outline\", size?: \"default\" | \"sm\" | \"lg\", disabled?: boolean, className?: string)",
@@ -450,8 +462,8 @@
       "description": "Small floating label attached to a trigger. `content` is the tooltip text; `triggerLabel` labels the trigger button. Open by default for preview."
     },
     "ValueProps": {
-      "signature": "ValueProps(heading?: string, values?: {title: string, description?: string}[], cols?: number, className?: string, design?: string)",
-      "description": "Value props: grid of value propositions with title and description. For benefits, why-choose-us, advantages."
+      "signature": "ValueProps(heading?: string, values?: {title: string, description?: string}[], cols?: number, chrome?: \"none\" | \"hairline\" | \"brutalist\" | \"terminal\" | \"editorial\", index?: string, className?: string, design?: string)",
+      "description": "Value props: grid of value propositions with title and description. Chrome: hairline (collapsed-border + mono indices + tick bars), terminal (mono $ labels), brutalist (border-2 + hard shadows)."
     }
   }
 }
