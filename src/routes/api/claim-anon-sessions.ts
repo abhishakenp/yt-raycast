@@ -6,6 +6,10 @@ import {
   getClientIp,
   hashClientIp,
 } from '@/features/session/server/session-create-response'
+import {
+  sendBusinessNotification,
+  userRegisteredEvent,
+} from '@/features/notifications/slack-business'
 
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -42,13 +46,40 @@ async function claimAnonymousSessions(request: Request) {
     )
   }
 
-  const clientIpHash = hashClientIp(getClientIp(request))
+  const clientIp = getClientIp(request)
+  const clientIpHash = hashClientIp(clientIp)
   const client = createRuntimeConvexHttpClient()
   client.setAuth(token)
   const result = await client.mutation(
     api.sessions.claimAnonymousSessionsByIpMutation,
     { clientIpHash },
   )
+
+  // Best-effort Slack notification — never blocks the response.
+  // Extract userId, name, email from the Clerk JWT payload.
+  let userId = 'unknown'
+  let userName: string | undefined
+  let userEmail: string | undefined
+  try {
+    const payload = token.split('.')[1]
+    if (payload) {
+      const decoded = JSON.parse(
+        Buffer.from(payload, 'base64url').toString('utf-8'),
+      )
+      userId = decoded.sub ?? decoded['https://clerk.com/user_id'] ?? 'unknown'
+      userName = decoded.name ?? decoded['https://clerk.com/name']
+      userEmail = decoded.email ?? decoded['https://clerk.com/email']
+    }
+  } catch {}
+
+  void sendBusinessNotification(
+    userRegisteredEvent({
+      userId,
+      userName,
+      userEmail,
+      ipHash: clientIpHash,
+    }),
+  ).catch(() => {})
 
   return json(result)
 }

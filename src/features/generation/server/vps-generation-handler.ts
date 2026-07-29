@@ -14,6 +14,24 @@ import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { getModelConfigurationFailure } from '../../../../convex/generationConfig'
 import { runEngineGeneration } from './generation-runner'
 import type { ShipFastEngineSessionEvent } from './ship-fast-engine-adapter'
+import {
+  sendBusinessNotification,
+  generationDoneEvent,
+  generationFailedEvent,
+} from '@/features/notifications/slack-business'
+
+function buildSessionUrls(sessionId: string): {
+  publicUrl: string
+  privateUrl: string
+} {
+  const baseUrl = (
+    process.env.APP_BASE_URL ?? 'https://ship-fast.ai'
+  ).replace(/\/+$/, '')
+  return {
+    publicUrl: `${baseUrl}/preview/${sessionId}`,
+    privateUrl: `${baseUrl}/generate/${sessionId}/`,
+  }
+}
 
 function buildGenerationPrompt(session: Doc<'sessions'>): string {
   if (session.cloneBrief && session.cloneBrief.trim().length > 0) {
@@ -106,10 +124,12 @@ export async function startVpsGeneration(
   const client = input.clientOverride ?? createRuntimeConvexHttpClient(120_000)
   if (input.bearerToken) client.setAuth?.(input.bearerToken)
 
+  let session: Doc<'sessions'> | null = null
+
   try {
     // 1. Load session from Convex
     const t_session_load = Date.now()
-    const session = await client.query(
+    session = await client.query(
       api.sessions.getGenerationSessionPublic,
       {
         sessionId: input.sessionId,
@@ -293,6 +313,22 @@ export async function startVpsGeneration(
       `[vps-gen] TOTAL ${stepTimings.total}ms — ${JSON.stringify(stepTimings)}`,
     )
 
+    // Best-effort Slack notification — never blocks.
+    const urls = buildSessionUrls(input.sessionId)
+    void sendBusinessNotification(
+      generationDoneEvent({
+        sessionId: input.sessionId,
+        userId: session.userId,
+        userEmail: session.ownerEmail,
+        ipHash: session.anonymousClientIdHash,
+        elapsedMs: stepTimings.total,
+        provider: 'ship-fast-engine-v3-vps',
+        prompt: session.prompt,
+        publicUrl: urls.publicUrl,
+        privateUrl: urls.privateUrl,
+      }),
+    ).catch(() => {})
+
     return { status: 'started' }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Generation failed'
@@ -325,6 +361,23 @@ export async function startVpsGeneration(
     }
 
     console.error(`[vps-gen] FAILED after ${elapsed}ms: ${message}`)
+
+    // Best-effort Slack notification for generation failure.
+    const failUrls = buildSessionUrls(input.sessionId)
+    void sendBusinessNotification(
+      generationFailedEvent({
+        sessionId: input.sessionId,
+        userId: session?.userId,
+        userEmail: session?.ownerEmail,
+        ipHash: session?.anonymousClientIdHash,
+        error: message,
+        elapsedMs: elapsed,
+        prompt: session?.prompt,
+        publicUrl: failUrls.publicUrl,
+        privateUrl: failUrls.privateUrl,
+      }),
+    ).catch(() => {})
+
     return { status: 'failed', message }
   }
 }

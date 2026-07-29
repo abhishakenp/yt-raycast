@@ -3,6 +3,10 @@ import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { applyReferralDiscountForUser } from '@/features/referrals/server/referral-discount'
+import {
+  sendBusinessNotification,
+  paymentDoneEvent,
+} from '@/features/notifications/slack-business'
 
 type WebhookConvexClient = Pick<ConvexHttpClient, 'mutation'>
 type ApplyReferralDiscount = (
@@ -487,6 +491,25 @@ export async function createWebhookApiResponse(
       })),
     ),
   )
+
+  // Best-effort Slack notification — never blocks the webhook response.
+  const subscriptionPayload =
+    'subscription' in mutationPayload ? mutationPayload.subscription : null
+  const creditsPayload =
+    'credits' in mutationPayload ? mutationPayload.credits : undefined
+  const paymentType: 'subscription' | 'credit_pack' = subscriptionPayload
+    ? 'subscription'
+    : 'credit_pack'
+  void sendBusinessNotification(
+    paymentDoneEvent({
+      provider: mutationPayload.provider,
+      userId: mutationPayload.userId,
+      type: paymentType,
+      planId: subscriptionPayload?.planId,
+      credits: creditsPayload,
+    }),
+    env,
+  ).catch(() => {})
 
   return json({ received: true })
 }

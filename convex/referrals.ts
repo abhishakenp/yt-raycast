@@ -15,6 +15,10 @@ import {
   referralsRemaining,
 } from './lib/referral_helpers'
 import { refreshReferralReward } from './lib/referral_qualification'
+import {
+  sendConvexBusinessNotification,
+  inviteSentEvent,
+} from './lib/slack_business_notifications'
 
 const activeSubscriptionStatuses = new Set([
   'active',
@@ -90,6 +94,18 @@ async function ensureReferralCode(
     code,
     createdAt: Date.now(),
   })
+
+  // Best-effort Slack notification — new referral code created.
+  const identity = await ctx.auth.getUserIdentity()
+  void sendConvexBusinessNotification(
+    inviteSentEvent({
+      referrerUserId: userId,
+      referrerUserName: identity?.name ?? undefined,
+      referrerUserEmail: identity?.email ?? undefined,
+      code,
+    }),
+  ).catch(() => {})
+
   return code
 }
 

@@ -225,6 +225,9 @@ export function useOptionalClerk(): OptionalClerk {
  * guards, server-side renders (returns `false` when `window` is undefined),
  * and any non-React code path. Returns `false` when Clerk is not configured,
  * no user is signed in, or the role is not `admin`.
+ *
+ * The super-admin account `hello@ship-fast.ai` has `system_role: admin` set
+ * in Clerk publicMetadata, so it is recognized via the standard role check.
  */
 export function isCurrentUserAdmin(): boolean {
   if (!isClerkConfigured()) return false
@@ -239,6 +242,9 @@ export function isCurrentUserAdmin(): boolean {
  * bypass sign-in gates (e.g. SignInGate) so internal tools keep working
  * without the Clerk sign-in flow. Returns `false` when Clerk is not
  * configured, no user is signed in, or the role is not `admin`.
+ *
+ * The super-admin account `hello@ship-fast.ai` has `system_role: admin` set
+ * in Clerk publicMetadata, so it is recognized via the standard role check.
  */
 export function useIsAdmin(): boolean {
   const snapshot = useClerkSnapshot()
