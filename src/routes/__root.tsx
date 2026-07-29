@@ -13,11 +13,19 @@ import { AppProviders } from '@/app/providers/AppProviders'
 import { MarketingConsentController } from '@/features/partners/components/MarketingConsentController'
 import { useAcquisitionCapture } from '@/features/partners/hooks/useAcquisitionCapture'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
+import { initLogRocket, isLogRocketEnabled } from '@/features/logrocket/client/logrocket-init'
 
 import appCss from '../styles.css?url'
 
 const PLAUSIBLE_TRACKED_DOMAIN = 'ship-fast.ai'
 const PLAUSIBLE_SCRIPT_SRC = 'https://plausible.ship-fast.ai/js/script.js'
+
+/**
+ * LogRocket async script URL — served from our first-party proxy so ad
+ * blockers never see a request to cdn.logrocket.com. This MUST be set
+ * before the LogRocket npm module is imported (see logrocket-init.ts).
+ */
+const LOGROCKET_ASYNC_SCRIPT = '/api/logrocket/cdn/logger.min.js'
 function RootDocument({ children }: { children: ReactNode }) {
   useAcquisitionCapture()
 
@@ -42,9 +50,20 @@ function RootDocument({ children }: { children: ReactNode }) {
 
   useEffect(() => installDynamicImportRecovery(window), [])
 
+  useEffect(() => {
+    if (isLogRocketEnabled()) initLogRocket()
+  }, [])
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* LogRocket: set async script URL before any JS imports so the
+            SDK fetches from our first-party proxy, not cdn.logrocket.com. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window._lrAsyncScript="${LOGROCKET_ASYNC_SCRIPT}"`,
+          }}
+        />
         <HeadContent />
       </head>
       <body suppressHydrationWarning>

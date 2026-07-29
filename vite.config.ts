@@ -388,6 +388,46 @@ function pexelsDevApi(): Plugin {
   }
 }
 
+function logrocketDevProxy(): Plugin {
+  return {
+    name: 'ship-fast-logrocket-dev-proxy',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const requestUrl = new URL(req.url ?? '', 'http://localhost/')
+        if (!requestUrl.pathname.startsWith('/api/logrocket/')) {
+          next()
+          return
+        }
+
+        try {
+          const proxyReq = new Request(requestUrl, {
+            method: req.method,
+            headers: new Headers(req.headers as Record<string, string>),
+          })
+          if (req.method !== 'GET' && req.method !== 'HEAD') {
+            const chunks: Buffer[] = []
+            for await (const chunk of req) chunks.push(chunk as Buffer)
+            proxyReq.headers.delete('content-length')
+          }
+          const { proxyLogRocketRequest } = await import(
+            './src/features/logrocket/server/logrocket-proxy'
+          )
+          const proxyRes = await proxyLogRocketRequest(proxyReq)
+          res.statusCode = proxyRes.status
+          proxyRes.headers.forEach((value, key) => {
+            res.setHeader(key, value)
+          })
+          const body = await proxyRes.arrayBuffer()
+          res.end(Buffer.from(body))
+        } catch (error) {
+          res.statusCode = 502
+          res.end('LogRocket proxy error')
+        }
+      })
+    },
+  }
+}
+
 function galleryImageRouteDevProxy(): Plugin {
   return {
     name: 'ship-fast-gallery-image-route-dev-proxy',
@@ -662,6 +702,7 @@ const config = defineConfig({
   plugins: [
     devtools(),
     pexelsDevApi(),
+    logrocketDevProxy(),
     galleryImageRouteDevProxy(),
     subdomainRewriteDevMiddleware(),
     nitro({
