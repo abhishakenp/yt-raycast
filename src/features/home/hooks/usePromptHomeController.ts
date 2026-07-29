@@ -456,6 +456,8 @@ export const usePromptHomeController = () => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
     const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
     const isPrivate = opts?.isPrivate ?? false
+    void preferredLanguage
+    void isPrivate
     const hasPrompt = runtimePrompt.length > 0
 
     if (!hasPrompt || isSubmitting || submitInFlightRef.current) {

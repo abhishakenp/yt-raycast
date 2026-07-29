@@ -3,9 +3,8 @@
 // The SSR HTML is used for gallery/preview rendering; the DOM JS is shipped to
 // the browser for client-side interactivity (Svelte island pattern).
 
-import { writeFileSync, unlinkSync, existsSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { tmpdir } from 'node:os'
+import { writeFileSync, unlinkSync } from 'node:fs'
+import { join } from 'node:path'
 import { randomBytes } from 'node:crypto'
 
 /** Result of a successful Svelte compilation. */

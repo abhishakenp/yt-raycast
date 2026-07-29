@@ -4,8 +4,6 @@
 // it generates real, deployable Convex backend code.
 import type {
   LakebedDefinition,
-  LakebedTable,
-  LakebedField,
   LakebedQuery,
   LakebedMutation,
 } from './types.ts'
@@ -147,7 +145,7 @@ export function generateConvexFunctions(
 /** Generate a seed data file from the lakebed tables that have seedFromProps.
  *  This populates the tables with initial data from the LLM-authored content. */
 export function generateSeedScript(
-  lakebed: LakebedDefinition,
+  _lakebed: LakebedDefinition,
   seedData: Record<string, unknown[]>,
 ): string {
   const seedFns = Object.entries(seedData)

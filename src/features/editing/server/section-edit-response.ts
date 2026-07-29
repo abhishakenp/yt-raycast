@@ -372,9 +372,9 @@ function selectionIdAnchor(selection: InspectorSelection): string {
 }
 
 const STYLE_SOURCE_ATTRIBUTE_ANCHORS = [
-  'data-openui-var',
-  'data-openui-component',
-  'data-sf-export-page',
+  'data-sf-export-page', // DOM-based, not capsule-specific
+  'data-openui-var', // Legacy capsule support, deprecated
+  'data-openui-component', // Legacy capsule support, deprecated
 ] as const
 
 function escapeAttributeSelectorValue(value: string): string {
@@ -1248,6 +1248,14 @@ export async function createSectionEditResponse(
       return json({ ...result, mode: 'html' })
     } else {
       // ─── OpenUI Session: generate AI capsule ───
+      // Legacy capsule path, deprecated in favor of DOM-based anchors — see
+      // docs/DOM_BASED_ANCHORS.md#migration-from-openui-capsule-markers.
+      console.warn(
+        `[ship-fast] Deprecated: section edit on OpenUI session uses the ` +
+          `legacy capsule source path (openuiComponent=${selection.openuiComponent ?? '(none)'}, ` +
+          `openuiVar=${selection.openuiVar ?? '(none)'}). Prefer DOM-based ` +
+          `anchors — see docs/DOM_BASED_ANCHORS.md#migration-from-openui-capsule-markers.`,
+      )
       const capsuleName = selection.openuiComponent
       if (!capsuleName) {
         const source = generationView.homeModule?.source ?? ''

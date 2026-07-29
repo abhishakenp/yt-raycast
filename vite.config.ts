@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import type { Plugin } from 'vite'
+import type { Plugin as RollupPlugin } from 'rollup'
 import { devtools } from '@tanstack/devtools-vite'
 
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
@@ -349,7 +350,7 @@ function isOpenUIPromptSpecModule(moduleId: string) {
 // the free identifiers resolve to the running module's path. Only chunks that
 // actually reference the globals are touched, and any chunk that already declares
 // them is skipped to avoid a redeclaration SyntaxError.
-function cjsDirnameShim(): Plugin {
+function cjsDirnameShim(): RollupPlugin {
   return {
     name: 'ship-fast-cjs-dirname-shim',
     renderChunk(code: string) {
@@ -559,7 +560,7 @@ function subdomainRewriteDevMiddleware(): Plugin {
   return {
     name: 'ship-fast-subdomain-rewrite-dev',
     configureServer(server) {
-      server.middlewares.use((req, res, next) => {
+      server.middlewares.use((req, _res, next) => {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           next()
           return

@@ -218,7 +218,7 @@ export async function rewritePreviewImageUrls(html: string): Promise<string> {
   const withCssUrls = await replaceAsync(
     withAttributes,
     /url\((["']?)([^"')]+)\1\)/gi,
-    async (match, quote, value) => {
+    async (match: string, quote: string, value: string) => {
       const rewritten = await resolvePreviewImageUrl(decodeHtmlEntities(value))
       return rewritten ? `url(${quote}${rewritten}${quote})` : match
     },
@@ -231,10 +231,10 @@ export async function rewritePreviewImageUrls(html: string): Promise<string> {
   // removed to avoid a permanent pulse animation.
   return withCssUrls.replace(
     /(<img\b[^>]*\sclass\s*=\s*)(["'])([^"']*)\2/gi,
-    (match, prefix, quote, classValue) => {
+    (_match: string, prefix: string, quote: string, classValue: string) => {
       const cleaned = classValue
         .split(/\s+/)
-        .filter((cls) => cls !== 'animate-pulse' && cls !== 'bg-accent')
+        .filter((cls: string) => cls !== 'animate-pulse' && cls !== 'bg-accent')
         .join(' ')
         .trim()
       return `${prefix}${quote}${cleaned}${quote}`

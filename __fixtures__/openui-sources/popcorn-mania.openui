@@ -1,0 +1,3 @@
+home_hero = SplitHero("Popcorn Mania", "Movies taste better with popcorn", "Crunch", "Bold flavours for every screening")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])

@@ -136,7 +136,7 @@ const requireRecord: RequireRecord = (value) => {
     return operationError('result must be an object')
   }
 
-  return value
+  return Object.fromEntries(Object.entries(value))
 }
 
 const assertExactKeys: AssertExactKeys = (value, allowedKeys) => {

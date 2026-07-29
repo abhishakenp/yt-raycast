@@ -1,0 +1,3 @@
+home_hero = SplitHero("Tech Journal", "Systems that ship", "Engineering", "Practical notes for product teams")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])

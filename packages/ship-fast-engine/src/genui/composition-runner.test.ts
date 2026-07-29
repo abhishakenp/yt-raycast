@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { runComposition } from './composition-runner.ts'
+import type { CompositionSessionCtx } from './composition-runner.ts'
 
 // Mock the LLM generateText to return a fixed composition DSL
 vi.mock('../generate.ts', () => ({
@@ -35,7 +36,7 @@ vi.mock('../generate.ts', () => ({
 
 @section TestimonialRow
   heading What customers say
-  testimonials>Best coffee in Brooklyn~Jane Doe~Regular^I come here every day~John Smith~Local
+  testimonials>Best coffee in Brooklyn~Mara Whitfield~Regular^I come here every day~John Smith~Local
 
 @section MapBlock
   heading Find us
@@ -79,7 +80,7 @@ vi.mock('../generate.ts', () => ({
 
 @section TestimonialRow
   heading What customers say
-  testimonials>Best coffee in Brooklyn~Jane Doe~Regular^I come here every day~John Smith~Local
+  testimonials>Best coffee in Brooklyn~Mara Whitfield~Regular^I come here every day~John Smith~Local
 
 @section MapBlock
   heading Find us
@@ -185,6 +186,50 @@ describe('runComposition', () => {
 
     await expect(runComposition({ prompt: 'test' })).rejects.toThrow(
       '0 sections',
+    )
+  })
+
+  it('rejects template copy before persisting artifacts and broadcasts a quality event', async () => {
+    const { generateTextStream } = await import('../generate.ts')
+    vi.mocked(generateTextStream).mockResolvedValueOnce(`@brand Bean & Co
+@title Bean & Co
+@pages home
+
+@section CardGrid
+  eyebrow What we do
+  heading Why Choose Us
+  cards>Feature One~Does the thing^Feature Two~Does another`)
+
+    const broadcasts: unknown[] = []
+    const sessionCtx: CompositionSessionCtx = {
+      id: 'quality-session',
+      broadcast: (payload) => {
+        broadcasts.push(payload)
+      },
+      setPrompt: vi.fn(),
+      setTasks: vi.fn(),
+      updateTask: vi.fn(),
+      signalHomepageReady: vi.fn(),
+      signalOpenuiReady: vi.fn(),
+      setElapsed: vi.fn(),
+      setCost: vi.fn(),
+    }
+
+    await expect(
+      runComposition({ prompt: 'coffee shop', workspace: '/tmp/test', sessionCtx }),
+    ).rejects.toThrow('quality gate rejected output')
+
+    const { writeFileSync } = await import('node:fs')
+    const writtenPaths = vi
+      .mocked(writeFileSync)
+      .mock.calls.map((call) => String(call[0]))
+    expect(writtenPaths).not.toContain('/tmp/test/home.openui')
+
+    const { saveSiteSpec } = await import('../spec/index.ts')
+    expect(vi.mocked(saveSiteSpec)).not.toHaveBeenCalled()
+
+    expect(broadcasts).toContainEqual(
+      expect.objectContaining({ type: 'quality', valid: false }),
     )
   })
 })

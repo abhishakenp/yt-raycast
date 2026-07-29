@@ -31,7 +31,9 @@ export type InlineEditCommandContext = {
   anonymousOwnerSecret?: string
   instruction?: string
   selectedText?: string
+  /** Primary DOM-based anchor (id, class, or data attribute). Use this for targeting. */
   sourceAnchor?: string
+  /** @deprecated Legacy OpenUI variable name. Use sourceAnchor instead. */
   openuiVar?: string
   linkHref?: string
   currentSource?: string
@@ -459,10 +461,23 @@ function openUiVarFromAnchor(anchor: string | undefined): string | undefined {
   return /^[A-Za-z_$][\w$]*$/.test(trimmed) ? trimmed : undefined
 }
 
+/** Surface usage of a deprecated legacy capsule (OpenUI source) code path so
+ *  remaining callers can be found in logs and migrated to DOM-based anchors.
+ *  See docs/DOM_BASED_ANCHORS.md#migration-from-openui-capsule-markers. */
+function warnLegacyOpenUiPath(path: string) {
+  console.warn(
+    `[ship-fast] Deprecated: ${path} uses the legacy OpenUI capsule source ` +
+      `path. Prefer DOM-based section targeting (replacementHtml + ` +
+      `beforeHtml) — see docs/DOM_BASED_ANCHORS.md#migration-from-openui-capsule-markers.`,
+  )
+}
+
+/** @deprecated Legacy OpenUI-specific section reordering. Use DOM-based reordering instead. */
 export function buildSectionMoveCommand(
   input: SectionMoveInput,
   ctx: InlineEditCommandContext,
 ): CreateInlineEditCommand {
+  warnLegacyOpenUiPath('buildSectionMoveCommand')
   const varName =
     input.varName ?? ctx.openuiVar ?? openUiVarFromAnchor(ctx.sourceAnchor)
   if (!varName) {
@@ -498,25 +513,34 @@ export function buildSectionRewriteCommand(
   input: SectionRewriteInput,
   ctx: InlineEditCommandContext,
 ): ApplySectionEditCommand {
+  // HTML-based path (DOM-based, preferred)
+  if (input.replacementHtml !== undefined) {
+    return {
+      kind: 'applySectionEdit',
+      mutation: api.sessions.applySectionEdit,
+      args: {
+        ...commandBase(ctx),
+        replacementHtml: input.replacementHtml,
+        beforeHtml: ctx.selectionHtml,
+        instruction: input.instruction ?? ctx.instruction ?? 'section rewrite',
+      },
+    }
+  }
+
+  // OpenUI-based path (legacy capsule support, deprecated)
   if (input.replacementOpenUiSource !== undefined && !ctx.openuiVar) {
     throw new Error(
       'sectionRewrite requires a known OpenUI section variable to safely apply replacementOpenUiSource — reselect a section and try again',
     )
   }
+  warnLegacyOpenUiPath('buildSectionRewriteCommand(replacementOpenUiSource)')
   return {
     kind: 'applySectionEdit',
     mutation: api.sessions.applySectionEdit,
     args: {
       ...commandBase(ctx),
-      replacementHtml: input.replacementHtml,
-      // Anchor whichever replacement kind is in play — both are section
-      // fragments from the AI's perspective and must never be trusted as
-      // the whole document.
-      beforeHtml:
-        input.replacementHtml !== undefined ? ctx.selectionHtml : undefined,
       replacementOpenUiSource: input.replacementOpenUiSource,
-      sectionVarName:
-        input.replacementOpenUiSource !== undefined ? ctx.openuiVar : undefined,
+      sectionVarName: ctx.openuiVar,
       instruction: input.instruction ?? ctx.instruction ?? 'section rewrite',
     },
   }

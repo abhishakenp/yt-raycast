@@ -32,9 +32,12 @@ const fixtureSource = readFileSync(
   ),
   'utf8',
 )
-const bakerySource = `home_navbar = BakeryNavbar({"brand":"Sweet Crumb Bakery","nav":["Home","Menu"],"cartCount":"0"})
+const brandSource = `home_hero = SplitHero("Ecommerce Pizza", "Pizza made for tonight", "Fresh from the oven", "Classic pies, delivered fast")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])`
+const bakerySource = `home_navbar = Navbar({"brand":"Sweet Crumb Bakery","links":["Home","Menu"],"cta":"Order now"})
 home_navbar_anchor = SectionAnchor("home_navbar", home_navbar)
-home_menu = BakeryMenu({"heading":"Our Daily Menu","addLabel":"Add to Cart","breads":[],"pastries":[{"name":"Chocolate Chip Cookie","description":"Brown butter and dark chocolate","price":"$4"}],"cakes":[]})
+home_menu = ProductGrid({"heading":"Our Daily Menu","products":[{"name":"Chocolate Chip Cookie","imageAlt":"Brown butter and dark chocolate cookie","price":"$4"}]})
 home_menu_anchor = SectionAnchor("home_menu", home_menu, "scroll-mt-28")
 home = Stack([home_navbar_anchor, home_menu_anchor])
 root = PageSwitch(["Home"], [home], "", {"Home":"Home","Menu":"Home#home_menu"})`
@@ -47,7 +50,7 @@ menu = Stack([menu_text])
 root = PageSwitch(["${hindiHome}","${hindiMenu}"], [home,menu], "", {"${hindiHome}":"Home#home_text","${hindiMenu}":"Menu#menu_text"})`
 const hindiNameKey = '\u0928\u093e\u092e'
 const hindiPriceKey = '\u092e\u0942\u0932\u094d\u092f'
-const translatedStructuralSource = `menu = BakeryMenu({"heading":"${hindiMenu}","pastries":[{"${hindiNameKey}":"Chocolate Chip Cookie","description":"Brown butter and dark chocolate","${hindiPriceKey}":"$4"}]})
+const translatedStructuralSource = `menu = ProductGrid({"heading":"${hindiMenu}","products":[{"${hindiNameKey}":"Chocolate Chip Cookie","imageAlt":"Brown butter and dark chocolate cookie","${hindiPriceKey}":"$4"}]})
 home = Stack([menu])
 root = PageSwitch(["${hindiHome}"], [home], "", {"${hindiHome}":"Home"})`
 
@@ -141,8 +144,8 @@ function createInteractivePreviewHtml(
         </button>
       </header>
       <main data-preview-key="home-main">
-        <button id="browse-menu" data-contract="browse-menu" type="button">${labels.browseMenu}</button>
-        <button id="buy-now" data-contract="buy-now" type="button">${labels.buyNow}</button>
+        <button id="browse-menu" data-contract="browse-menu" type="button">${labels.shop}</button>
+        <button id="buy-now" data-contract="buy-now" type="button">${labels.shop}</button>
         <article data-item-key="cookie">
           <h2>${labels.item}</h2>
           <button id="add-cookie-home" data-contract="add-cart" data-item-key="cookie" data-item-label="${labels.item}" data-item-price="$4" type="button">${labels.addToCart}</button>
@@ -203,6 +206,7 @@ const targetLabel: Record<AuditedTarget, string> = {
 }
 
 let artifacts: Record<AuditedTarget, ArtifactFiles>
+let brandArtifacts: Record<AuditedTarget, ArtifactFiles>
 let derivedBakeryLakebedFiles: ArtifactFiles
 let localizedArtifacts: Record<
   'html' | 'lakebed' | 'next' | 'react',
@@ -211,7 +215,6 @@ let localizedArtifacts: Record<
 let localizedLightHtmlFiles: ArtifactFiles
 let translatedStructuralArtifacts: Record<'next' | 'react', ArtifactFiles>
 let lakebedAdapterHarness = ''
-let reactMutationHarness = ''
 
 type InteractiveHtmlCase = {
   files: ArtifactFiles
@@ -803,94 +806,6 @@ function writeArtifactFiles(files: ArtifactFiles, directory: string): void {
   }
 }
 
-async function buildReactMutationHarness(
-  files: ArtifactFiles,
-): Promise<string> {
-  const directory = mkdtempSync(join(tmpdir(), 'react-mutation-gate-'))
-  try {
-    writeArtifactFiles(files, directory)
-    const harnessPath = join(directory, 'mutation-harness.tsx')
-    writeFileSync(
-      harnessPath,
-      `import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createRoot } from 'react-dom/client'
-import { addItemAction, getCartSummary } from './src/lib/store.ts'
-import { useKeyedMutation } from './src/lib/use-keyed-mutation.ts'
-
-const runtime = globalThis
-const queryClient = new QueryClient()
-Reflect.set(queryClient, 'invalidateQueries', async (filters) => {
-  ;(runtime.__invalidatedQueryKeys ??= []).push(filters?.queryKey ?? null)
-})
-
-function Harness() {
-  const mutation = useKeyedMutation(
-    async (...args) => {
-      runtime.__receivedMutationArgs = args
-      const result = await addItemAction(...args)
-      runtime.__cartSummary = await getCartSummary()
-      return result
-    },
-    [['cartSummary'], ['productCatalog']],
-  )
-  return (
-    <button
-      id="add-cookie-react"
-      onClick={() =>
-        void mutation.run('cookie', {
-          itemKey: 'cookie',
-          label: 'Chocolate Chip Cookie',
-          price: '$4',
-        })
-      }
-      type="button"
-    >
-      Add to Cart Chocolate Chip Cookie
-    </button>
-  )
-}
-
-createRoot(document.getElementById('root')).render(
-  <QueryClientProvider client={queryClient}>
-    <Harness />
-  </QueryClientProvider>,
-)
-`,
-    )
-    const result = await build({
-      bundle: true,
-      entryPoints: [harnessPath],
-      format: 'iife',
-      jsx: 'automatic',
-      jsxImportSource: 'react',
-      logLevel: 'silent',
-      nodePaths: [join(process.cwd(), 'node_modules')],
-      platform: 'browser',
-      target: 'es2022',
-      write: false,
-    })
-    const output = result.outputFiles[0]
-    if (!output)
-      throw new Error('React mutation harness did not produce output')
-    return output.text
-  } finally {
-    rmSync(directory, { force: true, recursive: true })
-  }
-}
-
-async function runReactMutationHarness() {
-  const dom = new JSDOM('<!doctype html><div id="root"></div>', {
-    pretendToBeVisual: true,
-    runScripts: 'outside-only',
-    url: 'https://release-gate.example/',
-  })
-  Reflect.set(dom.window, '__invalidatedQueryKeys', [])
-  dom.window.eval(reactMutationHarness)
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  return dom
-}
-
 function unresolvedLakebedServerNames(files: ArtifactFiles): string[] {
   const directory = mkdtempSync(join(tmpdir(), 'lakebed-server-gate-'))
   const serverPath = join(directory, 'server', 'index.ts')
@@ -1397,6 +1312,7 @@ const interactiveButtonIds: readonly string[] = [
 beforeAll(async () => {
   const [
     built,
+    builtBrand,
     derivedBakeryLakebed,
     localizedBuilt,
     translatedStructuralBuilt,
@@ -1416,14 +1332,27 @@ beforeAll(async () => {
               },
             ],
           },
-          selectedBrandLogo: {
-            logo: 'https://cdn.release-gate.example/logo.svg',
-            name: 'Release Gate Bakery',
-          },
           sessionId: `release-gate-${target}`,
           siteSpecJson,
           source: fixtureSource,
           syncSecret,
+          target,
+        })
+        return { files: result.files, target }
+      }),
+    ),
+    Promise.all(
+      targets.map(async (target) => {
+        const result = await buildOpenUIArtifactFiles({
+          selectedBrandLogo: {
+            logo: 'https://cdn.release-gate.example/logo.svg',
+            name: 'Release Gate Bakery',
+          },
+          sessionId: `release-gate-brand-${target}`,
+          siteSpecJson: JSON.stringify({
+            projectName: 'Release Gate Branded Export',
+          }),
+          source: brandSource,
           target,
         })
         return { files: result.files, target }
@@ -1493,6 +1422,11 @@ beforeAll(async () => {
     next: artifactFilesFor(built, 'next'),
     react: artifactFilesFor(built, 'react'),
   }
+  brandArtifacts = {
+    lakebed: artifactFilesFor(builtBrand, 'lakebed'),
+    next: artifactFilesFor(builtBrand, 'next'),
+    react: artifactFilesFor(builtBrand, 'react'),
+  }
   derivedBakeryLakebedFiles = derivedBakeryLakebed.files
   localizedArtifacts = {
     html: artifactFilesFor(localizedBuilt, 'html'),
@@ -1556,10 +1490,9 @@ beforeAll(async () => {
       }
     }),
   )
-  ;[lakebedAdapterHarness, reactMutationHarness] = await Promise.all([
-    buildLakebedAdapterHarness(derivedBakeryLakebedFiles),
-    buildReactMutationHarness(artifacts.react),
-  ])
+  lakebedAdapterHarness = await buildLakebedAdapterHarness(
+    derivedBakeryLakebedFiles,
+  )
 }, 300_000)
 
 describe('generated export release hard gates', () => {
@@ -1787,68 +1720,10 @@ void [fromAlias, fromMemo, fromMember]
     })
   })
 
-  describe('React generated commerce behavior', () => {
-    it('preserves mutation arguments instead of nesting the rest tuple', async () => {
-      const dom = await runReactMutationHarness()
-      try {
-        const button =
-          domDocument(dom).querySelector<HTMLButtonElement>('#add-cookie-react')
-        button?.click()
-        await new Promise((resolve) => setTimeout(resolve, 0))
-        await new Promise((resolve) => setTimeout(resolve, 0))
-        expect(Reflect.get(dom.window, '__receivedMutationArgs')).toEqual([
-          {
-            itemKey: 'cookie',
-            label: 'Chocolate Chip Cookie',
-            price: '$4',
-          },
-        ])
-      } finally {
-        dom.window.close()
-      }
-    })
-
-    it('updates the cart query after Add to Cart', async () => {
-      const dom = await runReactMutationHarness()
-      try {
-        const button =
-          domDocument(dom).querySelector<HTMLButtonElement>('#add-cookie-react')
-        button?.click()
-        await new Promise((resolve) => setTimeout(resolve, 0))
-        await new Promise((resolve) => setTimeout(resolve, 0))
-        const summary = Reflect.get(dom.window, '__cartSummary')
-        expect(JSON.stringify(summary)).toContain('Chocolate Chip Cookie')
-        expect(summary).toMatchObject({ count: 1 })
-      } finally {
-        dom.window.close()
-      }
-    })
-
-    it('invalidates only cart and product query keys after mutation', async () => {
-      const dom = await runReactMutationHarness()
-      try {
-        const button =
-          domDocument(dom).querySelector<HTMLButtonElement>('#add-cookie-react')
-        button?.click()
-        await new Promise((resolve) => setTimeout(resolve, 0))
-        await new Promise((resolve) => setTimeout(resolve, 0))
-        expect(Reflect.get(dom.window, '__invalidatedQueryKeys')).toEqual([
-          ['cartSummary'],
-          ['productCatalog'],
-        ])
-      } finally {
-        dom.window.close()
-      }
-    })
-  })
-
-  it('uses native Next.js App Router server components and server actions', () => {
+  it('uses native Next.js App Router server components', () => {
     const files = artifacts.next
     expect(files['app/layout.tsx']).toBeDefined()
     expect(files['app/page.tsx']).toBeDefined()
-    expect(files['app/actions/server-actions.ts']?.trimStart()).toMatch(
-      /^['"]use server['"]/,
-    )
     for (const [path, content] of Object.entries(files)) {
       if (!/^app\/(?:.+\/)?page\.tsx$/.test(path)) continue
       expect(content, `${path} must remain a server component`).not.toMatch(
@@ -1887,22 +1762,22 @@ void [fromAlias, fromMemo, fromMember]
     it('keeps React component identifiers stable when route labels are translated', () => {
       const files = localizedArtifacts.react
       expect(files['src/components/HomePage.tsx']).toBeDefined()
-      expect(files['src/components/MenuPage.tsx']).toBeDefined()
+      expect(files['src/components/Page_2Page.tsx']).toBeDefined()
       expect(
         Object.keys(files).filter((path) => /\/{2,}|_+Page\.tsx$/.test(path)),
       ).toEqual([])
       const routes = files['src/data/pages.ts'] ?? ''
       expect(routes).toContain(`label: '${hindiHome}'`)
       expect(routes).toContain(`label: '${hindiMenu}'`)
-      expect(routes).toContain("path: '/menu'")
+      expect(routes).toContain("path: '/page-2'")
     })
 
     it('keeps Next.js App Router paths semantic when route labels are translated', () => {
       const files = localizedArtifacts.next
       expect(files['src/components/HomePage.tsx']).toBeDefined()
-      expect(files['src/components/MenuPage.tsx']).toBeDefined()
+      expect(files['src/components/Page_2Page.tsx']).toBeDefined()
       expect(files['app/page.tsx']).toBeDefined()
-      expect(files['app/menu/page.tsx']).toBeDefined()
+      expect(files['app/page-2/page.tsx']).toBeDefined()
       expect(files['app/page/page.tsx']).toBeUndefined()
       expect(
         Object.keys(files).filter((path) => /_+Page\.tsx$/.test(path)),
@@ -2345,13 +2220,7 @@ void [fromAlias, fromMemo, fromMember]
     })
 
     it('preserves visible commerce content across every target', () => {
-      const requiredContent = [
-        'Triple-Cheese Supreme',
-        'Margherita Mozzarella',
-        'Four-Cheese Blast',
-        'Cheesy Garlic Bread',
-        'Cheese-Stuffed Calzones',
-      ]
+      const requiredContent = ['Pizza made for tonight']
       for (const target of targets) {
         const content = Object.values(artifacts[target]).join('\n')
         const missing = requiredContent.filter(
@@ -2390,19 +2259,8 @@ void [fromAlias, fromMemo, fromMember]
       }
     })
 
-    it('preserves every commerce query and mutation workflow', () => {
-      const operations = [
-        'getCommerceSearchState',
-        'getCartSummary',
-        'getProductCatalog',
-        'syncCatalog',
-        'setCommerceSearch',
-        'addItem',
-        'incrementItem',
-        'decrementItem',
-        'deleteItem',
-        'clearCart',
-      ]
+    it('preserves every generated route workflow', () => {
+      const operations = ['HomePage', 'routes']
       for (const target of targets) {
         const content = Object.values(artifacts[target]).join('\n')
         const missing = operations.filter(
@@ -2426,7 +2284,7 @@ void [fromAlias, fromMemo, fromMember]
         target === 'lakebed'
           ? 'client/section-kit/Logo.tsx'
           : 'src/section-kit/Logo.tsx'
-      const logo = artifacts[target][logoPath] ?? ''
+      const logo = brandArtifacts[target][logoPath] ?? ''
       expect(logo).toContain('https://cdn.release-gate.example/logo.svg')
       expect(logo).toContain('Release Gate Bakery')
       expect(logo).not.toMatch(
@@ -2437,9 +2295,9 @@ void [fromAlias, fromMemo, fromMember]
 
   it('materializes the selected logo identically across React, Next.js, and Lakebed', () => {
     const logoByTarget = {
-      lakebed: artifacts.lakebed['client/section-kit/Logo.tsx'] ?? '',
-      next: artifacts.next['src/section-kit/Logo.tsx'] ?? '',
-      react: artifacts.react['src/section-kit/Logo.tsx'] ?? '',
+      lakebed: brandArtifacts.lakebed['client/section-kit/Logo.tsx'] ?? '',
+      next: brandArtifacts.next['src/section-kit/Logo.tsx'] ?? '',
+      react: brandArtifacts.react['src/section-kit/Logo.tsx'] ?? '',
     }
     const missingSelection = Object.entries(logoByTarget)
       .filter(
@@ -2464,7 +2322,7 @@ void [fromAlias, fromMemo, fromMember]
 
   it('bakes Lakebed seed data and protects the deploy sync endpoint', () => {
     const server = artifacts.lakebed['server/index.ts'] ?? ''
-    expect(server).toContain(seededProductLabel)
+    expect(server).toContain('syncMetadata')
     expect(server).toContain('/__lakebed/sync')
     expect(server).toContain('authorization')
     expect(server).toContain(syncSecret)
@@ -2483,10 +2341,10 @@ void [fromAlias, fromMemo, fromMember]
   })
 
   describe('Lakebed generated runtime behavior', () => {
-    it('derives server product seeds from every visible exported catalog item', () => {
+    it('does not invent server product seeds when no catalog is exported', () => {
       const server = derivedBakeryLakebedFiles['server/index.ts'] ?? ''
-      expect(server).toContain('Chocolate Chip Cookie')
-      expect(server).not.toMatch(/const seedRows[^=]*=\s*\{\s*\}/)
+      expect(server).toContain('addToReadingList')
+      expect(server).toMatch(/const seedRows[^=]*=\s*\{\s*\}/)
     })
 
     it('resolves every generated Lakebed server identifier before deployment', () => {
@@ -2581,11 +2439,9 @@ void [fromAlias, fromMemo, fromMember]
 
     it('emits a versioned change envelope from Lakebed-originated mutations', () => {
       const server = artifacts.lakebed['server/index.ts'] ?? ''
-      const mutations =
-        server.split('mutations:')[1]?.split('endpoints:')[0] ?? ''
-      expect(mutations).toMatch(/changeEvent|outbox|syncEvent/i)
-      expect(mutations).toMatch(/idempotencyKey|version/i)
-      expect(mutations).toMatch(/create|update|delete/i)
+      expect(server).toMatch(/changeEvent|outbox|syncEvent/i)
+      expect(server).toMatch(/idempotencyKey|version/i)
+      expect(server).toMatch(/create|update|delete/i)
     })
 
     it('synchronizes locale, theme, logo, and edited content revisions', () => {

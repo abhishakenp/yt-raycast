@@ -6,7 +6,7 @@ import {
   type CompositionSection,
   type DslNode,
 } from './composition-parser.ts'
-import { argTypeTree, parseTypeTree } from './openui-signature.ts'
+import { parseTypeTree } from './openui-signature.ts'
 import { DEFAULT_DESIGN } from '../../../ship-fast-blocks/src/primitives/design-system.ts'
 
 describe('parseComposition', () => {

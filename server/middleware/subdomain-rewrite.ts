@@ -107,13 +107,8 @@ export default defineEventHandler((event) => {
   if (ASSET_EXTENSION.test(path)) return
 
   const rest = path === '/' ? '' : path
-  // FastURL (srvx) has only getters for pathname/search — can't mutate in
-  // place. Replace event.url with a new URL built from the rewritten path so
-  // event.path and downstream handlers see the internal route.
+  // FastURL (srvx) has only getters for pathname/search. The raw request URL
+  // remains mutable and is the source used by downstream Nitro handlers.
   const newPath = `/deployed/${slug}${rest}`
-  const newUrl = new URL(newPath + query, event.url.origin)
-  event.url = newUrl
-  // Also update req.url so any code reading the raw request URL sees the
-  // rewritten path.
   event.req.url = newPath + query
 })

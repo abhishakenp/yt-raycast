@@ -176,7 +176,9 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
     keySecret: '',
   })
   const actionInFlightRef = useRef(false)
-  const razorpayRef = useRef<RazorpayDeploymentCredentials>()
+  const razorpayRef = useRef<RazorpayDeploymentCredentials | undefined>(
+    undefined,
+  )
 
   const visibleExportTargets = exportTargets?.targets ?? []
   const htmlTarget = visibleExportTargets.find(

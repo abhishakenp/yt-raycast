@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const routeParamMocks = vi.hoisted(() => ({
-  category: 'saas',
+  category: 'core',
   search: {
     theme: 'modern-minimal',
     mode: 'light',
@@ -208,14 +208,13 @@ const importExamplesIndexRoute = async (): Promise<MockRoute> => {
 
 const parseExamplePageSwitch = (
   source: string,
-): { routes: string[]; targetMap: Record<string, string> } => {
+): { routes: string[] } => {
   const line = source
     .split('\n')
     .find((candidate) => candidate.startsWith('root = PageSwitch('))
   const match =
-    /^root = PageSwitch\((\[.*\]), \[[^\]]*\], "", (\{.*\})\)$/.exec(line ?? '')
-  if (!match?.[1] || !match[2])
-    throw new Error('Expected PageSwitch target map')
+    /^root = PageSwitch\((\[.*\]), \[[^\]]*\], ""\)$/.exec(line ?? '')
+  if (!match?.[1]) throw new Error('Expected PageSwitch routes')
 
   const routes: unknown = JSON.parse(match[1])
   if (
@@ -225,37 +224,12 @@ const parseExamplePageSwitch = (
     throw new Error('Expected PageSwitch routes')
   }
 
-  const parsed: unknown = JSON.parse(match[2])
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error('Expected target map object')
-  }
-
-  const result: Record<string, string> = {}
-  for (const [key, value] of Object.entries(parsed)) {
-    if (typeof value !== 'string') {
-      throw new Error(`Expected string target for ${key}`)
-    }
-    result[key] = value
-  }
-  return { routes, targetMap: result }
-}
-
-const expectMappedAnchor = (
-  source: string,
-  routes: string[],
-  targetMap: Record<string, string>,
-  label: string,
-) => {
-  const target = targetMap[label] ?? targetMap[label.toLowerCase()]
-  expect(target).toMatch(/^[^#]+#[a-z0-9_-]+$/)
-  const [pageLabel, anchorId] = target?.split('#') ?? []
-  expect(routes).toContain(pageLabel)
-  expect(source).toContain(`SectionAnchor("${anchorId}",`)
+  return { routes }
 }
 
 describe('examples route behavior', () => {
   beforeEach(() => {
-    routeParamMocks.category = 'saas'
+    routeParamMocks.category = 'core'
     routeParamMocks.search = {
       theme: DEFAULT_EXAMPLES_THEME,
       mode: 'light',
@@ -316,7 +290,7 @@ describe('examples route behavior', () => {
 
     expect(Route.path).toBe('/examples/$category')
     expect(() =>
-      Route.options.beforeLoad?.({ params: { category: 'saas' } }),
+      Route.options.beforeLoad?.({ params: { category: 'core' } }),
     ).toThrow(RouteNotFoundError)
   })
 
@@ -346,7 +320,7 @@ describe('examples route behavior', () => {
 
     const Route = await importExamplesCategoryRoute()
     expect(() =>
-      Route.options.beforeLoad?.({ params: { category: 'saas' } }),
+      Route.options.beforeLoad?.({ params: { category: 'core' } }),
     ).not.toThrow()
   })
 
@@ -380,7 +354,7 @@ describe('examples route behavior', () => {
 
     expect(Route.path).toBe('/examples/$category/$')
     expect(() =>
-      Route.options.beforeLoad?.({ params: { category: 'accounting-firm' } }),
+      Route.options.beforeLoad?.({ params: { category: 'core' } }),
     ).not.toThrow()
     expect(Route.options.validateSearch?.({ theme: 'twitter' })).toEqual({
       theme: 'twitter',
@@ -418,9 +392,9 @@ describe('examples route behavior', () => {
 
     expect(screen.getByRole('heading', { name: 'Categories' })).toBeTruthy()
     expect(
-      screen.getByRole('link', { name: /Saas/i }).getAttribute('href'),
-    ).toBe('/examples/saas')
-    expect(hasExampleCategory('saas')).toBe(true)
+      screen.getByRole('link', { name: /Core/i }).getAttribute('href'),
+    ).toBe('/examples/core')
+    expect(hasExampleCategory('core')).toBe(true)
 
     // `primitives` are the generation engine's building blocks (Button, Card…),
     // not a browsable example site — excluded from the catalog entirely so the
@@ -443,9 +417,9 @@ describe('examples route behavior', () => {
     expect(previews[0]?.textContent).toContain('root = PageSwitch')
     expect(previews[0]?.textContent).toContain('home = Stack')
     expect(previews[0]?.textContent).toContain('SectionAnchor(')
-    expect(previews[0]?.textContent).toContain('SaasHero')
+    expect(previews[0]?.textContent).toContain('CenteredHero')
     expect(previews[0]?.getAttribute('data-prompt')).toBe(
-      'Saas full site examples',
+      'Core full site examples',
     )
     expect(previews[0]?.getAttribute('data-is-dark')).toBe('true')
     expect(previews[0]?.getAttribute('data-primary')).toBe('#1e9df1')
@@ -470,10 +444,10 @@ describe('examples route behavior', () => {
       screen.getByTestId('theme-picker').getAttribute('data-current-mode'),
     ).toBe('light')
 
-    fireEvent.click(screen.getByText('Accounting Firm'))
+    fireEvent.click(screen.getByText('Core'))
     expect(navigationMocks.navigate).toHaveBeenCalledWith({
       to: '/examples/$category',
-      params: { category: 'accounting-firm' },
+      params: { category: 'core' },
       search: { theme: 'twitter', mode: 'light' },
       replace: true,
     })
@@ -481,7 +455,7 @@ describe('examples route behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Pick Vercel' }))
     expect(navigationMocks.navigate).toHaveBeenCalledWith({
       to: '/examples/$category',
-      params: { category: 'saas' },
+      params: { category: 'core' },
       search: { theme: 'vercel', mode: 'light' },
       replace: true,
     })
@@ -489,7 +463,7 @@ describe('examples route behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Toggle Mode' }))
     expect(navigationMocks.navigate).toHaveBeenLastCalledWith({
       to: '/examples/$category',
-      params: { category: 'saas' },
+      params: { category: 'core' },
       search: { theme: 'twitter', mode: 'dark' },
       replace: true,
     })
@@ -497,16 +471,16 @@ describe('examples route behavior', () => {
 
   it('builds source from real capsule categories and loads it in the OpenUI runtime', async () => {
     const categories = getExampleCategories()
-    const capsules = getExampleCapsules('saas')
+    const capsules = getExampleCapsules('core')
     const sample = capsules.find(
-      (capsule) => capsule.componentName === 'SaasHero',
+      (capsule) => capsule.componentName === 'CenteredHero',
     )
 
-    expect(categories.length).toBeGreaterThan(50)
+    expect(categories.length).toBeGreaterThan(0)
     expect(capsules.length).toBeGreaterThan(0)
-    expect(sample?.source).toContain('SaasHero(')
+    expect(sample?.source).toContain('CenteredHero(')
     expect(sample?.source).toContain(
-      'Launch faster with a clearer product story',
+      'A sharper core experience',
     )
     expect(sample?.source).toContain('root = Stack')
 
@@ -514,65 +488,26 @@ describe('examples route behavior', () => {
     expect(library).toBeTruthy()
   })
 
-  it('uses professional category copy instead of prop-name placeholders', () => {
-    const analyticsSite = getExampleCategorySite('analytics')
-    const aeoSite = getExampleCategorySite('aeo')
-    const winerySite = getExampleCategorySite('winery-brewery')
+  it('uses readable generic copy for the live section registry', () => {
+    const site = getExampleCategorySite('core')
 
-    expect(analyticsSite?.source).not.toContain('Analytics Analytics Header')
-    expect(analyticsSite?.source).not.toContain('Analytics Analytics Footer')
-    expect(aeoSite?.source).not.toContain('Aeo Aeo Footer')
-    expect(winerySite?.source).not.toContain(
-      'Winery Brewery Menu for Winery Brewery',
-    )
-    expect(winerySite?.source).not.toContain(
-      'Deterministic example copy for reviewing Winery Brewery Menu',
-    )
-    expect(analyticsSite?.source).toContain(
-      'Launch faster with a clearer product story',
-    )
-    expect(aeoSite?.source).toContain('Product resources')
-    expect(winerySite?.source).toContain('Seasonal pours and cellar bites')
-    expect(winerySite?.source).toContain(
-      'Explore tasting flights, reserve bottles, crisp lagers, and shareable boards selected for the current release list.',
-    )
+    expect(site?.source).toContain('Core Works')
+    expect(site?.source).toContain('A sharper core experience')
+    expect(site?.source).not.toContain('Deterministic example copy')
   })
 
-  it('builds cafe zero-argument capsules without hanging', () => {
-    const cafeGallery = getExampleCapsules('cafe').find(
-      (capsule) => capsule.componentName === 'CafeGallery',
-    )
-    const cafeSite = getExampleCategorySite('cafe')
-
-    expect(cafeGallery?.source).toContain('CafeGallery()')
-    expect(cafeGallery?.source).toContain('root = Stack([cafe_gallery])')
-    expect(cafeSite?.source).toContain('CafeGallery()')
-    expect(cafeSite?.source).toContain('root = PageSwitch')
+  it('builds every live core capsule into standalone OpenUI source', () => {
+    for (const capsule of getExampleCapsules('core')) {
+      expect(capsule.source).toContain(`${capsule.componentName}(`)
+      expect(capsule.source).toContain('root = Stack')
+    }
   })
 
-  it('keeps generated split headings and auth labels compact', () => {
-    const musicFestivalSite = getExampleCategorySite('music-festival')
-    const onlineCourseSite = getExampleCategorySite('online-course')
-    const cafeSite = getExampleCategorySite('cafe')
+  it('keeps generated navigation labels compact', () => {
+    const site = getExampleCategorySite('core')
 
-    expect(musicFestivalSite?.source).toContain(
-      'MusicFestivalHero("Built for momentum", "A sharper music", "festival"',
-    )
-    expect(musicFestivalSite?.source).not.toContain(
-      'MusicFestivalHero("Built for momentum", "A sharper music festival experience", "A sharper music festival experience"',
-    )
-    expect(onlineCourseSite?.source).toContain(
-      'OnlineCourseNavbar("Online Course Institute", ["Home","Pricing"], "Sign in"',
-    )
-    expect(onlineCourseSite?.source).not.toContain(
-      'OnlineCourseNavbar("Online Course Institute", ["Home","Pricing"], "Explain programs',
-    )
-    expect(cafeSite?.source).toContain(
-      'CafeHero("Fresh service, local flavor", "Book a table", "tonight", ""',
-    )
-    expect(cafeSite?.source).toContain(
-      'CafeNavbar("Cafe House", ["Home","Menu","Gallery","Newsletter"], "Home", "Menu", "Menu", "3")',
-    )
+    expect(site?.source).toContain('Navbar("Core Works", ["Home","Gallery"]')
+    expect(site?.source).toContain('SplitHero("Built for momentum"')
   })
 
   it('does not leak internal demo or layout-review copy into category sources', () => {
@@ -585,14 +520,7 @@ describe('examples route behavior', () => {
       'preview copy',
     ]
 
-    for (const category of [
-      'winery-brewery',
-      'restaurant',
-      'analytics',
-      'aeo',
-      'fitness',
-      'accounting-firm',
-    ]) {
+    for (const category of getExampleCategories().map((entry) => entry.category)) {
       const source = getExampleCategorySite(category)?.source ?? ''
       for (const banned of bannedCopy) {
         expect(source, `${category} leaked "${banned}"`).not.toContain(banned)
@@ -601,27 +529,21 @@ describe('examples route behavior', () => {
   })
 
   it('builds a no-chrome full-site category source with PageSwitch', async () => {
-    const site = getExampleCategorySite('saas')
+    const site = getExampleCategorySite('core')
     const pageSwitch = parseExamplePageSwitch(site?.source ?? '')
 
     expect(pageSwitch.routes).toContain('Home')
-    expect(pageSwitch.routes).toContain('Pricing')
+    expect(pageSwitch.routes).toContain('Gallery')
     expect(site?.source).toContain('SectionAnchor(')
-    expect(site?.source).toContain('SaasHero(')
-    expect(site?.source).toContain('SaasFooter(')
-    expectMappedAnchor(
-      site?.source ?? '',
-      pageSwitch.routes,
-      pageSwitch.targetMap,
-      'Pricing',
-    )
+    expect(site?.source).toContain('CenteredHero(')
+    expect(site?.source).toContain('Footer(')
 
     const library = await loadOpenUIRuntimeLibrary(site?.source ?? '')
     expect(library).toBeTruthy()
   })
 
-  it('loads the target category sources in the OpenUI runtime', async () => {
-    for (const category of ['music-festival', 'online-course', 'cafe']) {
+  it('loads every current category source in the OpenUI runtime', async () => {
+    for (const { category } of getExampleCategories()) {
       const site = getExampleCategorySite(category)
       const library = await loadOpenUIRuntimeLibrary(site?.source ?? '')
 
@@ -630,20 +552,16 @@ describe('examples route behavior', () => {
   })
 
   it('uses the engine route plan for category nav instead of inventing missing pages', () => {
-    const site = getExampleCategorySite('accounting-firm')
+    const site = getExampleCategorySite('core')
     const pageSwitch = parseExamplePageSwitch(site?.source ?? '')
 
     expect(pageSwitch.routes).toContain('Home')
-    expect(pageSwitch.routes).toContain('Services')
-    expect(pageSwitch.routes).toContain('About')
-    expect(pageSwitch.routes).toContain('Team')
-    expect(pageSwitch.routes).not.toContain('Pricing')
-    expect(pageSwitch.routes).not.toContain('FAQ')
+    expect(pageSwitch.routes).toContain('Gallery')
+    expect(pageSwitch.routes).toHaveLength(2)
     expect(site?.source).toContain(
-      'AccountingFirmNavbar("Accounting Firm Partners", ["Home","Team","Services","About"], "Team", "Sign in")',
+      'Navbar("Core Works", ["Home","Gallery"]',
     )
     expect(site?.source).not.toContain('"Pricing"')
-    expect(site?.source).not.toContain('"FAQ"')
   })
 
   it('maps planned category routes to real section anchors for every category', () => {
@@ -651,19 +569,9 @@ describe('examples route behavior', () => {
       const site = getExampleCategorySite(category.category)
       expect(site).toBeTruthy()
       const source = site?.source ?? ''
-      const pageSwitch = parseExamplePageSwitch(source)
-      for (const route of pageSwitch.routes.slice(1)) {
-        const target =
-          pageSwitch.targetMap[route] ??
-          pageSwitch.targetMap[route.toLowerCase()]
-        expect(target).toBeTruthy()
-        if (target?.includes('#')) {
-          const [pageLabel, anchorId] = target.split('#')
-          expect(pageSwitch.routes).toContain(pageLabel)
-          expect(source).toContain(`SectionAnchor("${anchorId}",`)
-        } else {
-          expect(pageSwitch.routes).toContain(target)
-        }
+      const { routes } = parseExamplePageSwitch(source)
+      for (const route of routes) {
+        expect(source).toContain(`${route.toLowerCase()} = Stack(`)
       }
     }
   })

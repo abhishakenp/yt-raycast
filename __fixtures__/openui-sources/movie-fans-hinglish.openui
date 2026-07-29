@@ -1,0 +1,3 @@
+home_hero = SplitHero("Movie Fans", "Har din naye movies", "Cinema", "Doston ke saath dekho aur discuss karo")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])

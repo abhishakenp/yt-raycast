@@ -218,7 +218,7 @@ describe('CMS annotation export contract', () => {
     // strings within the OpenUI source, the export parser must not reject the
     // source. Use a minimal source with an HTML string carrying data-cms.
     const source = [
-      'home_hero = CafeHero({"heading":"<span data-cms=\\"hero.title\\">Welcome</span>"})',
+      'home_hero = SplitHero("CMS", "<span data-cms=\\"hero.title\\">Welcome</span>")',
       'home = Stack([home_hero])',
       'root = PageSwitch(["Home"], [home], "", {"Home":"Home"})',
     ].join('\n')
@@ -261,13 +261,16 @@ describe('commerce integration export contract', () => {
     expect(htmlExport.contentType).toBe('text/html; charset=utf-8')
   })
 
-  it('pizza-ecommerce (Ecommerce family) parses and exports (React + HTML)', async () => {
+  it('pizza-ecommerce V3 fixture parses and exports (React + HTML)', async () => {
     const source = loadFixture('pizza-ecommerce')
 
     expect(() => parseOpenUIForExport(source, siteSpecJson)).not.toThrow()
     const parsed = parseOpenUIForExport(source, siteSpecJson)
     expect(parsed.routes.length).toBeGreaterThan(0)
-    expect(source).toContain('Ecommerce')
+    // V3 fixtures use the stable core grammar instead of legacy Ecommerce*
+    // components. Keep a content-level assertion so this remains a real pizza
+    // fixture rather than merely a generic parse/export smoke test.
+    expect(source).toContain('Pizza made for tonight')
 
     const react = await buildOpenUIExport({
       source,

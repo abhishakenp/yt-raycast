@@ -29,8 +29,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { deployLakebedProjectFiles } from '@/features/deployments/server/lakebed-deploy-service'
 import { buildOpenUILakebedProjectFiles } from './openui-lakebed-export-builder'
 
-const SMOKE_ENABLED = true
-const test = it
+const SMOKE_ENABLED = process.env.LAKEBED_E2E_SMOKE === '1'
+const test = it.skipIf(!SMOKE_ENABLED)
 
 type DeployedApp = {
   url: string

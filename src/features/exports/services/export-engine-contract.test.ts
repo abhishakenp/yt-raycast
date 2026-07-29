@@ -20,8 +20,8 @@ describe('engine output → export pipeline contract', () => {
       '"https://facebook.com/blog":"Home#home_hero",',
       '"https://twitter.com/blog":"Home#home_hero"',
       '})',
-      'home = CafeHero({"heading":"Welcome"})',
-      'about = CafeHero({"heading":"About us"})',
+      'home = CenteredHero({"heading":"Welcome"})',
+      'about = CenteredHero({"heading":"About us"})',
     ].join('\n')
 
     const siteSpecJson = JSON.stringify({ projectName: 'URL TargetMap' })

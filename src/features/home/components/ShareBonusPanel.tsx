@@ -80,6 +80,7 @@ export function ShareBonusPanel({
   label?: string
   className?: string
 }) {
+  void referralCode
   return (
     <div
       className={`${visible ? 'flex' : 'hidden'} items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-white/65${className ? ` ${className}` : ''}`}

@@ -705,15 +705,9 @@ describe('translator: language detection + HTML translation', () => {
   it('translates HTML preserving structure (only visible text nodes replaced)', async () => {
     const html =
       '<!DOCTYPE html><html><head><style>.x{color:red}</style></head><body><h1>Welcome</h1><p>Hello world</p><script>const x = "Hello world"</script></body></html>'
-    // translateTexts -> fetch 1, polishTranslations -> fetch 2, scoreTranslations -> fetch 3 (score 11)
+    // 2-pass pipeline: translateTexts -> fetch 1, scoreTranslations -> fetch 2
+    // (score 11, no corrections -> no verification re-score).
     fetchSpy
-      .mockResolvedValueOnce(
-        groqResponse(
-          JSON.stringify({
-            translations: { t0: 'स्वागत है', t1: 'नमस्ते दुनिया' },
-          }),
-        ),
-      )
       .mockResolvedValueOnce(
         groqResponse(
           JSON.stringify({
@@ -735,6 +729,7 @@ describe('translator: language detection + HTML translation', () => {
         script: 'Devanagari',
       },
     })
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
     expect(r.content).toContain('स्वागत है')
     expect(r.content).toContain('नमस्ते दुनिया')
     // structure preserved: doctype, html, head, style, script intact
@@ -743,11 +738,87 @@ describe('translator: language detection + HTML translation', () => {
     expect(r.content).toContain('<script>const x = "Hello world"</script>')
     expect(r.translatedCount).toBeGreaterThan(0)
     expect(r.qualityScore).toBe(11)
+    expect(r.initialQualityScore).toBe(11)
+    expect(r.correctionsApplied).toBe(0)
+    expect(r.correctionsVerified).toBe(false)
+  })
+
+  it('applies scorer corrections and re-scores them in a verification pass', async () => {
+    const html = '<body><h1>Welcome</h1><p>Hello world</p></body>'
+    // translateTexts -> fetch 1; scoreTranslations -> fetch 2 (score 8 with
+    // corrected copy for t1); verification re-score -> fetch 3 (score 11).
+    fetchSpy
+      .mockResolvedValueOnce(
+        groqResponse(
+          JSON.stringify({
+            translations: { t0: 'स्वागत है', t1: 'नमस्ते दुनिया' },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        groqResponse(
+          JSON.stringify({
+            score: 8,
+            reason: 'CTA is literal.',
+            weakIds: ['t1'],
+            translations: { t1: 'नमस्ते दुनिया!' },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        groqResponse(
+          JSON.stringify({ score: 11, reason: 'ship-ready', weakIds: [] }),
+        ),
+      )
+
+    const r = await translateHtml(html, {
+      language: { code: 'hi', name: 'Hindi', script: 'Devanagari' },
+    })
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+    expect(r.content).toContain('नमस्ते दुनिया!') // corrected copy applied
+    expect(r.initialQualityScore).toBe(8)
+    expect(r.qualityScore).toBe(11) // measured by verification, not assumed
+    expect(r.correctionsApplied).toBe(1)
+    expect(r.correctionsVerified).toBe(true)
+  })
+
+  it('keeps corrected copy but reports the honest score when verification still falls short', async () => {
+    const html = '<body><p>Hello world</p></body>'
+    // Scorer flags weak copy with a correction; verification re-score still 9.
+    fetchSpy
+      .mockResolvedValueOnce(
+        groqResponse(JSON.stringify({ translations: { t0: 'नमस्ते दुनिया' } })),
+      )
+      .mockResolvedValueOnce(
+        groqResponse(
+          JSON.stringify({
+            score: 8,
+            reason: 'too literal',
+            weakIds: ['t0'],
+            translations: { t0: 'नमस्ते दुनिया!' },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        groqResponse(
+          JSON.stringify({ score: 9, reason: 'better, still not 11', weakIds: [] }),
+        ),
+      )
+
+    const r = await translateHtml(html, {
+      language: { code: 'hi', name: 'Hindi', script: 'Devanagari' },
+    })
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+    expect(r.content).toContain('नमस्ते दुनिया!') // correction kept
+    expect(r.qualityScore).toBe(9) // honest verified score, not forced to 11
+    expect(r.correctionsApplied).toBe(1)
+    expect(r.correctionsVerified).toBe(false)
   })
 
   it('returns error when LLM returns no translations', async () => {
     const html = '<body><p>Hello world</p></body>'
-    // All 3 groq calls return empty/error content
+    // translateTexts returns empty content -> no translations; scoreTranslations
+    // then has no items and skips its groq call entirely.
     fetchSpy.mockResolvedValue(groqResponse(''))
     const r = await translateHtml(html, {
       language: { code: 'hi', name: 'Hindi', script: 'Devanagari' },
@@ -760,18 +831,14 @@ describe('translator: language detection + HTML translation', () => {
     const a = '<body><p>Hello world</p></body>'
     const b = '<body><p>Goodbye</p></body>'
     // Page a: translateTexts fetch returns empty -> no translations.
-    //   polishTranslations + scoreTranslations skip groq (no items).
-    //   rewriteWeakTranslations skips groq (no items). -> 1 fetch total.
-    // Page b: translateTexts (fetch 2) + polishTranslations (fetch 3) +
-    //   scoreTranslations (fetch 4, score 11) -> 3 fetches.
+    //   scoreTranslations skips groq (no items). -> 1 fetch total.
+    // Page b: translateTexts (fetch 2) + scoreTranslations (fetch 3, score 11,
+    //   no corrections -> no verification pass) -> 2 fetches.
     fetchSpy
       .mockResolvedValueOnce(groqResponse('')) // a: translateTexts -> empty
       .mockResolvedValueOnce(
         groqResponse(JSON.stringify({ translations: { t0: 'अलविदा' } })),
       ) // b: translateTexts
-      .mockResolvedValueOnce(
-        groqResponse(JSON.stringify({ translations: { t0: 'अलविदा' } })),
-      ) // b: polishTranslations
       .mockResolvedValueOnce(
         groqResponse(JSON.stringify({ score: 11, weakIds: [] })),
       ) // b: scoreTranslations
@@ -779,6 +846,7 @@ describe('translator: language detection + HTML translation', () => {
     const out = await translateHtmlSequential([a, b], {
       language: { code: 'hi', name: 'Hindi', script: 'Devanagari' },
     })
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
     expect(out).toHaveLength(2)
     expect(out[0]).toBe(a) // failed -> kept English
     expect(out[1]).toContain('अलविदा') // succeeded

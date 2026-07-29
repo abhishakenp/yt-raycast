@@ -71,7 +71,7 @@ export interface CompositionSection {
   /** Raw line number for error reporting. */
   line: number
   /** Page this section belongs to (default: "home"). Set by @page directive. */
-  page: string
+  page?: string
 }
 
 export interface ParsedComposition {
@@ -108,7 +108,6 @@ export function parseComposition(raw: string): ParsedComposition {
   const sections: CompositionSection[] = []
 
   let currentSection: CompositionSection | null = null
-  let sectionLine = 0
   let currentPage = 'home'
 
   for (let i = 0; i < lines.length; i++) {
@@ -207,7 +206,6 @@ export function parseComposition(raw: string): ParsedComposition {
         line: i + 1,
         page: currentPage,
       }
-      sectionLine = i + 1
       continue
     }
 

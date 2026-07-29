@@ -9,7 +9,7 @@ import { isClerkClientEnabled } from './clerk-runtime'
  * Mirrors the `isClerkConfigured` checks in HomePage/TopActions so the whole
  * app agrees on whether Clerk is mounted.
  */
-const isClerkConfigured = isClerkClientEnabled()
+const isClerkConfigured = (): boolean => isClerkClientEnabled()
 
 type ClerkTokenOptions = {
   template?: string
@@ -112,7 +112,7 @@ async function getOptionalToken(
 }
 
 export function requestClerkSignIn(): void {
-  if (!isClerkConfigured || typeof window === 'undefined') return
+  if (!isClerkConfigured() || typeof window === 'undefined') return
 
   const clerk = getClerk()
   if (clerk?.user || clerk?.session) return
@@ -126,7 +126,7 @@ export function requestClerkSignIn(): void {
 }
 
 function requestClerkUserProfile(): void {
-  if (!isClerkConfigured) return
+  if (!isClerkConfigured()) return
 
   const clerk = getClerk()
   if (typeof clerk?.openUserProfile === 'function') {
@@ -143,7 +143,7 @@ const useClerkSnapshot = () => {
   const [snapshot, setSnapshot] = useState(readClerkSnapshot)
 
   useEffect(() => {
-    if (!isClerkConfigured || typeof window === 'undefined') return
+    if (!isClerkConfigured() || typeof window === 'undefined') return
 
     let cancelled = false
     const scheduledSyncs: number[] = []
@@ -189,7 +189,7 @@ export function useOptionalAuth(): OptionalAuth {
 
   return useMemo(
     () =>
-      isClerkConfigured
+      isClerkConfigured()
         ? {
             getToken: getOptionalToken,
             isSignedIn: snapshot.isSignedIn,
@@ -205,7 +205,7 @@ export function useOptionalClerk(): OptionalClerk {
 
   return useMemo(
     () =>
-      isClerkConfigured
+      isClerkConfigured()
         ? {
             openSignIn: requestClerkSignIn,
             openUserProfile: requestClerkUserProfile,
@@ -227,7 +227,7 @@ export function useOptionalClerk(): OptionalClerk {
  * no user is signed in, or the role is not `admin`.
  */
 export function isCurrentUserAdmin(): boolean {
-  if (!isClerkConfigured) return false
+  if (!isClerkConfigured()) return false
   const metadata = readClerkSnapshot().user?.publicMetadata
   if (metadata === undefined) return false
   return metadata.system_role === 'admin' || metadata.systemRole === 'admin'
@@ -244,7 +244,7 @@ export function useIsAdmin(): boolean {
   const snapshot = useClerkSnapshot()
 
   return useMemo(() => {
-    if (!isClerkConfigured) return false
+    if (!isClerkConfigured()) return false
     const metadata = snapshot.user?.publicMetadata
     if (metadata === undefined) return false
     return metadata.system_role === 'admin' || metadata.systemRole === 'admin'

@@ -23,7 +23,7 @@ import {
 import { cn } from '@/lib/utils'
 import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
 import { GlassDefs, GlassPillAnchor, GlassPillButton } from './GlassPill'
-import { CloseIcon, LogoMark, SearchIcon, ZapIcon } from './HomeIcons'
+import { LogoMark, ZapIcon } from './HomeIcons'
 import { PrivateGenerationModal } from './PrivateGenerationModal'
 import { PromptLanguageDropdown } from './PromptLanguageDropdown'
 import { handleShareClick, ShareBonusPanel } from './ShareBonusPanel'
@@ -148,6 +148,10 @@ export const HomePage = () => {
     submitPrompt,
   } = usePromptHomeController()
   const [designRefOpen, setDesignRefOpen] = useState(false)
+  void refreshShareBonusStatus
+  void shareBonusClaimed
+  void designRefOpen
+  void setDesignRefOpen
   const [privateModalOpen, setPrivateModalOpen] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderLength, setPlaceholderLength] = useState(0)

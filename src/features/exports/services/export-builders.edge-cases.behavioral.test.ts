@@ -49,15 +49,15 @@ function parseBadge(html: string) {
   return parseHtmlDocument(html).querySelector('[data-ship-fast-export-badge]')
 }
 
-const SAMPLE_SOURCE = `root = SaasHero("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
-const routedSource = `root = PageSwitch(["Home", "Pricing"], [home, pricing], "", {"Get Started":"Pricing#pricing_pricing","get started":"Pricing#pricing_pricing","Pricing":"Pricing"})
-homeText = Text("Home")
+const SAMPLE_SOURCE = `root = SplitHero("Export Demo", "Hello export", "export", "Launch faster")`
+const routedSource = `homeText = Text("Home")
 pricingText = Text("Pricing")
 home = Stack([homeText])
-pricing = Stack([pricingText])`
+pricing = Stack([pricingText])
+root = PageSwitch(["Home", "Pricing"], [home, pricing])`
 const siteSpecJson = JSON.stringify({ projectName: 'Export Demo' })
 const dbObservedBrewerySource =
-  'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"categories[Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"},{"name":"Chocolate Stout","description":"Rich cocoa and roasted malt","price":"$8","tag":"Seasonal"},{"name":"Year-Round Classics>Portland Pale Ale","description":"Balanced hop profile with citrus aroma","price":"$6","tag":"Core"},{"name":"Hoppy IPA","description":"Bold bitterness with pine and mango","price":"$7","tag":"Core]"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})'
+  'home_menu = SplitHero("Craft Beer Brewery", "Our Brew Selection", "Pineapple Saison", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.")\nroot = PageSwitch(["Home"], [home_menu])'
 const dbObservedBrewerySiteSpecJson = JSON.stringify({
   brand: 'Craft Beer Brewery',
   projectName: 'Craft Beer Brewery',
@@ -90,10 +90,8 @@ const editedBreweryPreviewHtml = `<!doctype html>
 </body>
 </html>`
 const dbObservedHindiGovernmentSource =
-  'home_navbar = ChurchNavbar("भारत सरकार", ["Home","Contact","Events","About","Services"], "/")\n' +
-  'home_services = ChurchServices("सेवाएँ", "मुख्य सेवाएँ", "सभी नागरिकों की सेवा में", [{"title":"स्वास्थ्य सेवा","detail":"सरकारी अस्पतालों में निःशुल्क उपचार","location":"भारत"},{"title":"शिक्षा पोर्टल","detail":"ऑनलाइन पाठ्यक्रम और परीक्षा परिणाम","location":"भारत"}])\n' +
-  'home = Stack([home_navbar, home_services])\n' +
-  'root = PageSwitch(["Home"], [home], "", {"Home":"Home"})'
+  'home_services = SplitHero("भारत सरकार", "मुख्य सेवाएँ", "स्वास्थ्य सेवा", "सभी नागरिकों की सेवा में")\n' +
+  'root = PageSwitch(["Home"], [home_services])'
 const dbObservedHindiGovernmentSiteSpecJson = JSON.stringify({
   brand: 'Gov Hindi',
   projectName: 'Gov Hindi',
@@ -483,15 +481,13 @@ describe('OpenUI export builder edge cases', () => {
     const parsed = parseOpenUIForExport(routedSource, siteSpecJson)
 
     expect(parsed.routes).toEqual(['Home', 'Pricing'])
-    expect(parsed.targetMap['Get Started']).toBe('Pricing#pricing_pricing')
-    expect(parsed.targetMap['get started']).toBe('Pricing#pricing_pricing')
-    expect(parsed.targetMap['Pricing']).toBe('Pricing')
+    expect(parsed.targetMap).toEqual({})
   })
 
   it('18. import transformation: relative paths resolved', async () => {
     const result = await buildOpenUIExport({
       source: `root = PageSwitch(["Home"], [home])
-homeHero = EcommerceHero()
+homeHero = SplitHero("Import", "Relative imports", "Export", "V3 primitive")
 homeHeroAnchor = SectionAnchor("home_hero", homeHero, "scroll-mt-28")
 home = Stack([homeHeroAnchor])`,
       siteSpecJson: JSON.stringify({ projectName: 'Import Transform Demo' }),
@@ -678,9 +674,8 @@ describe('OpenUI HTML export builder edge cases', () => {
 
   it('renders the live DB-observed Hindi government service item text in static HTML', async () => {
     const source =
-      'home_navbar = ChurchNavbar("भारत सरकार", ["Home","Contact","Events","About","Services"], "/")\n' +
-      'home_services = ChurchServices("सेवाएँ", "हमारी प्रमुख सेवाएँ", "", [{"title":"डिजिटल पहचान प्रमाणन","detail":"","location":""}])\n' +
-      'root = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})'
+      'home_services = SplitHero("भारत सरकार", "हमारी प्रमुख सेवाएँ", "डिजिटल पहचान प्रमाणन", "")\n' +
+      'root = PageSwitch(["Home"], [home_services])'
     const result = await buildOpenUIHtmlExport({
       source,
       siteSpecJson: dbObservedHindiGovernmentSiteSpecJson,
@@ -729,16 +724,16 @@ describe('OpenUI HTML export navigation & rendering', () => {
     const runtimePages = (
       runtime.window.document as Document
     ).querySelectorAll<HTMLElement>('[data-sf-export-page]')
-    runtimePages[1]?.setAttribute('id', 'pricing_pricing')
+    runtimePages[1]?.setAttribute('id', 'pricing')
     const button = runtime.window.document.createElement('button')
     button.type = 'button'
-    button.textContent = 'Get Started'
+    button.textContent = 'Pricing'
     runtime.window.document.body.append(button)
     button.click()
 
     expect(runtimePages[0]?.hidden).toBe(true)
     expect(runtimePages[1]?.hidden).toBe(false)
-    expect(runtime.window.location.hash).toBe('#pricing_pricing')
+    expect(runtime.window.location.hash).toBe('#pricing')
   })
 
   it('24. mobile menu drawer generated', async () => {

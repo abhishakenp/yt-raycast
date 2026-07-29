@@ -1,0 +1,3 @@
+home_hero = SplitHero("प्रवास", "आकर्षक गंतव्यस्थाने", "प्रवास करा", "तुमच्यासाठी निवडलेल्या सहली")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])

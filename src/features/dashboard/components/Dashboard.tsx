@@ -41,6 +41,7 @@ import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { SessionGeneratedPreview } from '@/features/dashboard/components/SessionGeneratedPreview'
 import { PreviewErrorBoundary } from '@/features/dashboard/components/PreviewErrorBoundary'
 import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
+import { useGalleryThumbnailRegeneration } from '@/features/gallery/hooks/useGalleryThumbnailRegeneration'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { createPendingDashboardSaves } from '@/features/dashboard/lib/pending-dashboard-saves'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
@@ -140,6 +141,7 @@ export type DashboardGenerationView = {
     sessionId: Id<'sessions'>
     status?: string
     previewVersion?: number
+    updatedAt?: number
     prompt: string
     preferredLanguage?: string
     preferredExportTarget?: string
@@ -610,6 +612,14 @@ export function Dashboard({ sessionId }: DashboardProps) {
   // catches render crashes and the last-known-good logic keeps the previous
   // frame if a streaming chunk breaks. No need to wait for preview_ready.
   const isPreviewRenderable = !isMissingSession && hasRenderableHomeSource
+  const galleryThumbnailRevision = isPreviewReady
+    ? String(generationView?.session.updatedAt ?? '')
+    : undefined
+  useGalleryThumbnailRegeneration({
+    isPreviewReady,
+    revision: galleryThumbnailRevision,
+    sessionId: resolvedSessionId,
+  })
   const sidePanelQueryArgs =
     resolvedSessionId === undefined || !isPreviewReady
       ? 'skip'

@@ -9,6 +9,22 @@ function normalizeOperation(name: string): string {
   return name.replace(/[^A-Za-z0-9]/g, '').toLowerCase()
 }
 
+export const portableCommerceQueryNames = [
+  'commerceSearchState',
+  'cartSummary',
+  'productCatalog',
+] as const
+
+const portableCommerceMutationNames = [
+  'syncCatalog',
+  'setCommerceSearch',
+  'addItem',
+  'incrementItem',
+  'decrementItem',
+  'deleteItem',
+  'clearCart',
+] as const
+
 function renderStoreCore(collections: PrecomputedCollections): string {
   return `
 type DataRecord = Record<string, unknown>
@@ -301,13 +317,22 @@ export function renderSpecializedReactStore(
   keys: DataKeys,
   collections: PrecomputedCollections,
 ): string {
-  const queries = [...keys.queries]
+  // A React export with Lakebed-compatible components must retain the core
+  // commerce surface even when a source component only references a subset of
+  // it. The generated application can then add a cart UI without regenerating
+  // its data layer, and the mutation hook has stable query names to invalidate.
+  const queryNames = new Set([...portableCommerceQueryNames, ...keys.queries])
+  const mutationNames = new Set([
+    ...portableCommerceMutationNames,
+    ...keys.mutations,
+  ])
+  const queries = [...queryNames]
     .map((name) => renderQueryFunction(name, 'localStore', true))
     .join('\n\n')
-  const mutations = [...keys.mutations]
+  const mutations = [...mutationNames]
     .map((name) => renderMutationFunction(name, 'localStore', true))
     .join('\n\n')
-  const invalidations = [...keys.mutations]
+  const invalidations = [...mutationNames]
     .map(
       (name) =>
         `    case ${JSON.stringify(name)}: return ${JSON.stringify(invalidationKeys(name))}`,

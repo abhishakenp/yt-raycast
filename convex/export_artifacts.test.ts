@@ -11,6 +11,11 @@ vi.mock('../src/features/exports/services/openui-artifact-files', () => ({
   buildDownloadFromArtifactFiles: vi.fn(),
 }))
 
+vi.mock('../src/features/exports/services/stable-export-builder', () => ({
+  buildExportFromStableArtifact: vi.fn(),
+  buildDownloadFromStableArtifact: vi.fn(),
+}))
+
 // Mock the lakebed deploy service (only invoked for auto-deploy-public).
 vi.mock('../src/features/deployments/server/lakebed-deploy-service', () => ({
   deployLakebedProjectFiles: vi.fn(),
@@ -20,6 +25,10 @@ import {
   buildOpenUIArtifactFiles,
   buildDownloadFromArtifactFiles,
 } from '../src/features/exports/services/openui-artifact-files'
+import {
+  buildExportFromStableArtifact,
+  buildDownloadFromStableArtifact,
+} from '../src/features/exports/services/stable-export-builder'
 
 type BuildArgs = {
   sessionId: Id<'sessions'>
@@ -316,5 +325,37 @@ describe('export_artifacts build action', () => {
     const { createHash } = await import('node:crypto')
     const expectedHash = createHash('sha256').update(bodyBytes).digest('hex')
     expect(readyArgs.hash).toBe(expectedHash)
+  })
+
+  it('builds a final HTML artifact through the stable export boundary', async () => {
+    const download: BuiltExport = {
+      body: '<!doctype html><html><body><h1>Stable</h1></body></html>',
+      contentType: 'text/html; charset=utf-8',
+      filename: 'stable.html',
+      fileCount: 1,
+    }
+    ;(buildExportFromStableArtifact as ReturnType<typeof vi.fn>).mockResolvedValue({
+      files: { 'index.html': download.body as string },
+      download,
+    })
+    ;(buildDownloadFromStableArtifact as ReturnType<typeof vi.fn>).mockResolvedValue(download)
+
+    const { ctx } = mockActionCtx({
+      prepareResult: {
+        ...preparedFixture(),
+        source: '<!doctype html><html><body><h1>Stable</h1></body></html>',
+        previewHtml: '<!doctype html><html><body><h1>Stable</h1></body></html>',
+      },
+    })
+
+    await handler(ctx, baseArgs)
+
+    expect(buildExportFromStableArtifact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        artifact: expect.objectContaining({ html: expect.stringContaining('<h1>Stable</h1>') }),
+        target: 'html',
+      }),
+    )
+    expect(buildOpenUIArtifactFiles).not.toHaveBeenCalled()
   })
 })

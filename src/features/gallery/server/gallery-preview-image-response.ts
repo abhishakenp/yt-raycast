@@ -1,59 +1,15 @@
-import type { Browser } from 'playwright'
-
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '../../../shared/convex/http-client'
-import { resolveGalleryPreviewHtml } from './gallery-preview-html'
+import { generateGalleryPreviewImage } from './gallery-preview-image-generation'
 
 const versionedPreviewImageCacheControl = 'public, max-age=31536000, immutable'
-const fallbackPreviewImageCacheControl =
-  'public, max-age=300, stale-while-revalidate=3600'
 const previewPngMemoryCacheMaxEntries = 64
-
-const previewViewport = {
-  height: 800,
-  width: 1280,
-} as const
-
-type PlaywrightModule = typeof import('playwright')
 type PreviewPngCacheEntry = {
   bytes: Uint8Array
   cacheVersion: string
 }
-type PreviewBrowserState = {
-  browserPromise?: Promise<Browser>
-}
-
-declare global {
-  var __shipFastGalleryPreviewBrowser: PreviewBrowserState | undefined
-}
-
-const playwrightModuleId = 'playwright'
-
-const previewBrowserState =
-  globalThis.__shipFastGalleryPreviewBrowser ??
-  (globalThis.__shipFastGalleryPreviewBrowser = {})
 const previewPngMemoryCache = new Map<string, PreviewPngCacheEntry>()
-const previewPngCaptureRequests = new Map<string, Promise<Uint8Array>>()
-
-const getBrowser = async (): Promise<Browser> => {
-  if (previewBrowserState.browserPromise === undefined) {
-    previewBrowserState.browserPromise = import(
-      /* @vite-ignore */ playwrightModuleId
-    )
-      .then((mod: PlaywrightModule) =>
-        mod.chromium.launch({
-          args: ['--disable-dev-shm-usage', '--no-sandbox'],
-        }),
-      )
-      .catch((error: unknown) => {
-        previewBrowserState.browserPromise = undefined
-        throw error
-      })
-  }
-
-  return await previewBrowserState.browserPromise
-}
 
 const toArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
   const buffer = new ArrayBuffer(bytes.byteLength)
@@ -63,17 +19,21 @@ const toArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
 
 export type GalleryPreviewImageResponseDeps = {
   cacheVersion?: string | null
-  capturePng?: (html: string) => Promise<Uint8Array>
+  /**
+   * Generates a preview image on cache miss. The GET handler triggers this
+   * so the request resolves with the ready PNG instead of returning 425.
+   * Defaults to `generateGalleryPreviewImage` in public mode.
+   */
+  generateImage?: (
+    sessionId: string,
+    cacheVersion: string,
+  ) => Promise<{
+    status: 'stored' | 'stale' | 'not_found' | 'forbidden' | 'failed'
+  }>
   readCachedPng?: (
     cacheKey: string,
     cacheVersion: string,
   ) => Promise<Uint8Array | null>
-  resolveHtml?: (sessionId: string) => Promise<string | null>
-  writeCachedPng?: (
-    cacheKey: string,
-    cacheVersion: string,
-    bytes: Uint8Array,
-  ) => Promise<void>
 }
 
 const normalizeCacheVersion = (value: string | null | undefined) => {
@@ -123,61 +83,11 @@ const readCachedPreviewPng = async (
   }
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
-
-const readStorageId = (value: unknown): Id<'_storage'> | null => {
-  if (!isRecord(value)) return null
-  return typeof value.storageId === 'string'
-    ? (value.storageId as Id<'_storage'>)
-    : null
-}
-
-const writeCachedPreviewPng = async (
-  cacheKey: string,
-  cacheVersion: string,
-  bytes: Uint8Array,
-): Promise<void> => {
-  try {
-    const client = createRuntimeConvexHttpClient(10_000)
-    const sessionId = cacheKey as Id<'sessions'>
-    const uploadUrl = await client.mutation(
-      api.gallery_preview_images.generateUploadUrl,
-      { cacheVersion, sessionId },
-    )
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'image/png' },
-      body: new Blob([toArrayBuffer(bytes)], { type: 'image/png' }),
-    })
-    if (!uploadResponse.ok) return
-
-    const storageId = readStorageId(await uploadResponse.json())
-    if (storageId === null) return
-
-    await client.mutation(api.gallery_preview_images.commit, {
-      cacheVersion,
-      contentType: 'image/png',
-      sessionId,
-      size: bytes.byteLength,
-      storageId,
-    })
-  } catch {
-    // Cache writes are an optimization. The image response remains valid.
-  }
-}
-
-const createPngResponse = (
-  png: Uint8Array,
-  cacheKey: string | null,
-): Response =>
+const createPngResponse = (png: Uint8Array): Response =>
   new Response(toArrayBuffer(png), {
     status: 200,
     headers: {
-      'Cache-Control':
-        cacheKey === null
-          ? fallbackPreviewImageCacheControl
-          : versionedPreviewImageCacheControl,
+      'Cache-Control': versionedPreviewImageCacheControl,
       'Content-Type': 'image/png',
       'X-Robots-Tag': 'noindex',
     },
@@ -204,107 +114,62 @@ const readCachedPng = async (
   return cached
 }
 
-const captureAndCachePng = async (
-  cacheKey: string,
+const defaultGenerateImage = (
+  sessionId: string,
   cacheVersion: string,
-  html: string,
-  deps: GalleryPreviewImageResponseDeps,
-): Promise<Uint8Array> => {
-  const requestKey = `${cacheKey}:${cacheVersion}`
-  const pending = previewPngCaptureRequests.get(requestKey)
-  if (pending !== undefined) return await pending
-
-  const capturePng = deps.capturePng ?? captureGalleryPreviewPng
-  const writeCachedPng = deps.writeCachedPng ?? writeCachedPreviewPng
-  const request = (async () => {
-    const png = await capturePng(html)
-    rememberPreviewPng(cacheKey, cacheVersion, png)
-    await writeCachedPng(cacheKey, cacheVersion, png)
-    return png
-  })().finally(() => {
-    previewPngCaptureRequests.delete(requestKey)
+): Promise<{
+  status: 'stored' | 'stale' | 'not_found' | 'forbidden' | 'failed'
+}> =>
+  generateGalleryPreviewImage({
+    cacheVersion,
+    sessionId,
   })
 
-  previewPngCaptureRequests.set(requestKey, request)
-  return await request
-}
-
-export async function captureGalleryPreviewPng(
-  html: string,
-): Promise<Uint8Array> {
-  const browser = await getBrowser()
-  const page = await browser.newPage({
-    deviceScaleFactor: 1,
-    viewport: previewViewport,
+const notReadyResponse = (): Response =>
+  new Response('Preview image is not ready', {
+    status: 503,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Retry-After': '5',
+      'X-Robots-Tag': 'noindex',
+    },
   })
-
-  try {
-    await page.setContent(html, {
-      timeout: 8_000,
-      waitUntil: 'domcontentloaded',
-    })
-    await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {
-      // Gallery thumbnails should not fail because a remote font/image keeps
-      // a request open. Capture the settled DOM after the short grace period.
-    })
-    const png = await page.screenshot({
-      animations: 'disabled',
-      caret: 'hide',
-      fullPage: false,
-      scale: 'css',
-      timeout: 8_000,
-      type: 'png',
-    })
-    return new Uint8Array(png)
-  } finally {
-    await page.close()
-  }
-}
 
 export async function createGalleryPreviewImageResponse(
   sessionId: string,
   deps: GalleryPreviewImageResponseDeps = {},
 ): Promise<Response> {
-  const resolveHtml = deps.resolveHtml ?? resolveGalleryPreviewHtml
   const normalizedCacheVersion = normalizeCacheVersion(deps.cacheVersion)
   const cacheKey = getCacheKey(sessionId, normalizedCacheVersion)
 
-  if (cacheKey !== null && normalizedCacheVersion !== null) {
-    const cachedPng = await readCachedPng(
+  if (cacheKey === null || normalizedCacheVersion === null) {
+    return new Response('Preview image version is required', {
+      status: 400,
+      headers: {
+        'Cache-Control': 'no-store',
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Robots-Tag': 'noindex',
+      },
+    })
+  }
+
+  const cachedPng = await readCachedPng(cacheKey, normalizedCacheVersion, deps)
+  if (cachedPng !== null) return createPngResponse(cachedPng)
+
+  // Cache miss: trigger generation and wait for it to complete.
+  // The generation is deduplicated by pendingGenerations so concurrent
+  // requests for the same session+version share one render.
+  const generate = deps.generateImage ?? defaultGenerateImage
+  const result = await generate(cacheKey, normalizedCacheVersion)
+  if (result.status === 'stored') {
+    const generatedPng = await readCachedPng(
       cacheKey,
       normalizedCacheVersion,
       deps,
     )
-    if (cachedPng !== null) return createPngResponse(cachedPng, cacheKey)
+    if (generatedPng !== null) return createPngResponse(generatedPng)
   }
 
-  const html = await resolveHtml(sessionId)
-
-  if (html === null) {
-    return new Response('Preview not found or not public', {
-      status: 404,
-      headers: {
-        'Cache-Control': 'public, max-age=20',
-        'Content-Type': 'text/plain; charset=utf-8',
-        'X-Robots-Tag': 'noindex',
-      },
-    })
-  }
-
-  try {
-    const png =
-      cacheKey === null || normalizedCacheVersion === null
-        ? await (deps.capturePng ?? captureGalleryPreviewPng)(html)
-        : await captureAndCachePng(cacheKey, normalizedCacheVersion, html, deps)
-    return createPngResponse(png, cacheKey)
-  } catch {
-    return new Response('Preview image temporarily unavailable', {
-      status: 503,
-      headers: {
-        'Cache-Control': 'public, max-age=10',
-        'Content-Type': 'text/plain; charset=utf-8',
-        'X-Robots-Tag': 'noindex',
-      },
-    })
-  }
+  return notReadyResponse()
 }

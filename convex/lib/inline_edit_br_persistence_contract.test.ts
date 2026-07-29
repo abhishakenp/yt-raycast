@@ -1,7 +1,5 @@
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { convexTest } from 'convex-test'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { api, internal } from '../_generated/api'
@@ -10,11 +8,12 @@ import { applyPreviewTextEdit } from './session_edit_helpers'
 
 const modules = import.meta.glob('../**/*.ts')
 
-const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
-
-function loadFixture(name: string): string {
-  return readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
-}
+const brSeparatedHeroSource = [
+  'home_hero = SplitHero("Fresh daily", "Craving Something Hot?<br/>Pizza Delivered Fast", "", "Hot pizza delivered fast", "Order Now", "Our Story")',
+  'home_hero_anchor = SectionAnchor("home_hero", home_hero)',
+  'home = Stack([home_hero_anchor])',
+  'root = PageSwitch(["Home"], [home], "", {"Home":"home"})',
+].join('\n')
 
 let activeTest: ReturnType<typeof convexTest> | null = null
 
@@ -35,25 +34,21 @@ afterEach(async () => {
   }
 })
 
-async function createReadySessionWithFixture(
+async function createReadySessionWithSource(
   t: ReturnType<typeof sessionEditContractTest>,
-  fixtureName: string,
+  source: string,
   prompt: string,
   language = 'en',
 ) {
-  const source = loadFixture(fixtureName)
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: language,
     preferredExportTarget: 'html',
     isPrivate: false,
-    workspace: `workspace_${fixtureName}`,
-    anonymousClientId: `anon_${fixtureName}`,
+    workspace: 'workspace_inline_br_source',
+    anonymousClientId: 'anon_inline_br_source',
     anonymousOwnerSecret: 'owner-secret',
   })
-
-  const { renderOpenUIToHTML } = await import('@ship-fast/engine/openui-ssr.js')
-  const html = await renderOpenUIToHTML(source, undefined, language)
 
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
@@ -63,45 +58,7 @@ async function createReadySessionWithFixture(
     elapsed: 1000,
   })
 
-  return { sessionId, source, html }
-}
-
-/**
- * Strip HTML tags and comments from a string to approximate textContent.
- * Used to extract visible text from HTML fragments that contain inline
- * markup (e.g. <span> highlight markers on the last word of a heading).
- */
-function stripHtmlTags(html: string): string {
-  return html.replace(/<!--[^>]*-->/g, '').replace(/<[^>]+>/g, '')
-}
-
-/**
- * Find a <br> separated hero in the HTML.
- * The real pizza-delivery fixture renders:
- *   <h1 ...>Craving Something Hot?<br/>Pizza Delivered<!-- --> <span ...>Fast</span></h1>
- * The second fragment may contain inline markup (highlight spans, comments)
- * so we capture the raw inner HTML after <br/> and derive textContent by
- * stripping tags.
- */
-function findBrSeparatedHero(html: string): {
-  fullMatch: string
-  textContent: string
-  firstFragment: string
-  secondFragment: string
-} | null {
-  // Match <h1...>text<br/>...content...</h1> (br may be <br> or <br/>)
-  // The first fragment is pure text (before <br>); the second fragment may
-  // contain inline elements (spans, comments) so capture non-greedily.
-  const match = html.match(/<h1[^>]*>([^<]+)<br\s*\/?>(.*?)<\/h1>/)
-  if (!match) return null
-  const [, first, secondRaw] = match
-  const second = stripHtmlTags(secondRaw)
-  return {
-    fullMatch: match[0],
-    textContent: `${first}${second}`,
-    firstFragment: first,
-    secondFragment: second,
-  }
+  return { sessionId, source }
 }
 
 describe('inline edit persistence — <br> separated text nodes', () => {
@@ -164,23 +121,13 @@ describe('inline edit persistence — <br> separated text nodes', () => {
 
   it('createEdit with single-fragment text edit on real pizza fixture persists', async () => {
     const t = sessionEditContractTest()
-    const { sessionId, html } = await createReadySessionWithFixture(
+    const { sessionId } = await createReadySessionWithSource(
       t,
-      'pizza-delivery-real',
+      brSeparatedHeroSource,
       'pizza delivery app',
     )
 
-    // Verify "Pizza Delivered Fast" is in the HTML textContent.
-    // The hero's headingBottom is now split by a highlight <span> on the
-    // last word, so the raw HTML has "Pizza Delivered<!-- --> <span...>Fast</span>"
-    // rather than a contiguous "Pizza Delivered Fast" string.
-    const brHero = findBrSeparatedHero(html)
-    expect(brHero).toBeTruthy()
-    expect(brHero?.secondFragment).toBe('Pizza Delivered Fast')
-
-    // Edit just "Pizza Delivered Fast" → "Pizza Delivered NOW"
-    // applyPreviewTextEdit's tolerant matching tiers handle the inline
-    // <span> markup around "Fast".
+    // Edit a single fragment within a source-level <br/> boundary.
     await expect(
       t.mutation(api.sessions.createEdit, {
         sessionId,
@@ -203,22 +150,16 @@ describe('inline edit persistence — <br> separated text nodes', () => {
 
   it('createEdit with flattened textContent spanning <br> on real pizza fixture', async () => {
     const t = sessionEditContractTest()
-    const { sessionId, html } = await createReadySessionWithFixture(
+    const { sessionId } = await createReadySessionWithSource(
       t,
-      'pizza-delivery-real',
+      brSeparatedHeroSource,
       'pizza delivery app',
     )
-
-    // Verify the HTML has a <br/> separated hero
-    const brHero = findBrSeparatedHero(html)
-    expect(brHero).toBeTruthy()
-    expect(brHero?.firstFragment).toBe('Craving Something Hot?')
-    expect(brHero?.secondFragment).toBe('Pizza Delivered Fast')
 
     // Simulate what diffEdits produces when the user selects across the <br/>:
     // oldText = element.textContent (strips <br/>) = "Craving Something Hot?Pizza Delivered Fast"
     // newText = the edited textContent = "Craving Something Hot?Pizza Delivered NOW"
-    const flattenedOld = brHero!.textContent
+    const flattenedOld = 'Craving Something Hot?Pizza Delivered Fast'
     const flattenedNew = 'Craving Something Hot?Pizza Delivered NOW'
 
     // BUG: This will throw TEXT_NOT_FOUND because the flattened text
@@ -244,14 +185,11 @@ describe('inline edit persistence — <br> separated text nodes', () => {
 
   it('createEdit with space-separated text spanning <br> on real pizza fixture', async () => {
     const t = sessionEditContractTest()
-    const { sessionId, html } = await createReadySessionWithFixture(
+    const { sessionId } = await createReadySessionWithSource(
       t,
-      'pizza-delivery-real',
+      brSeparatedHeroSource,
       'pizza delivery app',
     )
-
-    const brHero = findBrSeparatedHero(html)
-    expect(brHero).toBeTruthy()
 
     // User types the text with a space between sentences (as it appears visually)
     const oldText = 'Craving Something Hot? Pizza Delivered Fast'

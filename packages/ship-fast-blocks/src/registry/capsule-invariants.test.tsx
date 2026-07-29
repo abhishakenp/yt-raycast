@@ -53,9 +53,7 @@ import {
 import { library, componentNames } from '#/library.ts'
 import * as primitiveRegistry from '#/registry/primitives/index.ts'
 import { Button } from '#/registry/primitives/button.tsx'
-import { Navbar } from '#/motifs/index.tsx'
-import { FaqAccordion } from '#/motifs/index.tsx'
-import { StatsStrip } from '#/motifs/index.tsx'
+import { Navbar, FaqAccordion , StatsStrip  } from '#/motifs/index.tsx'
 
 const primitiveNames = new Set(
   Object.values(primitiveRegistry)

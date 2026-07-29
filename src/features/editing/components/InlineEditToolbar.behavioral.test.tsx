@@ -2419,7 +2419,80 @@ describe('InlineEditToolbar (behavioral)', () => {
     )
   })
 
-  it('23b.3i. can promote an OpenUI child to the generated page stack before applying a background image', async () => {
+  it('23b.3h.1 persists the DOM id before class and page markers for page-level styles', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/page-anchor-priority.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'page anchor priority',
+        source: 'pexels',
+      },
+    ])
+
+    const pageElement = document.createElement('section')
+    pageElement.id = 'durable_page_root'
+    pageElement.className = 'page-shell bg-paper'
+    pageElement.setAttribute('data-sf-export-page', 'Home')
+    const headingElement = document.createElement('h1')
+    headingElement.textContent = 'Hero title'
+    pageElement.appendChild(headingElement)
+    document.body.appendChild(pageElement)
+
+    const onStyleApply = vi.fn()
+
+    function Harness() {
+      const [activeElement, setActiveElement] =
+        useState<HTMLElement>(headingElement)
+      return createElement(InlineEditToolbar, {
+        isOpen: true,
+        anchorRect,
+        activeElement,
+        onStyleApply,
+        onCommitText: vi.fn(),
+        onClose: vi.fn(),
+        onSelectParentSection: setActiveElement,
+        isApplying: false,
+        isForking: false,
+        canUndo: true,
+        canRedo: true,
+        onUndo: vi.fn(),
+        onRedo: vi.fn(),
+        onMoveUp: vi.fn(),
+        onMoveDown: vi.fn(),
+        canMoveUp: true,
+        canMoveDown: true,
+        onLinkEdit: vi.fn(),
+        onImageSelect: vi.fn(),
+        sessionId: 'sess-1',
+        onSectionEdit: vi.fn(),
+        isSectionSubmitting: false,
+      })
+    }
+
+    render(createElement(Harness))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select page' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'page anchor priority' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '#durable_page_root',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+  })
+
+  it('23b.3i. uses a page stack class before its legacy OpenUI marker when applying a background image', async () => {
     const imageUrl = 'https://images.pexels.com/photos/openui-page-bg.jpeg'
     searchStockImagesMock.mockResolvedValue([
       {
@@ -2496,14 +2569,14 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(headingElement.style.backgroundImage).toBe('')
     expect(onStyleApply).toHaveBeenCalledWith(
       expect.objectContaining({
-        sourceAnchor: '[data-openui-var="home"]',
+        sourceAnchor: 'flex flex-col gap-4',
         occurrenceIndex: 0,
         style: expect.stringContaining(imageUrl),
       }),
     )
   })
 
-  it('23b.3j. can promote an OpenUI child to the generated page stack before applying a gradient background', async () => {
+  it('23b.3j. uses a page stack class before its legacy OpenUI marker when applying a gradient background', async () => {
     const pageStackElement = document.createElement('div')
     pageStackElement.className = 'flex flex-col gap-4'
     pageStackElement.setAttribute('data-openui-component', 'Stack')
@@ -2573,7 +2646,7 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(headingElement.style.backgroundImage).toBe('')
     expect(onStyleApply).toHaveBeenCalledWith(
       expect.objectContaining({
-        sourceAnchor: '[data-openui-var="home"]',
+        sourceAnchor: 'flex flex-col gap-4',
         occurrenceIndex: 0,
         style: expect.stringContaining('linear-gradient'),
       }),

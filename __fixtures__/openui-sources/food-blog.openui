@@ -1,0 +1,5 @@
+home_hero = SplitHero("Food Notes", "The Ultimate Guide to Autumn Comfort Foods", "Autumn comfort", "Recipes and stories for thoughtful home cooks")
+stories_hero = SplitHero("Food Notes", "The Ultimate Guide to Autumn Comfort Foods", "Archive", "Seasonal recipes")
+authors_hero = SplitHero("Food Notes", "The Ultimate Guide to Autumn Comfort Foods", "Authors", "Meet our contributors")
+home = Stack([home_hero, stories_hero, authors_hero])
+root = PageSwitch(["Home"], [home])

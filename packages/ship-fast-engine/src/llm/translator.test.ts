@@ -45,15 +45,18 @@ vi.mock('./groq.js', () => ({
             }),
           }
         }
+        // Malayalam: first scoring pass flags weak copy and returns
+        // corrections; the verification re-score (second call) confirms the
+        // corrected copy reaches the bar.
         return {
           content: JSON.stringify({
-            score: qualityScoreCalls <= 2 ? 8 : 11,
+            score: qualityScoreCalls === 1 ? 8 : 11,
             reason:
-              qualityScoreCalls <= 2
+              qualityScoreCalls === 1
                 ? 'CTA is literal and not premium enough.'
-                : 'The rewrite reaches the premium local copy bar.',
+                : 'The corrected copy reaches the premium local copy bar.',
             weakIds:
-              qualityScoreCalls <= 2
+              qualityScoreCalls === 1
                 ? (payload.items as Array<{ id: string }>).map(
                     (item) => item.id,
                   )
@@ -66,17 +69,6 @@ vi.mock('./groq.js', () => ({
                     ),
                   )
                 : undefined,
-          }),
-        }
-      }
-      if (String(opts.system).includes('rewrite only the weak translations')) {
-        return {
-          content: JSON.stringify({
-            translations: Object.fromEntries(
-              (payload.items as Array<{ id: string; draft: string }>).map(
-                (item) => [item.id, `${item.draft} polished`],
-              ),
-            ),
           }),
         }
       }
@@ -100,12 +92,18 @@ vi.mock('./groq.js', () => ({
 }))
 
 // @ts-expect-error — vitest cache-busting query string; module resolves at runtime
-const { translateHtml } = await import('./translator.js?translator-test')
+const translatorModule = await import('./translator.js?translator-test')
+const {
+  translateHtml,
+  getTranslationQualityMetrics,
+  resetTranslationQualityMetrics,
+} = translatorModule as typeof import('./translator.js')
 
 describe('translateHtml', () => {
   beforeEach(() => {
     groqCalls.length = 0
     qualityScoreCalls = 0
+    resetTranslationQualityMetrics()
   })
 
   it('translates visible HTML text with llama 3.3 and preserves markup', async () => {
@@ -205,86 +203,74 @@ describe('translateHtml', () => {
     expect(JSON.parse(groqCalls[1].prompt).projectBrief).toContain(
       'small business owners',
     )
-    expect(JSON.parse(groqCalls[2].prompt).projectBrief).toContain(
-      'small business owners',
-    )
   })
 
-  it('runs a final localization polish pass after the draft translation', async () => {
+  it('produces high-quality translation in a single pass with 11/10 quality emphasis', async () => {
     await translateHtml(
       '<main><h1>Grow faster with clear marketing</h1><a href="/contact">Book a strategy call</a></main>',
       { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം' },
     )
 
-    expect(groqCalls.length).toBeGreaterThanOrEqual(2)
-    expect(groqCalls[1].opts.system).toContain('final localization QA')
-    expect(groqCalls[1].opts.system).toContain('11/10')
-    expect(groqCalls[1].opts.system).toContain('rewrite awkward')
-    expect(JSON.parse(groqCalls[1].prompt).items).toEqual([
-      {
-        id: 't0',
-        source: 'Grow faster with clear marketing',
-        draft: 'Bonjour',
-      },
-      {
-        id: 't1',
-        source: 'Book a strategy call',
-        draft: 'Commencer maintenant',
-      },
-    ])
+    expect(groqCalls.length).toBeGreaterThanOrEqual(1)
+    expect(groqCalls[0].opts.system).toContain('elite in-market website copywriter')
+    expect(groqCalls[0].opts.system).toContain('11/10 quality')
+    expect(groqCalls[0].opts.system).toContain('ready to ship without further revision')
   })
 
-  it('scores polished translations and rewrites weak output below the 11/10 bar', async () => {
+  it('applies scorer corrections and verifies them with a re-score', async () => {
     const result = await translateHtml(
       '<main><h1>Grow faster with clear marketing</h1><a href="/contact">Book a strategy call</a></main>',
       { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം' },
     )
 
-    expect(groqCalls).toHaveLength(6)
-    expect(groqCalls[2].opts.system).toContain(
+    // Exactly 3 calls when corrections are applied: translation + scoring
+    // with corrections + verification re-score of the corrected copy.
+    expect(groqCalls).toHaveLength(3)
+    expect(groqCalls[1].opts.system).toContain(
       'ruthless translation quality judge',
     )
-    expect(groqCalls[2].opts.system).toContain('11/10')
-    expect(groqCalls[2].opts.system).toContain(
+    expect(groqCalls[1].opts.system).toContain('11/10')
+    expect(groqCalls[1].opts.system).toContain(
       'practical insights means actionable guidance',
     )
-    expect(groqCalls[2].opts.system).toContain(
+    expect(groqCalls[1].opts.system).toContain(
       'strategy call means consultation',
     )
-    expect(groqCalls[2].opts.system).toContain('Do not award 11')
-    expect(groqCalls[2].opts.system).toContain('Do not nitpick')
-    expect(groqCalls[2].opts.system).toContain('award 11')
-    expect(groqCalls[2].opts.system).toContain('ship-ready')
-    expect(groqCalls[2].opts.system).toContain('Mostly natural and clear')
-    expect(groqCalls[2].opts.system).toContain('must be scored 11')
-    expect(groqCalls[2].opts.system).toContain('8 or 9 only')
-    expect(groqCalls[2].opts.system).toContain('If score is below 11')
-    expect(groqCalls[2].opts.system).toContain('"translations"')
-    expect(JSON.parse(groqCalls[2].prompt).items).toHaveLength(2)
-    expect(groqCalls[3].opts.system).toContain(
+    expect(groqCalls[1].opts.system).toContain('Do not award 11')
+    expect(groqCalls[1].opts.system).toContain('Do not nitpick')
+    expect(groqCalls[1].opts.system).toContain('award 11')
+    expect(groqCalls[1].opts.system).toContain('ship-ready')
+    expect(groqCalls[1].opts.system).toContain('Mostly natural and clear')
+    expect(groqCalls[1].opts.system).toContain('must be scored 11')
+    expect(groqCalls[1].opts.system).toContain('8 or 9 only')
+    expect(groqCalls[1].opts.system).toContain('If score is below 11')
+    expect(groqCalls[1].opts.system).toContain('"translations"')
+    // Verification pass re-scores the corrected copy with the same judge prompt.
+    expect(groqCalls[2].opts.system).toContain(
       'ruthless translation quality judge',
     )
-    expect(groqCalls[4].opts.system).toContain(
-      'rewrite only the weak translations',
-    )
-    expect(groqCalls[4].opts.system).toContain(
-      'natural contemporary website language',
-    )
-    expect(groqCalls[4].opts.system).toContain('accepted English loanwords')
-    expect(groqCalls[4].opts.system).toContain(
-      'strategy, marketing, call, booking',
-    )
-    expect(groqCalls[4].opts.system).toContain('conversational professional')
-    expect(groqCalls[4].opts.system).toContain('digital-marketing register')
-    expect(groqCalls[4].opts.system).toContain('Do not repeat wording')
-    expect(groqCalls[5].opts.system).toContain(
-      'ruthless translation quality judge',
-    )
+    expect(result.initialQualityScore).toBe(8)
     expect(result.qualityScore).toBe(11)
-    expect(result.content).toContain('Bonjour judge polished polished')
+    expect(result.correctionsApplied).toBe(2)
+    expect(result.correctionsVerified).toBe(true)
+    expect(result.content).toContain('Bonjour judge polished')
     expect(result.content).toContain(
-      'Commencer maintenant judge polished polished',
+      'Commencer maintenant judge polished',
     )
+  })
+
+  it('skips the verification pass when the scorer returns no corrections', async () => {
+    const result = await translateHtml(
+      '<main><h1>Hello</h1><a href="/start">Start now</a></main>',
+      { code: 'fr', name: 'French', nativeName: 'Français' },
+    )
+
+    // Exactly 2 calls on the happy path: translation + scoring (score 11).
+    expect(groqCalls).toHaveLength(2)
+    expect(result.initialQualityScore).toBe(11)
+    expect(result.qualityScore).toBe(11)
+    expect(result.correctionsApplied).toBe(0)
+    expect(result.correctionsVerified).toBe(false)
   })
 
   // Regression: image alt text is the stock-photo search query (Pexels/Unsplash
@@ -450,5 +436,110 @@ describe('translateHtml', () => {
 
     expect(groqCalls.length).toBeGreaterThan(0)
     expect(result.content).toContain('Bonjour')
+  })
+
+  // ── Quality monitoring ──────────────────────────────────────────────────
+  //
+  // Every scored pipeline run feeds an in-memory aggregate (correction rate,
+  // average scores before/after corrections, verification pass rate) and
+  // emits a per-run report through the onQualityReport option so callers can
+  // persist the signal (e.g. to Convex).
+
+  it('aggregates correction rate and scores across pipeline runs', async () => {
+    // Run 1 (ml): scorer flags weak copy (8) -> corrections -> verified 11.
+    await translateHtml(
+      '<main><h1>Grow faster with clear marketing</h1><a href="/contact">Book a strategy call</a></main>',
+      { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം' },
+    )
+    // Run 2 (ml): scorer passes copy at 11 with no corrections.
+    await translateHtml('<main><h1>Hello</h1></main>', {
+      code: 'ml',
+      name: 'Malayalam',
+      nativeName: 'മലയാളം',
+    })
+
+    const metrics = getTranslationQualityMetrics()
+    expect(metrics.pipelinesScored).toBe(2)
+    expect(metrics.pipelinesWithCorrections).toBe(1)
+    expect(metrics.correctionsApplied).toBe(2)
+    expect(metrics.correctionRate).toBe(0.5)
+    expect(metrics.averageInitialScore).toBe(9.5) // (8 + 11) / 2
+    expect(metrics.averageFinalScore).toBe(11)
+    expect(metrics.correctionsVerified).toBe(1)
+    expect(metrics.verificationPassRate).toBe(1)
+  })
+
+  it('emits a per-run quality report through onQualityReport', async () => {
+    const onQualityReport = vi.fn()
+    await translateHtml(
+      '<main><h1>Hello</h1><a href="/start">Start now</a></main>',
+      { code: 'fr', name: 'French', nativeName: 'Français' },
+      { onQualityReport },
+    )
+
+    expect(onQualityReport).toHaveBeenCalledTimes(1)
+    expect(onQualityReport).toHaveBeenCalledWith({
+      locale: 'fr',
+      translatedCount: 2,
+      initialScore: 11,
+      finalScore: 11,
+      correctionsApplied: 0,
+      correctionsVerified: false,
+    })
+  })
+
+  it('never lets a throwing onQualityReport sink break translation', async () => {
+    const result = await translateHtml('<main><h1>Hello</h1></main>', {
+      code: 'fr',
+      name: 'French',
+      nativeName: 'Français',
+    })
+    expect(result.content).toContain('Bonjour')
+
+    const throwing = await translateHtml(
+      '<main><h1>Hello</h1></main>',
+      { code: 'fr', name: 'French', nativeName: 'Français' },
+      {
+        onQualityReport: () => {
+          throw new Error('metrics sink down')
+        },
+      },
+    )
+    expect(throwing.content).toContain('Bonjour')
+    expect(throwing.qualityScore).toBe(11)
+  })
+
+  it('does not record metrics for cache hits, and reset clears the aggregate', async () => {
+    const cacheClient = {
+      getBatch: vi.fn(async () => ['Bonjour']),
+      setBatch: vi.fn(async () => undefined),
+    }
+    await translateHtml('<main><h1>Hello</h1></main>', {
+      code: 'fr',
+      name: 'French',
+      nativeName: 'Français',
+    }, { cacheClient })
+
+    // Cache hit skipped the LLM entirely -> nothing scored, nothing recorded.
+    expect(getTranslationQualityMetrics().pipelinesScored).toBe(0)
+
+    await translateHtml('<main><h1>Hello</h1></main>', {
+      code: 'fr',
+      name: 'French',
+      nativeName: 'Français',
+    })
+    expect(getTranslationQualityMetrics().pipelinesScored).toBe(1)
+
+    resetTranslationQualityMetrics()
+    expect(getTranslationQualityMetrics()).toEqual({
+      pipelinesScored: 0,
+      pipelinesWithCorrections: 0,
+      correctionsApplied: 0,
+      correctionRate: 0,
+      averageInitialScore: 0,
+      averageFinalScore: 0,
+      correctionsVerified: 0,
+      verificationPassRate: 0,
+    })
   })
 })

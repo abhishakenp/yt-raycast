@@ -10,16 +10,14 @@ import {
   updateStoresWorkflow,
 } from '@medusajs/medusa/core-flows'
 
+import { createDefaultStoreUpdate } from './bootstrap-default-store'
+
 const DEFAULT_COUNTRY = 'us'
-const DEFAULT_CURRENCY = 'usd'
 const DEFAULT_REGION_NAME = 'United States'
 const DEFAULT_SALES_CHANNEL_NAME = 'Ship Fast Default Sales Channel'
 const DEFAULT_STOCK_LOCATION_NAME = 'Ship Fast Warehouse'
 
-export const createDefaultStoreUpdate = (defaultSalesChannelId: string) => ({
-  default_sales_channel_id: defaultSalesChannelId,
-  supported_currencies: [{ currency_code: DEFAULT_CURRENCY, is_default: true }],
-})
+export { createDefaultStoreUpdate } from './bootstrap-default-store'
 
 export default async function bootstrapShipFastMedusa({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)

@@ -472,7 +472,7 @@ export default capsule({
     it('boots the deployed browser bundle for generated Lakebed auth and fullstack sections', async () => {
       const project = await buildOpenUILakebedProjectFiles({
         source:
-          'root = PageSwitch(["Home","Auth"], [SaasNavbar(), SignIn("Sign in")])',
+          'root = PageSwitch(["Home","Auth"], [Navbar(), SignIn("Sign in")])',
         siteSpecJson: JSON.stringify({ projectName: 'Lakebed Runtime Smoke' }),
         sessionId: 'lakebed-runtime-smoke',
         target: 'lakebed',
@@ -485,7 +485,7 @@ export default capsule({
 
       expect(home.evalError).toBeUndefined()
       expect(home.errors).toEqual([])
-      expect(home.text).toContain('Chronos AI')
+      expect(home.text).toContain('Brand')
       expect(home.text).not.toBe('')
       expect(home.html).not.toContain('Generated page')
 

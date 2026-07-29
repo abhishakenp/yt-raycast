@@ -285,8 +285,8 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
     const t = sessionEditContractTest()
     const { sessionId, source } = await createReadySessionWithFixture(
       t,
-      'popcorn-mania',
-      'popcorn mania website',
+      'edit-persistence-generic',
+      'generic coffee website',
     )
 
     const headline = extractHeadlineFromSource(source)
@@ -391,8 +391,8 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
     const t = sessionEditContractTest()
     const { sessionId, source } = await createReadySessionWithFixture(
       t,
-      'tech-blog',
-      'tech blog site',
+      'edit-persistence-generic',
+      'generic coffee website',
     )
 
     const headline = extractHeadlineFromSource(source)
@@ -425,10 +425,13 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
       undefined,
       'en',
     )
-    // BUG: This will FAIL because the source was never patched — the
-    // re-rendered HTML shows the old headline, not the AI rewrite.
-    expect(reRenderedHtml).toContain(newHeadline)
-    expect(reRenderedHtml).not.toContain(headline)
+    // Generic hero motifs may place a line break or highlight span inside a
+    // heading. Assert the rendered text content rather than its markup.
+    const renderedText = reRenderedHtml
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+    expect(renderedText).toContain(newHeadline)
+    expect(renderedText).not.toContain(headline)
   })
 
   it('sequential AI rewrite edits persist in source', async () => {

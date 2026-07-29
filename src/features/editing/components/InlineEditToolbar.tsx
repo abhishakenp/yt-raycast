@@ -190,9 +190,9 @@ function formatPixelValue(value: number): string {
 }
 
 const STYLE_SOURCE_ATTRIBUTE_ANCHORS = [
-  'data-openui-var',
-  'data-openui-component',
-  'data-sf-export-page',
+  'data-sf-export-page', // DOM-based, not capsule-specific
+  'data-openui-var', // Legacy capsule support, deprecated
+  'data-openui-component', // Legacy capsule support, deprecated
 ] as const
 
 function escapeAttributeSelectorValue(value: string): string {
@@ -203,9 +203,12 @@ function getStyleSourceAnchor(element: HTMLElement): {
   sourceAnchor: string
   occurrenceIndex: number
 } {
-  const attributeAnchor = getAttributeStyleSourceAnchor(element)
-  if (isGeneratedPageRoot(element) && attributeAnchor) {
-    return attributeAnchor
+  const id = element.getAttribute('id')
+  if (id) {
+    return {
+      sourceAnchor: `#${id}`,
+      occurrenceIndex: 0,
+    }
   }
 
   const classAnchor = element.getAttribute('class') ?? ''
@@ -221,14 +224,7 @@ function getStyleSourceAnchor(element: HTMLElement): {
     }
   }
 
-  const id = element.getAttribute('id')
-  if (id) {
-    return {
-      sourceAnchor: `#${id}`,
-      occurrenceIndex: 0,
-    }
-  }
-
+  const attributeAnchor = getAttributeStyleSourceAnchor(element)
   if (attributeAnchor) {
     return attributeAnchor
   }

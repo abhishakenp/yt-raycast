@@ -1,0 +1,3 @@
+home_hero = SplitHero("FashionStore", "Sneakers for every mile", "New arrivals", "Curated footwear for everyday movement")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])

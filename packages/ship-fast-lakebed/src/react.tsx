@@ -62,7 +62,12 @@ export type {
 
 type LakebedSessionContextValue = {
   anonymousOwnerSecret?: string
-  sessionId: Id<'sessions'> | undefined
+  sessionId?: Id<'sessions'>
+}
+
+type ActiveLakebedSession = {
+  anonymousOwnerSecret?: string
+  sessionId: Id<'sessions'>
 }
 
 type QueryResult<TQuery> = TQuery extends (
@@ -271,12 +276,11 @@ export function LakebedSessionProvider({
   children?: ReactNode
   sessionId?: string
 }) {
-  const value = useMemo(
+  const value = useMemo<LakebedSessionContextValue>(
     () => ({
-      ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
-      ...(sessionId === undefined
-        ? {}
-        : { sessionId: sessionId as Id<'sessions'> }),
+      anonymousOwnerSecret,
+      sessionId:
+        sessionId === undefined ? undefined : (sessionId as Id<'sessions'>),
     }),
     [anonymousOwnerSecret, sessionId],
   )
@@ -288,12 +292,15 @@ export function LakebedSessionProvider({
   )
 }
 
-export function useLakebedSession(): LakebedSessionContextValue {
+export function useLakebedSession(): ActiveLakebedSession {
   const value = useContext(LakebedSessionContext)
-  if (!value) {
-    throw new Error('Lakebed hooks must be used inside LakebedSessionProvider')
+  const sessionId = value?.sessionId
+  if (!value || !sessionId) {
+    throw new Error(
+      'Lakebed session hooks require LakebedSessionProvider with a sessionId',
+    )
   }
-  return value
+  return { ...value, sessionId }
 }
 
 /**
@@ -310,7 +317,7 @@ function lakebedSessionArgs({
   anonymousOwnerSecret,
   capsule,
   sessionId,
-}: LakebedSessionContextValue & { capsule: string }) {
+}: ActiveLakebedSession & { capsule: string }) {
   return {
     ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
     capsule,
@@ -379,7 +386,13 @@ export function useOptionalSessionState<TData extends JsonRecord = JsonRecord>(
   const session = useOptionalLakebedSession()
   const state = useOptionalConvexQuery(
     lakebedApi?.getSessionState,
-    session?.sessionId ? lakebedSessionArgs({ ...session, capsule }) : 'skip',
+    session?.sessionId
+      ? lakebedSessionArgs({
+          anonymousOwnerSecret: session.anonymousOwnerSecret,
+          capsule,
+          sessionId: session.sessionId,
+        })
+      : 'skip',
   ) as { auth: LakebedAuthContext; canWrite?: boolean; data: TData } | undefined
 
   return state === undefined

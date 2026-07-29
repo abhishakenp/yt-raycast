@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   buildElementDeleteCommand,
@@ -459,5 +459,61 @@ home = Stack([home_hero_anchor, home_pricing_anchor])`
         { sessionId: 'session_undo_at_start', currentPreviewVersion: 1 },
       ),
     ).toThrow(/Nothing to undo/)
+  })
+
+  it('warns when the legacy capsule-based section move path is used', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const source = `home_hero = Hero({})
+home_hero_anchor = SectionAnchor("home_hero", home_hero)
+home_pricing = Pricing({})
+home_pricing_anchor = SectionAnchor("home_pricing", home_pricing)
+home = Stack([home_hero_anchor, home_pricing_anchor])`
+
+    buildSectionMoveCommand(
+      { varName: 'home_pricing', direction: 'up' },
+      { sessionId: 'session_move_warn', currentSource: source },
+    )
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(String(warn.mock.calls[0]?.[0])).toContain(
+      '[ship-fast] Deprecated:',
+    )
+    expect(String(warn.mock.calls[0]?.[0])).toContain(
+      'buildSectionMoveCommand',
+    )
+  })
+
+  it('warns when the legacy replacementOpenUiSource section rewrite path is used', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    buildSectionRewriteCommand(
+      { replacementOpenUiSource: 'Hero({ headline: "New" })' },
+      {
+        sessionId: 'session_rewrite_warn',
+        openuiVar: 'home_hero',
+      },
+    )
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(String(warn.mock.calls[0]?.[0])).toContain(
+      '[ship-fast] Deprecated:',
+    )
+    expect(String(warn.mock.calls[0]?.[0])).toContain(
+      'replacementOpenUiSource',
+    )
+  })
+
+  it('does not warn for the DOM-based replacementHtml section rewrite path', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    buildSectionRewriteCommand(
+      { replacementHtml: '<section class="hero">Sharper hero</section>' },
+      {
+        sessionId: 'session_rewrite_html_no_warn',
+        selectionHtml: '<section class="hero">Hero</section>',
+      },
+    )
+
+    expect(warn).not.toHaveBeenCalled()
   })
 })

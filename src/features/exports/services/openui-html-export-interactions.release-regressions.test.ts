@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest'
 import { buildOpenUIHtmlExport } from './openui-html-export-builder'
 
 const bakerySource = `
-home_navbar = BakeryNavbar()
-home_hero = BakeryHero()
+home_navbar = Navbar({"brand":"Sweet Crumb Bakery","links":["Home","Menu"]})
+home_hero = SplitHero({"heading":"Fresh from the oven","primaryCta":"Order now"})
 home = Stack([home_navbar, home_hero])
 root = PageSwitch(["Home"], [home], "", {"Home":"Home"})
 `
@@ -13,13 +13,13 @@ root = PageSwitch(["Home"], [home], "", {"Home":"Home"})
 const bakeryPreviewHtml = `
 <div id="openui-root">
   <section data-sf-export-page="Home">
-    <header data-openui-component="BakeryNavbar">
+    <header data-openui-component="Navbar">
       <button type="button" aria-label="Cart">
         Cart
         <span>0</span>
       </button>
     </header>
-    <section data-openui-component="BakeryHero">
+    <section data-openui-component="SplitHero">
       <button
         type="button"
         aria-label="Add to Cart Chocolate Chip Cookie"
@@ -35,7 +35,7 @@ const bakeryPreviewHtml = `
 const localizedBakeryPreviewHtml = `
 <div id="openui-root">
   <section data-sf-export-page="Home">
-    <header data-openui-component="BakeryNavbar">
+    <header data-openui-component="Navbar">
       <button type="button">होम</button>
       <button type="button">मेनू</button>
       <button type="button" aria-label="Cart">
@@ -43,7 +43,7 @@ const localizedBakeryPreviewHtml = `
         <span>0</span>
       </button>
     </header>
-    <section data-openui-component="BakeryHero">
+    <section data-openui-component="SplitHero">
       <button
         type="button"
         aria-label="कार्ट में जोड़ें Chocolate Chip Cookie"

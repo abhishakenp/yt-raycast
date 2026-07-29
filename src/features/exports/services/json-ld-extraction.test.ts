@@ -14,7 +14,7 @@ function readFixture(name: string) {
   return readFileSync(join(fixtureDir, name), 'utf8')
 }
 
-// Real OpenUI source from Convex DB — coffee roastery with products + reviews
+// V3-compatible coffee roastery source with products + reviews.
 const realReviewSource = readFixture('real-review.openui')
 const realProductSource = readFixture('real-product.openui')
 
@@ -51,8 +51,8 @@ function parseJsonLd(json: string): Record<string, unknown>[] {
   return Array.isArray(parsed) ? parsed : [parsed]
 }
 
-describe('JSON-LD extraction from real DB data', () => {
-  it('extracts products from real coffee roastery source', () => {
+describe('JSON-LD extraction from V3 OpenUI data', () => {
+  it('extracts products from a coffee roastery source', () => {
     const seoBundle = buildBundle(realReviewSource)
     expect(seoBundle?.homeSeo).toBeTruthy()
     const json = seoBundle!.homeSeo!.structuredDataJson

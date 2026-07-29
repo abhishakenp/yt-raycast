@@ -23,7 +23,7 @@ import { buildComponentCall } from './openui-signature.ts'
 import { inferLakebedFromComposition } from './inference.ts'
 import { getInteraction } from './interactions.ts'
 import { generateConvexBackend } from './convex-codegen.ts'
-import { compileSvelteBlock, type CompiledSvelte } from './svelte-compiler.ts'
+import { compileSvelteBlock } from './svelte-compiler.ts'
 import type { LakebedDefinition, DataBinding } from './types.ts'
 
 export interface CompositionCompileResult {
@@ -345,7 +345,7 @@ async function compileCompositionSection(
   pageId: string,
   brand: string,
   nav: string[],
-): { statements: string[]; ref: string | null } {
+): Promise<{ statements: string[]; ref: string | null }> {
   const id = `${pageId}_${section.motif.toLowerCase().replace(/[^a-z0-9]/g, '')}`
   const props = sectionToProps(section)
 

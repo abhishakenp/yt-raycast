@@ -1,0 +1,3 @@
+home_title = Text("Pizza made for tonight")
+home = Stack([home_title])
+root = PageSwitch(["Home"], [home], "", {"Home":"Home#home_title"})

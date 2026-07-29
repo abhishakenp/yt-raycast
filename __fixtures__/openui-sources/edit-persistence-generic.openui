@@ -1,0 +1,4 @@
+home_hero = SplitHero("Fresh daily", "Fresh Coffee", "", "Small-batch beans from around the world", "Order Now", "Our Story")
+home_hero_anchor = SectionAnchor("home_hero", home_hero)
+home = Stack([home_hero_anchor])
+root = PageSwitch(["Home"], [home], "", {"Home":"home"})

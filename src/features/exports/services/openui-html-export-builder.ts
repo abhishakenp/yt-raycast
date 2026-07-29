@@ -499,6 +499,13 @@ function themeValues(
   )
 }
 
+/**
+ * Client-side theme runtime for the FULL standalone export only: re-applies
+ * the light/dark token set on `prefers-color-scheme` changes. Static
+ * thumbnails do not include it — they bake one fixed theme inline (root
+ * `style` attribute + `#openui-root` rule + static `dark` class), so shipping
+ * this script would only add parse/execute time to the html→PNG capture path.
+ */
 function buildThemeRuntime(
   styles: ThemeStyles | null,
   initialDark: boolean,
@@ -1481,6 +1488,140 @@ export async function buildOpenUIHtmlExport(
   await input.onProgress?.('generating')
   return {
     body,
+    contentType: 'text/html; charset=utf-8',
+    filename: 'index.html',
+    fileCount: 1,
+  }
+}
+
+/**
+ * Render only the first page of a parsed OpenUI program, wrapped in the same
+ * `data-sf-export-page` section convention the full export uses. Thumbnails
+ * only ever show the landing page, so pages 2..N are never rendered.
+ */
+async function buildFirstPageMarkup(
+  parsed: ParsedOpenUIProgram,
+  locale: string,
+  imageContext: ImageContext | null,
+  brandLogo?: BrandLogoSelection | null,
+): Promise<string> {
+  const firstPage = parsed.pages[0]
+  if (!firstPage) return ''
+  const pageHtml = await renderPageHtml(
+    firstPage,
+    parsed.library,
+    locale,
+    imageContext,
+    brandLogo,
+  )
+  return `<section data-sf-export-page="${escapeHtml(parsed.routes[0] ?? 'Home')}">${pageHtml}</section>`
+}
+
+/**
+ * Build a lightweight static HTML document for gallery thumbnail capture
+ * (html → PNG via Playwright in gallery-preview-image-response.ts).
+ *
+ * Optimization strategy vs. {@link buildOpenUIHtmlExport}:
+ *
+ * - **Exactly one SSR render.** Only the first page is rendered
+ *   ({@link buildFirstPageMarkup}); the full export renders every page PLUS
+ *   the whole source once more to obtain `cssVars`. That extra full-source
+ *   render is skipped here entirely: it is invoked without theme tokens, so
+ *   `cssVars` is always empty and the render is pure cost. An N-page site
+ *   costs 1 render here vs. N+1 renders in the full export.
+ * - **Zero JavaScript.** The theme is baked statically (root `style`
+ *   attribute + `#openui-root` rule + static `dark` class), so the theme
+ *   runtime, route script, interaction runtime, and `__STATIC_SITE__` state
+ *   are all omitted. A static capture never switches pages, carts, or color
+ *   schemes — every script would only slow `page.setContent` down.
+ * - **No SEO bundle.** Thumbnails are never indexed, so the head carries only
+ *   charset/viewport/style (no `<title>`, Open Graph, JSON-LD, or fonts).
+ * - **No web-font links.** Remote font stylesheets would stall the
+ *   network-idle grace window in the capture path; system fonts render fine
+ *   at thumbnail size.
+ * - **No badge.** `includeBadge` is forced off so branding never covers
+ *   thumbnail content.
+ */
+export async function buildOpenUIHtmlThumbnail(
+  input: OpenUIExportInput,
+): Promise<BuiltExport> {
+  if (isHtmlDocumentSource(input.source)) {
+    return {
+      body: input.source.trim(),
+      contentType: 'text/html; charset=utf-8',
+      filename: 'index.html',
+      fileCount: 1,
+    }
+  }
+  if (isHtmlLikeSource(input.source)) {
+    const html = isUsablePreviewHtml(input.previewHtml)
+      ? input.previewHtml.trim()
+      : input.source.trim()
+    return {
+      body: buildHtmlExport(html, {
+        includeBadge: false,
+      }),
+      contentType: 'text/html; charset=utf-8',
+      filename: 'index.html',
+      fileCount: 1,
+    }
+  }
+
+  const parsed = await parseOpenUIForHtmlExport(
+    input.source,
+    input.siteSpecJson,
+  )
+
+  const siteSpec = parseSiteSpec(input.siteSpecJson)
+  const themeName = readThemeName(siteSpec, input.themeName)
+  const isDark = input.isDark ?? true
+  const locale = input.locale ?? 'en'
+  const themeStyles =
+    resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
+  const themeStyle = buildThemeStyle(themeStyles, isDark)
+  const imageContext = buildExportImageContext(input)
+
+  const pagesMarkup = await rewritePreviewImageUrls(
+    await buildFirstPageMarkup(
+      parsed,
+      locale,
+      imageContext,
+      input.selectedBrandLogo,
+    ),
+  )
+
+  const bodyMarkup = prepareGeneratedMarkup(
+    stripPreviewSourceMetadata(pagesMarkup).replace(
+      /\sdata-openui-[\w-]+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
+      '',
+    ),
+    locale,
+  )
+
+  const rootMarkup = `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</main>`
+
+  const css = await readPreviewCss(rootMarkup)
+  const rootId = 'openui-root'
+
+  return {
+    body: buildHtmlExport(
+      `<!doctype html>
+<html lang="${escapeAttribute(locale)}" dir="${localeTextDirection(locale)}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+${css}
+    #${rootId} { ${themeStyle} }
+    html, body { min-height: 100%; margin: 0; background: var(--background); color: var(--foreground); }
+  </style>
+</head>
+<body class="min-h-screen bg-background text-foreground">
+  ${rootMarkup}
+</body>
+</html>`,
+      { includeBadge: false },
+    ),
     contentType: 'text/html; charset=utf-8',
     filename: 'index.html',
     fileCount: 1,

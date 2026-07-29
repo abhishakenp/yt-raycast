@@ -18,7 +18,7 @@ vi.mock('../generate.ts', () => ({
       _s: string,
       _u: string,
       _sig: unknown,
-      onChunk?: (line: string) => void,
+      _onChunk?: (line: string) => void,
     ) => {
       return ''
     },
@@ -88,7 +88,7 @@ describe('E2E: Coffee Shop', () => {
 
 @section TestimonialRow
   heading Loved by locals
-  testimonials>Best coffee in Brooklyn~Jane Doe~Regular for 3 years^I come every morning~John Smith~Neighborhood local^The pour over is incredible~Alice Lee~Food blogger
+  testimonials>Best coffee in Brooklyn~Mara Whitfield~Regular for 3 years^I come every morning~John Smith~Neighborhood local^The pour over is incredible~Alice Lee~Food blogger
 
 @section MapBlock
   heading Find Us
@@ -228,7 +228,7 @@ describe('E2E: Portfolio Site', () => {
 
 @section PersonGrid
   heading The Team
-  people>Jane Doe~Creative Director~Portrait of Jane Doe^John Smith~Lead Designer~Portrait of John Smith^Alice Lee~Developer~Portrait of Alice Lee
+  people>Mara Whitfield~Creative Director~Portrait of Mara Whitfield^John Smith~Lead Designer~Portrait of John Smith^Alice Lee~Developer~Portrait of Alice Lee
 
 @section ContactForm
   heading Let's work together
@@ -282,7 +282,7 @@ describe('E2E: Restaurant', () => {
 
 @section TestimonialRow
   heading Acclaim
-  testimonials>An unforgettable evening~Food Critic~NYT^The best meal of my life~Jane Doe~Diner^Maison sets the standard~John Smith~Michelin Guide
+  testimonials>An unforgettable evening~Food Critic~NYT^The best meal of my life~Mara Whitfield~Diner^Maison sets the standard~John Smith~Michelin Guide
 
 @section BookingForm
   heading Reserve a Table

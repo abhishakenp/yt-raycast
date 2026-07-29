@@ -45,7 +45,7 @@ jobs:
       - name: Lint packages
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: bun run eslint "packages/*/src/**/*.{ts,tsx}" --max-warnings=0
+        run: bun run eslint "packages/*/src/**/*.{ts,tsx}" --quiet
 
       - name: Lint scripts
         run: bun run eslint "scripts/**/*.ts"

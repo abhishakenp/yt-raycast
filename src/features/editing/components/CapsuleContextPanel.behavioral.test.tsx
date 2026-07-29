@@ -32,14 +32,40 @@ vi.mock('@ship-fast/lakebed/server', async (importOriginal) => {
 })
 
 vi.mock('../hooks/useRuntimeCapsuleSchemaInfo', async () => {
-  const { allCapsules } = await import('@ship-fast/blocks')
+  const { z } = await import('zod/v4')
   const { hasContextInfo, introspectCapsuleSchema } =
     await import('@ship-fast/blocks/capsules')
+  const schemas = {
+    CoworkingGallery: z.object({
+      columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
+      images: z.array(z.object({ alt: z.string(), caption: z.string().optional() })).optional(),
+    }),
+    CoworkingFeatures: z.object({
+      columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
+      features: z.array(z.object({ title: z.string(), description: z.string() })).optional(),
+    }),
+    CoworkingPricing: z.object({
+      tiers: z.array(z.object({ name: z.string(), price: z.string(), period: z.string().optional(), features: z.array(z.string()).optional(), cta: z.string().optional(), ctaTarget: z.string().optional(), highlighted: z.boolean().optional() })).optional(),
+    }),
+    CoworkingTestimonials: z.object({
+      members: z.array(z.object({ quote: z.string(), name: z.string(), role: z.string().optional(), company: z.string().optional(), rating: z.number().optional() })).optional(),
+    }),
+    CoworkingHero: z.object({
+      eyebrow: z.string().optional(),
+      headingLead: z.string().optional(),
+      headingMuted: z.string().optional(),
+      primaryCta: z.string().optional(),
+      secondaryCta: z.string().optional(),
+    }),
+    ElectronicsStoreDeals: z.object({
+      countdown: z.array(z.object({ value: z.string() })).optional(),
+      items: z.array(z.object({ title: z.string(), subtitle: z.string().optional(), price: z.string(), was: z.string().optional(), discount: z.string().optional(), imageAlt: z.string().optional() })).optional(),
+    }),
+  }
   const lookup = (capsuleName: string) => {
-    const capsule = allCapsules.find((c) => c.client.name === capsuleName)
-    const propsSchema = capsule?.client.props
-    if (!propsSchema) return null
-    const info = introspectCapsuleSchema(propsSchema)
+    const info = introspectCapsuleSchema(
+      schemas[capsuleName as keyof typeof schemas],
+    )
     return hasContextInfo(info) ? info : null
   }
   return {

@@ -45,7 +45,7 @@ function classTokensIncludeAnchor(classValue: string, anchor: string): boolean {
 }
 
 const STYLE_ATTRIBUTE_ANCHOR_RE =
-  /^\[(data-openui-var|data-openui-component|data-sf-export-page)=(["'])(.*?)\2\]$/
+  /^\[(data-sf-export-page|data-openui-var|data-openui-component)=(["'])(.*?)\2\]$/
 
 function unescapeAttributeSelectorValue(value: string): string {
   return value.replace(/\\(["'\\])/g, '$1')

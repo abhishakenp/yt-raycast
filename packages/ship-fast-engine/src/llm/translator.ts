@@ -46,12 +46,106 @@ interface TranslationResult {
   error?: string
   qualityScore?: number
   qualityReason?: string
+  /** Score from the first quality pass, before corrections were applied. */
+  initialQualityScore?: number
+  /** Number of strings replaced by scorer-provided corrections (0 when none). */
+  correctionsApplied?: number
+  /** True when corrections were re-scored in a verification pass. */
+  correctionsVerified?: boolean
+}
+
+/**
+ * Quality signal for a single translateHtml pipeline run. Emitted via the
+ * `onQualityReport` callback and folded into the module-level aggregate
+ * returned by `getTranslationQualityMetrics()`.
+ */
+export interface TranslationQualityReport {
+  locale: string
+  translatedCount: number
+  /** First scoring-pass score (0-11), before corrections. */
+  initialScore: number
+  /** Final score after corrections (verification re-score when corrections
+   * were applied, otherwise identical to `initialScore`). */
+  finalScore: number
+  /** Number of strings replaced by scorer-provided corrections. */
+  correctionsApplied: number
+  /** True when corrections were confirmed by a verification re-score at or
+   * above the quality target. */
+  correctionsVerified: boolean
+}
+
+export interface TranslationQualityMetrics {
+  /** Pipeline runs that reached the LLM scoring pass. */
+  pipelinesScored: number
+  /** Runs where the scorer returned corrections (score below target). */
+  pipelinesWithCorrections: number
+  /** Total strings replaced by scorer-provided corrections. */
+  correctionsApplied: number
+  /** Fraction of scored runs that needed corrections (0-1). */
+  correctionRate: number
+  /** Mean first-pass score across scored runs. */
+  averageInitialScore: number
+  /** Mean final score across scored runs (post-correction). */
+  averageFinalScore: number
+  /** Runs where applied corrections passed the verification re-score. */
+  correctionsVerified: number
+  /** Fraction of corrected runs whose verification re-score passed (0-1). */
+  verificationPassRate: number
 }
 
 // llama-3.3-70b handles Indian language translation well
 const TRANSLATION_MODEL = 'llama-3.3-70b-versatile'
 const QUALITY_TARGET_SCORE = 11
-const MAX_QUALITY_REWRITE_ATTEMPTS = 3
+
+// ── Quality monitoring (in-memory aggregate) ─────────────────────────────
+// Counts how often the scorer has to provide corrections and whether those
+// corrections pass the verification re-score. Long-term persistence is the
+// caller's job via the `onQualityReport` option (e.g. write to Convex).
+const qualityMetricsState = {
+  pipelinesScored: 0,
+  pipelinesWithCorrections: 0,
+  correctionsApplied: 0,
+  initialScoreSum: 0,
+  finalScoreSum: 0,
+  correctionsVerified: 0,
+}
+
+function recordQualityReport(report: TranslationQualityReport): void {
+  qualityMetricsState.pipelinesScored += 1
+  qualityMetricsState.initialScoreSum += report.initialScore
+  qualityMetricsState.finalScoreSum += report.finalScore
+  if (report.correctionsApplied > 0) {
+    qualityMetricsState.pipelinesWithCorrections += 1
+    qualityMetricsState.correctionsApplied += report.correctionsApplied
+    if (report.correctionsVerified) qualityMetricsState.correctionsVerified += 1
+  }
+}
+
+/** Snapshot of aggregate translation-quality metrics for this process. */
+export function getTranslationQualityMetrics(): TranslationQualityMetrics {
+  const scored = qualityMetricsState.pipelinesScored
+  const corrected = qualityMetricsState.pipelinesWithCorrections
+  return {
+    pipelinesScored: scored,
+    pipelinesWithCorrections: corrected,
+    correctionsApplied: qualityMetricsState.correctionsApplied,
+    correctionRate: scored > 0 ? corrected / scored : 0,
+    averageInitialScore: scored > 0 ? qualityMetricsState.initialScoreSum / scored : 0,
+    averageFinalScore: scored > 0 ? qualityMetricsState.finalScoreSum / scored : 0,
+    correctionsVerified: qualityMetricsState.correctionsVerified,
+    verificationPassRate: corrected > 0 ? qualityMetricsState.correctionsVerified / corrected : 0,
+  }
+}
+
+/** Reset the in-memory aggregate (primarily for tests). */
+export function resetTranslationQualityMetrics(): void {
+  qualityMetricsState.pipelinesScored = 0
+  qualityMetricsState.pipelinesWithCorrections = 0
+  qualityMetricsState.correctionsApplied = 0
+  qualityMetricsState.initialScoreSum = 0
+  qualityMetricsState.finalScoreSum = 0
+  qualityMetricsState.correctionsVerified = 0
+}
 
 function resolveTargetLanguage(
   languageMode: LanguageMode | undefined,
@@ -194,18 +288,20 @@ async function translateTexts(
 
 Source strings may be English, target-language, or mixed. Do not produce stiff, word-for-word translation; the result must be not word-for-word when natural local copy requires transcreation. Preserve the original intent and UI role, but improve phrasing where needed for natural rhythm, trust, clarity, and conversion. Headlines should sound like strong marketing headlines. CTAs should be concise and action-oriented. Body copy should feel fluent and specific, not generic.
 
-Avoid calques and dictionary-literal business phrases. Resolve ambiguous UI and marketing verbs by their role: Book a call means schedule a call, not the noun "book"; get started means begin; learn more means read/discover more. Use accepted local business/technology loanwords when they sound more natural than forced purist wording; terms like strategy, marketing, call, booking, brand, service, and client are often better as familiar local loanwords than as awkward literal translations. Before returning JSON, silently self-review every string and rewrite anything that sounds machine-translated, awkward, or low-trust.
+Avoid calques and dictionary-literal business phrases. Resolve ambiguous UI and marketing verbs by their role: Book a call means schedule a call, not the noun "book"; get started means begin; learn more means read/discover more. Use accepted local business/technology loanwords when they sound more natural than forced purist wording; terms like strategy, marketing, call, booking, brand, service, and client are often better as familiar local loanwords than as awkward literal translations.
+
+CRITICAL: Before returning JSON, silently self-review every string and rewrite anything that sounds machine-translated, awkward, or low-trust. Your output must be 11/10 quality — ready to ship without further revision. Each string should sound like it was written by a strong local copywriter for a premium conversion website.
 
 Rules:
 - Return ONLY valid JSON, no markdown or explanation.
 - Use the target language's normal native script unless the language code explicitly requests Latin/romanized script.
 - Keep each translated string roughly similar in length and purpose so the UI layout still works.
 - Preserve brand names, product names, URLs, numbers, prices, email addresses, code-like tokens, and placeholders.
-- Translate every item in sourceTexts.
+- Translate every item in sourceTexts to 11/10 quality.
 
 Expected response shape:
 {"translations":{"t0":"...","t1":"..."}}`,
-    temperature: 0.35,
+    temperature: 0.4,
     maxTokens: 6000,
   })
 
@@ -215,64 +311,6 @@ Expected response shape:
     return parseTranslationResponse(result.content, records)
   } catch {
     return {}
-  }
-}
-
-async function polishTranslations(
-  texts: string[],
-  draftTranslations: TranslationMap,
-  language: TargetLanguage,
-): Promise<TranslationMap> {
-  const records = buildTextRecords(texts)
-  const items = records
-    .map((record) => ({
-      id: record.id,
-      source: record.text,
-      draft: draftTranslations[record.text],
-    }))
-    .filter((item) => typeof item.draft === 'string' && item.draft.trim())
-
-  if (items.length === 0) return draftTranslations
-
-  const result = await groq(
-    JSON.stringify({
-      targetLanguage: {
-        code: language.code,
-        name: language.name,
-        nativeName: language.nativeName,
-      },
-      pageContext: buildPageContext(texts),
-      projectBrief: language.projectBrief,
-      items,
-    }),
-    {
-      model: TRANSLATION_MODEL,
-      system: `You are the final localization QA and senior conversion copy chief for a premium website.
-
-Review the draft translations against the source text and rewrite awkward, literal, low-trust, or overly formal phrases into 11/10 ${language.name} (${language.nativeName}) website copy. Keep the same meaning and UI role, but make the copy feel natural, modern, persuasive, and locally credible.
-
-Rules:
-- Return ONLY valid JSON, no markdown or explanation.
-- Preserve each item id.
-- Fix calques, false friends, and ambiguous CTA verbs.
-- Prefer clear everyday business language over academic or bureaucratic wording.
-- Keep accepted business/tech loanwords when they are what real users expect.
-- Preserve brand names, numbers, URLs, placeholders, and code-like tokens.
-
-Expected response shape:
-{"translations":{"t0":"...","t1":"..."}}`,
-      temperature: 0.45,
-      maxTokens: 6000,
-    },
-  )
-
-  if (!result?.content || result.error) return draftTranslations
-
-  try {
-    const polished = parseTranslationResponse(result.content, records)
-    return { ...draftTranslations, ...polished }
-  } catch {
-    return draftTranslations
   }
 }
 
@@ -359,67 +397,6 @@ function applySuggestedTranslations(
     : translations
 }
 
-async function rewriteWeakTranslations(
-  texts: string[],
-  translations: TranslationMap,
-  language: TargetLanguage,
-  quality: QualityResult,
-): Promise<TranslationMap> {
-  if (!quality || quality.score >= 10.5) return translations
-
-  const records = buildTextRecords(texts)
-  const weakIds = new Set<string>(
-    quality.weakIds?.length
-      ? quality.weakIds
-      : records.map((record) => record.id),
-  )
-  const items = records
-    .filter((record) => weakIds.has(record.id))
-    .map((record) => ({
-      id: record.id,
-      source: record.text,
-      draft: translations[record.text],
-    }))
-    .filter((item) => typeof item.draft === 'string' && item.draft.trim())
-
-  if (items.length === 0) return translations
-
-  const result = await groq(
-    JSON.stringify({
-      targetLanguage: {
-        code: language.code,
-        name: language.name,
-        nativeName: language.nativeName,
-      },
-      pageContext: buildPageContext(texts),
-      projectBrief: language.projectBrief,
-      qualityFeedback:
-        quality.reason || 'Output did not reach the 11/10 user-appeal bar.',
-      items,
-    }),
-    {
-      model: TRANSLATION_MODEL,
-      system: `You must rewrite only the weak translations so they reach an 11/10 premium website standard.
-
-Make each string sound native, modern, persuasive, and locally credible using natural contemporary website language in a conversational professional digital-marketing register. Remove literal calques, awkward formal phrasing, and any wording that would make users feel the page was machine-translated. Use accepted English loanwords for business, marketing, and technology terms when that is what real local users expect; terms like strategy, marketing, call, booking, brand, service, and client should stay familiar when literal translation sounds unnatural. Use the quality feedback directly. Do not repeat wording that the judge already rejected. Preserve meaning, UI role, ids, brand names, numbers, URLs, placeholders, and layout-friendly length.
-
-Return ONLY valid JSON:
-{"translations":{"t0":"..."}}`,
-      temperature: 0.55,
-      maxTokens: 6000,
-    },
-  )
-
-  if (!result?.content || result.error) return translations
-
-  try {
-    const rewritten = parseTranslationResponse(result.content, records)
-    return { ...translations, ...rewritten }
-  } catch {
-    return translations
-  }
-}
-
 function replaceVisibleTextNodes(
   html: string,
   translations: TranslationMap,
@@ -458,6 +435,13 @@ function replaceVisibleTextNodes(
  * Translate the visible text content of an HTML string into the target Indian
  * language using Groq. HTML structure, CSS, and JavaScript are never touched.
  *
+ * Pipeline: (1) high-quality translation pass with built-in self-review,
+ * (2) quality-scoring pass that returns corrected copy for weak strings in
+ * the same response, and (3) a verification re-score that runs only when
+ * corrections were applied. Every scored run is folded into the in-memory
+ * quality aggregate (`getTranslationQualityMetrics()`) and emitted through
+ * the optional `onQualityReport` callback.
+ *
  * When a `cacheClient` is provided, the function checks the shared translation
  * cache (`translationCache` + `sessionTranslationOverrides`) before calling the
  * LLM. If all extracted texts are cached, the LLM is skipped entirely. After a
@@ -470,6 +454,9 @@ export async function translateHtml(
   options?: {
     cacheClient?: TranslationCacheClient
     sessionId?: string
+    /** Quality signal emitted once per scored pipeline run. Use it to persist
+     * quality monitoring data (e.g. to Convex). Errors are swallowed. */
+    onQualityReport?: (report: TranslationQualityReport) => void
   },
 ): Promise<TranslationResult> {
   const language = resolveTargetLanguage(languageMode)
@@ -516,39 +503,63 @@ export async function translateHtml(
     }
   }
 
-  // ── LLM translation pipeline (draft → polish → score → rewrite) ─────────
-  const draftTranslations = await translateTexts(texts, language)
-  const polishedTranslations = await polishTranslations(
-    texts,
-    draftTranslations,
-    language,
-  )
-  let translations = polishedTranslations
-  let finalQuality = await scoreTranslations(texts, translations, language)
-  for (
-    let attempt = 0;
-    finalQuality.score < QUALITY_TARGET_SCORE &&
-    attempt < MAX_QUALITY_REWRITE_ATTEMPTS;
-    attempt += 1
-  ) {
-    const suggested = applySuggestedTranslations(
+  // ── LLM translation pipeline (2 passes, +1 conditional verification) ────
+  // Pass 1: high-quality translation with built-in self-review.
+  // Pass 2: quality scoring; the scorer returns corrected 11/10 copy for any
+  //         weak strings in the same response.
+  // Pass 3 (only when corrections were applied): verification re-score of the
+  //         corrected copy so the reported qualityScore is measured, not
+  //         assumed. Bounded at one correction round — no rewrite loop.
+  let translations = await translateTexts(texts, language)
+  const initialQuality = await scoreTranslations(texts, translations, language)
+  const initialScore = initialQuality.score
+
+  let finalScore = initialScore
+  let finalReason = initialQuality.reason || ''
+  let correctionsApplied = 0
+  let correctionsVerified = false
+
+  const suggestions = initialQuality.translations
+  if (suggestions && Object.keys(suggestions).length > 0) {
+    const correctedTranslations = applySuggestedTranslations(
       translations,
-      finalQuality.translations,
+      suggestions,
     )
-    const rewritten =
-      suggested === translations
-        ? await rewriteWeakTranslations(
-            texts,
-            translations,
-            language,
-            finalQuality,
-          )
-        : suggested
-    if (rewritten === translations) break
-    translations = rewritten
-    finalQuality = await scoreTranslations(texts, translations, language)
+    if (correctedTranslations !== translations) {
+      translations = correctedTranslations
+      correctionsApplied = Object.values(suggestions).filter(
+        (suggestion) => typeof suggestion === 'string' && suggestion.trim(),
+      ).length
+
+      // Verification pass: re-score the corrected copy instead of assuming
+      // the corrections hit the bar. Corrections are kept even if the score
+      // still falls short — the scorer judged them strictly better than the
+      // originals — but the reported score stays honest.
+      const verification = await scoreTranslations(texts, translations, language)
+      finalScore = verification.score
+      finalReason = verification.reason || 'Corrections applied from quality assessment'
+      correctionsVerified = verification.score >= QUALITY_TARGET_SCORE
+    }
   }
+
   const translatedCount = Object.values(translations).filter(Boolean).length
+
+  // ── Quality monitoring ──────────────────────────────────────────────────
+  const qualityReport: TranslationQualityReport = {
+    locale,
+    translatedCount,
+    initialScore,
+    finalScore,
+    correctionsApplied,
+    correctionsVerified,
+  }
+  recordQualityReport(qualityReport)
+  try {
+    options?.onQualityReport?.(qualityReport)
+  } catch {
+    // Metrics sinks must never break translation.
+  }
+
   if (translatedCount === 0)
     return { content: html, error: 'no translations returned' }
 
@@ -572,8 +583,11 @@ export async function translateHtml(
   return {
     content: translated,
     translatedCount,
-    qualityScore: finalQuality.score,
-    qualityReason: finalQuality.reason || '',
+    qualityScore: finalScore,
+    qualityReason: finalReason,
+    initialQualityScore: initialScore,
+    correctionsApplied,
+    correctionsVerified,
   }
 }
 
@@ -587,6 +601,7 @@ export async function translateHtmlSequential(
   options?: {
     cacheClient?: TranslationCacheClient
     sessionId?: string
+    onQualityReport?: (report: TranslationQualityReport) => void
   },
 ): Promise<string[]> {
   const out: string[] = []
