@@ -39,6 +39,7 @@ type UnavailableDecision = {
     | 'provider_error'
     | 'provider_timeout'
     | 'invalid_provider_response'
+    | 'input_too_large'
 }
 
 type SuppliedField = [ModerationField, string]
@@ -124,69 +125,50 @@ const createClassificationBatches = (
   const totalChars = fields.reduce((sum, [, value]) => sum + value.length, 0)
   if (totalChars <= CONTENT_MODERATION_MAX_CHUNK_CHARS) return [fields]
 
-  const companionBudgetChars = 4_000
-  const companionLimit = Math.floor(
-    companionBudgetChars / Math.max(1, fields.length - 1),
-  )
   const longestFieldIndex = fields.reduce(
     (longest, current, index) =>
       current[1].length > fields[longest][1].length ? index : longest,
     0,
   )
-  const primaryFields = fields.filter(
-    ([, value], index) =>
-      index === longestFieldIndex || value.length > companionLimit,
+  const [primaryField, value] = fields[longestFieldIndex]
+  const companionChars = fields.reduce(
+    (sum, [field, companion]) =>
+      field === primaryField ? sum : sum + companion.length,
+    0,
   )
   const batches: SuppliedField[][] = []
   const overlapChars = 256
   const openingContextChars = 512
   const reservedLabelChars = 512
-  const excerpt = (value: string) => {
-    if (value.length <= companionLimit) return value
-    const marker = '\n[…]\n'
-    const sideChars = Math.max(
-      1,
-      Math.floor((companionLimit - marker.length) / 2),
+  const primaryBudget = Math.max(
+    1_000,
+    CONTENT_MODERATION_MAX_CHUNK_CHARS - companionChars - reservedLabelChars,
+  )
+  let start = 0
+  while (start < value.length) {
+    const openingContext =
+      start === 0
+        ? ''
+        : `${value.slice(0, openingContextChars)}\n[…current segment…]\n`
+    const segmentBudget = primaryBudget - openingContext.length
+    const end = Math.min(start + segmentBudget, value.length)
+    const primaryValue = `${openingContext}${value.slice(start, end)}`
+    batches.push(
+      fields.map(([field, companion]) =>
+        field === primaryField ? [field, primaryValue] : [field, companion],
+      ),
     )
-    return `${value.slice(0, sideChars)}${marker}${value.slice(-sideChars)}`
-  }
-
-  for (const [primaryField, value] of primaryFields) {
-    const companions = fields
-      .filter(([field]) => field !== primaryField)
-      .map(([field, companion]) => [field, excerpt(companion)] as SuppliedField)
-    const companionChars = companions.reduce(
-      (sum, [, companion]) => sum + companion.length,
-      0,
-    )
-    const primaryBudget = Math.max(
-      1_000,
-      CONTENT_MODERATION_MAX_CHUNK_CHARS - companionChars - reservedLabelChars,
-    )
-    let start = 0
-    while (start < value.length) {
-      const openingContext =
-        start === 0
-          ? ''
-          : `${value.slice(0, openingContextChars)}\n[…current segment…]\n`
-      const segmentBudget = primaryBudget - openingContext.length
-      const end = Math.min(start + segmentBudget, value.length)
-      const primaryValue = `${openingContext}${value.slice(start, end)}`
-      batches.push(
-        fields.map(([field]) =>
-          field === primaryField
-            ? [field, primaryValue]
-            : (companions.find(([companion]) => companion === field) ?? [
-                field,
-                '',
-              ]),
-        ),
-      )
-      if (end === value.length) break
-      start = end - overlapChars
-    }
+    if (end === value.length) break
+    start = end - overlapChars
   }
   return batches
+}
+
+const cannotPreserveFullCompanionContext = (fields: SuppliedField[]) => {
+  const totalChars = fields.reduce((sum, [, value]) => sum + value.length, 0)
+  if (totalChars <= CONTENT_MODERATION_MAX_CHUNK_CHARS) return false
+  const longestFieldChars = Math.max(...fields.map(([, value]) => value.length))
+  return totalChars - longestFieldChars > 4_000
 }
 
 const createLabeledInput = (
@@ -317,6 +299,8 @@ export const classifyUserInput = async ({
   const suppliedFields = nonemptyStringFields(fields)
   if (suppliedFields.length === 0) return { decision: 'safe' }
   if (!apiKey) return unavailable('missing_api_key')
+  if (cannotPreserveFullCompanionContext(suppliedFields))
+    return unavailable('input_too_large')
 
   const batches = createClassificationBatches(suppliedFields)
   const controller = new AbortController()
