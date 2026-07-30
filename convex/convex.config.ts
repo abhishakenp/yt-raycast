@@ -5,6 +5,7 @@ import debouncer from '@ikhrustalev/convex-debouncer/convex.config.js'
 const app = defineApp({
   env: {
     BILLING_WEBHOOK_MUTATION_SECRET: v.optional(v.string()),
+    CONTENT_MODERATION_MUTATION_SECRET: v.optional(v.string()),
     DUB_API_KEY: v.optional(v.string()),
     DUB_PARTNERS_ENABLED: v.optional(v.string()),
     DUB_PARTNER_GROUP_ID: v.optional(v.string()),
