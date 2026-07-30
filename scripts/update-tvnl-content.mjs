@@ -1,8 +1,14 @@
-const ORIGIN = 'https://courteous-horse-635.convex.cloud'
-const SESSION = 'k576ce1ygzdqxq8q05aa3zcfpd8a5fmr'
-const SECRET = 'tvnl-seed-secret-1783541246530'
-const STATE_LOGO_URL =
-  'https://courteous-horse-635.convex.cloud/api/storage/fef5a962-f3f5-4451-91bc-e02ed4890f44'
+const ORIGIN = process.env.TVNL_CONVEX_ORIGIN
+const SESSION = process.env.TVNL_SESSION_ID
+const SECRET = process.env.TVNL_SESSION_SECRET
+
+if (!ORIGIN || !SESSION || !SECRET) {
+  console.error(
+    'Missing required env vars: TVNL_CONVEX_ORIGIN, TVNL_SESSION_ID, TVNL_SESSION_SECRET',
+  )
+  process.exit(1)
+}
+const STATE_LOGO_URL = `${ORIGIN}/api/storage/fef5a962-f3f5-4451-91bc-e02ed4890f44`
 
 const guestQuery = async (path, args) => {
   const res = await fetch(`${ORIGIN}/api/query`, {

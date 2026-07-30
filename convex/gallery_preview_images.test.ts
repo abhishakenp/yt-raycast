@@ -5,9 +5,12 @@ import { describe, expect, it } from 'vitest'
 
 import { api } from './_generated/api'
 import type { Id } from './_generated/dataModel'
+import { hashOwnerSecret } from './lib/session_access_helpers'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+
+const ownerSecret = 'gallery-thumbnail-owner-secret'
 
 const insertPublicSession = async (
   t: ReturnType<typeof convexTest>,
@@ -16,6 +19,7 @@ const insertPublicSession = async (
   await t.run(async (ctx) => {
     return await ctx.db.insert('sessions', {
       createdAt: 100,
+      anonOwnerSecretHash: await hashOwnerSecret(ownerSecret),
       isPrivate: false,
       preferredExportTarget: 'html',
       preferredLanguage: 'en',
@@ -44,12 +48,33 @@ const readStorageExists = async (
   })
 
 describe('gallery preview image storage', () => {
+  it('requires the dashboard owner before issuing an image upload URL', async () => {
+    const t = convexTest(schema, modules)
+    const sessionId = await insertPublicSession(t, 111)
+
+    await expect(
+      t.mutation(api.gallery_preview_images.generateUploadUrl, {
+        cacheVersion: '111',
+        sessionId,
+      }),
+    ).rejects.toThrow('FORBIDDEN')
+
+    await expect(
+      t.mutation(api.gallery_preview_images.generateUploadUrl, {
+        anonymousOwnerSecret: ownerSecret,
+        cacheVersion: '111',
+        sessionId,
+      }),
+    ).resolves.toEqual(expect.any(String))
+  })
+
   it('replaces the session-keyed storage blob when cache version changes', async () => {
     const t = convexTest(schema, modules)
     const sessionId = await insertPublicSession(t, 111)
     const firstStorageId = await storePng(t, 'first')
 
     const first = await t.mutation(api.gallery_preview_images.commit, {
+      anonymousOwnerSecret: ownerSecret,
       cacheVersion: '111',
       contentType: 'image/png',
       sessionId,
@@ -62,6 +87,7 @@ describe('gallery preview image storage', () => {
     })
     const secondStorageId = await storePng(t, 'second')
     const second = await t.mutation(api.gallery_preview_images.commit, {
+      anonymousOwnerSecret: ownerSecret,
       cacheVersion: '222',
       contentType: 'image/png',
       sessionId,
@@ -88,6 +114,7 @@ describe('gallery preview image storage', () => {
     const sessionId = await insertPublicSession(t, 333)
     const currentStorageId = await storePng(t, 'current')
     await t.mutation(api.gallery_preview_images.commit, {
+      anonymousOwnerSecret: ownerSecret,
       cacheVersion: '333',
       contentType: 'image/png',
       sessionId,
@@ -100,6 +127,7 @@ describe('gallery preview image storage', () => {
     })
     const staleStorageId = await storePng(t, 'stale')
     const stale = await t.mutation(api.gallery_preview_images.commit, {
+      anonymousOwnerSecret: ownerSecret,
       cacheVersion: '333',
       contentType: 'image/png',
       sessionId,

@@ -40,8 +40,10 @@ const DISABLED_IDENTIFIERS = new Set([
 // Integration tests that legitimately require external env vars to run.
 // These are allowed to use skipIf to skip when the env is absent.
 const SKIP_IF_ALLOWLIST = new Set([
+  'packages/ship-fast-engine/src/llm/translator.integration.test.ts',
   'src/features/deployments/inspect-tvnl-build.test.ts',
   'src/features/deployments/run-tvnl-lakebed-deploy.test.ts',
+  'src/features/exports/services/lakebed-e2e-deploy-smoke.test.ts',
 ])
 
 function collectTestArtifacts(root: string) {

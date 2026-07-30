@@ -12,6 +12,7 @@ import {
   renderShooAuthProvider,
   renderShooCallbackRoute,
 } from './export-data'
+import { renderSpecializedReactStore } from './export-specialized-store'
 
 describe('export-data naming', () => {
   it('queryActionName converts query names to PascalCase getter names', () => {
@@ -54,6 +55,29 @@ describe('export-data react store', () => {
     keys.queries.add('menuCatalog')
     const store = renderReactStore(keys)
     expect(store).not.toContain('export function readAuth()')
+  })
+
+  it('retains the portable commerce contract when a component uses only part of it', () => {
+    const store = renderSpecializedReactStore(createDataKeys(), {
+      products: [],
+      restaurants: [],
+    })
+
+    expect(store).toContain('export async function getCartSummary()')
+    expect(store).toContain('export async function getProductCatalog()')
+    expect(store).toContain('export async function addItemAction(')
+    expect(store).toContain('export async function clearCartAction(')
+  })
+
+  it('includes portable cart query keys in generated keyed mutations', () => {
+    const hook = renderKeyedMutationHook([
+      'commerceSearchState',
+      'cartSummary',
+      'productCatalog',
+    ])
+
+    expect(hook).toContain('queryKey: ["cartSummary"]')
+    expect(hook).toContain('queryKey: ["productCatalog"]')
   })
 })
 

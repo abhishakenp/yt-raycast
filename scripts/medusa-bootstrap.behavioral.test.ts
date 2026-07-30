@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { createDefaultStoreUpdate } from '../medusa-backend/src/scripts/bootstrap'
+import { createDefaultStoreUpdate } from '../medusa-backend/src/scripts/bootstrap-default-store'
 
 describe('Ship Fast Medusa bootstrap store update', () => {
   it('marks USD as the default supported store currency', () => {

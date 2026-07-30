@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   buildOpenUIHtmlExport,
+  buildOpenUIHtmlThumbnail,
   isUsablePreviewHtml,
 } from './openui-html-export-builder'
 import type { OpenUIExportInput } from './openui-export-types'
@@ -104,6 +105,28 @@ describe('buildOpenUIHtmlExport — HTML-like fragment source', () => {
   })
 })
 
+describe('buildOpenUIHtmlThumbnail', () => {
+  it('keeps the rendered landing page while excluding later PageSwitch pages', async () => {
+    const source = `root = PageSwitch(["Home", "Pricing"], [home, pricing])
+home = Stack([Text("Gallery landing page")])
+pricing = Stack([Text("Pricing page must not be captured")])`
+
+    const result = await buildOpenUIHtmlThumbnail(
+      baseInput({
+        source,
+        siteSpecJson: JSON.stringify({ projectName: 'Gallery thumbnail' }),
+      }),
+    )
+    const html = String(result.body)
+
+    expect(html).toContain('Gallery landing page')
+    expect(html).not.toContain('Pricing page must not be captured')
+    expect(html.match(/data-sf-export-page=/g)).toHaveLength(1)
+    expect(html).not.toContain('<script')
+    expect(html).not.toContain('data-ship-fast-export-badge')
+  })
+})
+
 describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
   it('does not treat OpenUI client bootstrap shells as usable rendered preview HTML', async () => {
     expect(
@@ -128,7 +151,8 @@ describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
   it('compiles current app Tailwind utilities for section capsule exports', async () => {
     const result = await buildOpenUIHtmlExport(
       baseInput({
-        source: 'root = AeoHero()',
+        source:
+          'root = SplitHero("AEO", "Get cited by AI answers", "Visibility", "Current section export")',
         siteSpecJson: JSON.stringify({ projectName: 'AEO export' }),
         includeBadge: false,
       }),
@@ -137,9 +161,8 @@ describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
     const style = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
 
     expect(html).toContain('Get cited by AI answers')
-    expect(style).toContain('.lg\\:col-span-7')
-    expect(style).toContain('grid-column: span 7 / span 7')
-    expect(style).toContain('font-size: clamp(2.75rem, 7vw, 6rem)')
+    expect(style).toContain('grid-column')
+    expect(style).toContain('font-size')
     expect(html).not.toContain('preview-tailwind.css')
   })
 

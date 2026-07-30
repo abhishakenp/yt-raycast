@@ -3728,9 +3728,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     render(<Dashboard sessionId="ready-session" />)
     await startStubDashboardTextDraft()
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Regenerate session' }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: 'Regenerate session' }))
 
     await waitFor(() => {
       expect(getConvexState().publishMutation).toHaveBeenCalledTimes(1)
@@ -3738,10 +3736,23 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     expectStubDashboardDraftDiscarded()
     expect(
       getConvexState().pendingTextEdit.cancel.mock.invocationCallOrder[0],
-    ).toBeLessThan(
-      getConvexState().publishMutation.mock.invocationCallOrder[0],
-    )
+    ).toBeLessThan(getConvexState().publishMutation.mock.invocationCallOrder[0])
     fetchSpy.mockRestore()
+  })
+
+  it('discards one pending draft before reloading the preview', async () => {
+    setupReady()
+    const { reloadSpy } = installLocationMock()
+    render(<Dashboard sessionId="ready-session" />)
+    await startStubDashboardTextDraft()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reload page' }))
+
+    expect(reloadSpy).toHaveBeenCalledTimes(1)
+    expectStubDashboardDraftDiscarded()
+    expect(
+      getConvexState().pendingTextEdit.cancel.mock.invocationCallOrder[0],
+    ).toBeLessThan(reloadSpy.mock.invocationCallOrder[0])
   })
 
   it('discards one pending draft before navigating back home', async () => {

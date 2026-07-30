@@ -43,6 +43,7 @@ import {
 import {
   renderSpecializedNextStore,
   renderSpecializedReactStore,
+  portableCommerceQueryNames,
 } from './export-specialized-store'
 import {
   extractPreviewImageSourceReferences,
@@ -4163,8 +4164,6 @@ async function buildReactExport(
     'src/data/pages.ts':
       renderRouteData(routes, routeComponentNames) +
       renderPortableCommerceConfig(input.siteSpecJson),
-    'src/lib/cn.ts': renderLibCn(),
-    'src/lib/image.tsx': renderImageHelper(imageSources),
     'src/styles.css':
       renderThemeCss(input) + renderStyleOverridesCss(styleOverrides),
     'README.md': renderReadme(parsed.projectName, 'react'),
@@ -4175,7 +4174,7 @@ async function buildReactExport(
       extractCollections(routes),
     )
     files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook(
-      dataKeys.queries,
+      new Set([...portableCommerceQueryNames, ...dataKeys.queries]),
     )
     files['src/lib/query-provider.tsx'] = renderQueryClientProvider()
     if (dataKeys.usesAuth) {
@@ -4190,6 +4189,13 @@ async function buildReactExport(
     files[`src/components/${component.name}.tsx`] = component.source
   }
   Object.assign(files, blockSources.files)
+  const generatedSource = Object.values(files).join('\n')
+  if (/from ['"][^'"]*\/lib\/cn['"]/.test(generatedSource)) {
+    files['src/lib/cn.ts'] = renderLibCn()
+  }
+  if (/from ['"][^'"]*\/lib\/image['"]/.test(generatedSource)) {
+    files['src/lib/image.tsx'] = renderImageHelper(imageSources)
+  }
   if (files['src/section-kit/Logo.tsx']) {
     files['src/section-kit/Logo.tsx'] = renderExportLogoComponent(input)
   }
@@ -4298,8 +4304,6 @@ export default function RootLayout({ children }: PropsWithChildren) {
     'src/data/pages.ts':
       renderRouteData(routes, routeComponentNames) +
       renderPortableCommerceConfig(input.siteSpecJson),
-    'src/lib/cn.ts': renderLibCn(),
-    'src/lib/image.tsx': renderImageHelper(imageSources),
     'README.md': renderReadme(parsed.projectName, 'next'),
   }
   if (usesLakebed) {
@@ -4349,6 +4353,13 @@ export default function Page() {
     )
   }
   Object.assign(files, blockSources.files)
+  const generatedSource = Object.values(files).join('\n')
+  if (/from ['"][^'"]*\/lib\/cn['"]/.test(generatedSource)) {
+    files['src/lib/cn.ts'] = renderLibCn()
+  }
+  if (/from ['"][^'"]*\/lib\/image['"]/.test(generatedSource)) {
+    files['src/lib/image.tsx'] = renderImageHelper(imageSources)
+  }
   if (files['src/section-kit/Logo.tsx']) {
     files['src/section-kit/Logo.tsx'] = renderExportLogoComponent(input)
   }

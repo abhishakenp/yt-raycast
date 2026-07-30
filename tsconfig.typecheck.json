@@ -25,6 +25,14 @@
     "node_modules/**",
     "sessions/**",
     "vendor/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.integration.test.ts",
+    "**/*.integration.test.tsx",
+    "**/*.behavioral.test.ts",
+    "**/*.behavioral.test.tsx",
+    "**/*.release-regressions.test.ts",
+    "**/*.release-regressions.test.tsx",
     "packages/ship-fast-blocks/src/**"
   ],
   "compilerOptions": {

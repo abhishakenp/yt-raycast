@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import type { Plugin } from 'vite'
+import type { Plugin as RollupPlugin } from 'rollup'
 import { devtools } from '@tanstack/devtools-vite'
 
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
@@ -349,7 +350,7 @@ function isOpenUIPromptSpecModule(moduleId: string) {
 // the free identifiers resolve to the running module's path. Only chunks that
 // actually reference the globals are touched, and any chunk that already declares
 // them is skipped to avoid a redeclaration SyntaxError.
-function cjsDirnameShim(): Plugin {
+function cjsDirnameShim(): RollupPlugin {
   return {
     name: 'ship-fast-cjs-dirname-shim',
     renderChunk(code: string) {
@@ -379,9 +380,8 @@ function pexelsDevApi(): Plugin {
         // below is kept only as a fallback if the route handler import fails
         // (e.g. during a broken HMR state).
         try {
-          const { createPexelsPreviewImageResponse } = await import(
-            './src/features/images/server/pexels-preview-image'
-          )
+          const { createPexelsPreviewImageResponse } =
+            await import('./src/features/images/server/pexels-preview-image')
           const host = req.headers.host ?? 'localhost:3000'
           const request = new Request(
             new URL(req.url ?? '', `http://${host}/api/pexels`),
@@ -399,7 +399,10 @@ function pexelsDevApi(): Plugin {
           res.end(Buffer.from(await response.arrayBuffer()))
           return
         } catch (error) {
-          console.error('[pexels-dev-api] route handler failed, falling back to inline resolver:', error)
+          console.error(
+            '[pexels-dev-api] route handler failed, falling back to inline resolver:',
+            error,
+          )
         }
 
         const photoUrl = await resolvePexelsUrl(req.url ?? '')
@@ -410,6 +413,45 @@ function pexelsDevApi(): Plugin {
           'public, max-age=3600, stale-while-revalidate=86400',
         )
         res.end()
+      })
+    },
+  }
+}
+
+function logrocketDevProxy(): Plugin {
+  return {
+    name: 'ship-fast-logrocket-dev-proxy',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const requestUrl = new URL(req.url ?? '', 'http://localhost/')
+        if (!requestUrl.pathname.startsWith('/api/logrocket/')) {
+          next()
+          return
+        }
+
+        try {
+          const proxyReq = new Request(requestUrl, {
+            method: req.method,
+            headers: new Headers(req.headers as Record<string, string>),
+          })
+          if (req.method !== 'GET' && req.method !== 'HEAD') {
+            const chunks: Buffer[] = []
+            for await (const chunk of req) chunks.push(chunk as Buffer)
+            proxyReq.headers.delete('content-length')
+          }
+          const { proxyLogRocketRequest } =
+            await import('./src/features/logrocket/server/logrocket-proxy')
+          const proxyRes = await proxyLogRocketRequest(proxyReq)
+          res.statusCode = proxyRes.status
+          proxyRes.headers.forEach((value, key) => {
+            res.setHeader(key, value)
+          })
+          const body = await proxyRes.arrayBuffer()
+          res.end(Buffer.from(body))
+        } catch (error) {
+          res.statusCode = 502
+          res.end('LogRocket proxy error')
+        }
       })
     },
   }
@@ -693,6 +735,7 @@ const config = defineConfig({
   plugins: [
     devtools(),
     pexelsDevApi(),
+    logrocketDevProxy(),
     galleryImageRouteDevProxy(),
     subdomainRewriteDevMiddleware(),
     nitro({

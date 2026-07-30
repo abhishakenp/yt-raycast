@@ -37,9 +37,9 @@ export type InspectorSelection = {
   pageLabel?: string
   /** Durable style anchor for the nearest editable section ancestor. */
   sectionAnchor?: string
-  /** OpenUI capsule name (from data-openui-component) — undefined for HTML sessions. */
+  /** OpenUI capsule name (from data-openui-component) — legacy/optional, deprecated for DOM-based targeting. */
   openuiComponent?: string
-  /** OpenUI source variable name (from data-openui-var) — undefined for HTML sessions. */
+  /** OpenUI source variable name (from data-openui-var) — legacy/optional, deprecated for DOM-based targeting. */
   openuiVar?: string
 }
 
@@ -116,9 +116,31 @@ function serializeElementForSelection(element: HTMLElement): string {
   return clone.outerHTML
 }
 
+const warnedLegacyCapsuleKeys = new Set<string>()
+
+/** Warn once per capsule when a legacy `data-openui-*` marker is still the
+ *  only targeting information a selection carries. These markers are kept for
+ *  backwards compatibility with OpenUI sessions but are deprecated — see
+ *  docs/DOM_BASED_ANCHORS.md for the DOM-based anchor contract. */
+function warnLegacyCapsuleMarker(component: string, openuiVar?: string) {
+  const key = `${component}${openuiVar ?? ''}`
+  if (warnedLegacyCapsuleKeys.has(key)) return
+  warnedLegacyCapsuleKeys.add(key)
+  console.warn(
+    `[ship-fast] Deprecated: selection relies on legacy OpenUI capsule markers ` +
+      `(data-openui-component="${component}"` +
+      `${openuiVar ? `, data-openui-var="${openuiVar}"` : ''}). ` +
+      `Prefer DOM-based anchors (id, class, data-sf-export-page) — ` +
+      `see docs/DOM_BASED_ANCHORS.md#migration-from-openui-capsule-markers.`,
+  )
+}
+
 /** Walk up from `element` to the nearest ancestor (inclusive) carrying
  *  `data-openui-component`. Returns the capsule name + source variable, or
- *  `undefined` if no OpenUI capsule marker is found (HTML sessions). */
+ *  `undefined` if no OpenUI capsule marker is found (HTML sessions).
+ *
+ * @deprecated Legacy function for capsule-based targeting. Use DOM-based
+ *             anchors (id, class, data-sf-export-page) instead. */
 function findOpenUICapsule(
   element: HTMLElement,
 ): { openuiComponent: string; openuiVar?: string } | undefined {
@@ -126,10 +148,9 @@ function findOpenUICapsule(
   while (current) {
     const component = current.getAttribute('data-openui-component')
     if (component) {
-      return {
-        openuiComponent: component,
-        openuiVar: current.getAttribute('data-openui-var') ?? undefined,
-      }
+      const openuiVar = current.getAttribute('data-openui-var') ?? undefined
+      warnLegacyCapsuleMarker(component, openuiVar)
+      return { openuiComponent: component, openuiVar }
     }
     current = current.parentElement
   }
@@ -152,26 +173,49 @@ function cssIdSelectorValue(value: string): string {
     : value.replace(/([^\w-])/g, '\\$1')
 }
 
-function getElementStyleAnchor(element: HTMLElement): string | undefined {
-  const openuiVar = element.getAttribute('data-openui-var')
-  if (openuiVar) {
-    return `[data-openui-var="${cssAttributeSelectorValue(openuiVar)}"]`
+/** Compute the durable style anchor for a single element, using a strict
+ *  priority order (see docs/DOM_BASED_ANCHORS.md for the full contract):
+ *
+ *  1. `#id`                       — most stable DOM-based anchor
+ *  2. `class` (full class string) — common DOM-based anchor
+ *  3. `[data-sf-export-page="…"]` — DOM-based, not capsule-specific
+ *  4. `[data-openui-var="…"]`     — legacy capsule support, deprecated
+ *
+ *  Returns `undefined` when the element carries none of these markers. */
+export function getElementStyleAnchor(
+  element: HTMLElement,
+): string | undefined {
+  // Priority 1: ID (most stable DOM-based anchor)
+  if (element.id) {
+    return `#${cssIdSelectorValue(element.id)}`
   }
 
+  // Priority 2: Class name (common DOM-based anchor)
+  const className = element.getAttribute('class')?.trim()
+  if (className) {
+    return className
+  }
+
+  // Priority 3: Export page marker (DOM-based, not capsule-specific)
   const exportPage = element.getAttribute('data-sf-export-page')
   if (exportPage) {
     return `[data-sf-export-page="${cssAttributeSelectorValue(exportPage)}"]`
   }
 
-  if (element.id) {
-    return `#${cssIdSelectorValue(element.id)}`
+  // Priority 4: OpenUI var (legacy capsule support, deprecated)
+  const openuiVar = element.getAttribute('data-openui-var')
+  if (openuiVar) {
+    return `[data-openui-var="${cssAttributeSelectorValue(openuiVar)}"]`
   }
 
-  const className = element.getAttribute('class')?.trim()
-  return className || undefined
+  return undefined
 }
 
-function findSectionAnchor(element: HTMLElement): string | undefined {
+/** Find the durable style anchor for the nearest editable section ancestor
+ *  (section/article/aside/footer/header/main/[role="region"]) of `element`.
+ *  Sections without any anchor are skipped — the walk continues outward until
+ *  an anchored section is found or the document is exhausted. */
+export function findSectionAnchor(element: HTMLElement): string | undefined {
   let current: HTMLElement | null = element.closest(
     'section, article, aside, footer, header, main, [role="region"]',
   )

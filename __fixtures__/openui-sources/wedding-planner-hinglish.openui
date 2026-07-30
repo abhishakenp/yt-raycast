@@ -1,0 +1,3 @@
+home_hero = SplitHero("Shaadi Planner", "Apni perfect shaadi plan karo", "Celebrate", "Har moment ko yaadgaar banao")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])

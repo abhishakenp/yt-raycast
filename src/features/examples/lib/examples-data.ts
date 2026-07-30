@@ -1067,6 +1067,8 @@ const propsByRoleForPages = (
     ]),
   )
 
+void propsByRoleForPages
+
 const isRouteListKey = (key: string): boolean =>
   /^(nav|links|routes?)$/i.test(key)
 

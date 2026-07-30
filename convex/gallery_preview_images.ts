@@ -3,6 +3,7 @@ import { ConvexError, v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
 import { mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
+import { assertCanMutateSession } from './lib/session_access_helpers'
 
 const assertPublicSession = async (
   ctx: Pick<QueryCtx, 'db'> | Pick<MutationCtx, 'db'>,
@@ -53,11 +54,13 @@ export const get = query({
 
 export const generateUploadUrl = mutation({
   args: {
+    anonymousOwnerSecret: v.optional(v.string()),
     cacheVersion: v.string(),
     sessionId: v.id('sessions'),
   },
   handler: async (ctx, args) => {
     const session = await assertPublicSession(ctx, args.sessionId)
+    await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
     const currentVersion = String(session.updatedAt ?? session.createdAt)
     if (currentVersion !== args.cacheVersion) {
       throw new ConvexError({
@@ -72,6 +75,7 @@ export const generateUploadUrl = mutation({
 
 export const commit = mutation({
   args: {
+    anonymousOwnerSecret: v.optional(v.string()),
     cacheVersion: v.string(),
     contentType: v.string(),
     sessionId: v.id('sessions'),
@@ -80,6 +84,7 @@ export const commit = mutation({
   },
   handler: async (ctx, args) => {
     const session = await assertPublicSession(ctx, args.sessionId)
+    await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
     const currentVersion = String(session.updatedAt ?? session.createdAt)
     if (currentVersion !== args.cacheVersion) {
       await ctx.storage.delete(args.storageId)

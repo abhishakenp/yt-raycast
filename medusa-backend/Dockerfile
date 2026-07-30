@@ -19,6 +19,10 @@ ENV NODE_ENV=production
 COPY --from=deps /app ./
 RUN chmod +x ./docker-entrypoint.sh
 
+RUN addgroup -g 1001 -S medusa && \
+    adduser -S -u 1001 -G medusa medusa
+USER medusa
+
 EXPOSE 9000
 
 ENTRYPOINT ["./docker-entrypoint.sh"]

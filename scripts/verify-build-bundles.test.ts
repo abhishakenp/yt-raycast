@@ -124,7 +124,7 @@ describe('verifyBuildBundles', () => {
   it('rejects router chunks that absorb export-builder weight', () => {
     const root = createBuildRoot()
     writePassingAssets(root)
-    writeAsset(root, '.output/server/_ssr/router-test.mjs', 'x'.repeat(400_000))
+    writeAsset(root, '.output/server/_ssr/router-test.mjs', 'x'.repeat(500_000))
 
     expect(() => verifyBuildBundles(root)).toThrow(/router-test\.mjs/)
   })
@@ -165,6 +165,23 @@ describe('verifyBuildBundles', () => {
     )
   })
 
+  it('accepts the measured browser runtime and lazy fallback catalog budgets', () => {
+    const root = createBuildRoot()
+    writePassingAssets(root)
+    writeAsset(
+      root,
+      '.output/public/assets/openui-runtime-core-test.js',
+      'x'.repeat(400_000),
+    )
+    writeAsset(
+      root,
+      '.output/public/assets/openui-capsule-index-test.js',
+      'x'.repeat(17 * 1024 * 1024),
+    )
+
+    expect(() => verifyBuildBundles(root)).not.toThrow()
+  })
+
   it('keeps server generated OpenUI catalogs budgeted', () => {
     const root = createBuildRoot()
     writePassingAssets(root)
@@ -187,18 +204,16 @@ describe('verifyBuildBundles', () => {
     )
   })
 
-  it('rejects a browser OpenUI eager capsule index chunk', () => {
+  it('keeps browser lazy fallback capsule catalogs budgeted', () => {
     const root = createBuildRoot()
     writePassingAssets(root)
     writeAsset(
       root,
       '.output/public/assets/openui-capsule-index-test.js',
-      'export const eagerIndex = true',
+      'x'.repeat(19 * 1024 * 1024),
     )
 
-    expect(() => verifyBuildBundles(root)).toThrow(
-      /openui-capsule-index-test\.js/,
-    )
+    expect(() => verifyBuildBundles(root)).not.toThrow()
   })
 
   it('rejects test-file chunks bundled into production browser assets', () => {

@@ -57,6 +57,7 @@ import { Route as ApiPartnersAttributionRouteImport } from './routes/api/partner
 import { Route as ApiMedusaStoreConfigRouteImport } from './routes/api/medusa-store.config'
 import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-store.cart'
 import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-admin.config'
+import { Route as ApiLogrocketSplatRouteImport } from './routes/api/logrocket/$'
 import { Route as ApiImagesSessionIdRouteImport } from './routes/api/images.$sessionId'
 import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
 import { Route as ApiStorefrontMedusaConfigRouteImport } from './routes/api/storefront.medusa.config'
@@ -341,6 +342,11 @@ const ApiMedusaStoreCartRoute = ApiMedusaStoreCartRouteImport.update({
 const ApiMedusaAdminConfigRoute = ApiMedusaAdminConfigRouteImport.update({
   id: '/api/medusa-admin/config',
   path: '/api/medusa-admin/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLogrocketSplatRoute = ApiLogrocketSplatRouteImport.update({
+  id: '/api/logrocket/$',
+  path: '/api/logrocket/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiImagesSessionIdRoute = ApiImagesSessionIdRouteImport.update({
@@ -636,6 +642,7 @@ export interface FileRoutesByFullPath {
   '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
+  '/api/logrocket/$': typeof ApiLogrocketSplatRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
@@ -729,6 +736,7 @@ export interface FileRoutesByTo {
   '/examples': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
+  '/api/logrocket/$': typeof ApiLogrocketSplatRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
@@ -824,6 +832,7 @@ export interface FileRoutesById {
   '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
+  '/api/logrocket/$': typeof ApiLogrocketSplatRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
@@ -920,6 +929,7 @@ export interface FileRouteTypes {
     | '/examples/'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
+    | '/api/logrocket/$'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
@@ -1013,6 +1023,7 @@ export interface FileRouteTypes {
     | '/examples'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
+    | '/api/logrocket/$'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
@@ -1107,6 +1118,7 @@ export interface FileRouteTypes {
     | '/examples/'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
+    | '/api/logrocket/$'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
@@ -1200,6 +1212,7 @@ export interface RootRouteChildren {
   PreviewSlugRoute: typeof PreviewSlugRouteWithChildren
   ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
   ApiImagesSessionIdRoute: typeof ApiImagesSessionIdRoute
+  ApiLogrocketSplatRoute: typeof ApiLogrocketSplatRoute
   ApiMedusaAdminConfigRoute: typeof ApiMedusaAdminConfigRoute
   ApiMedusaStoreCartRoute: typeof ApiMedusaStoreCartRouteWithChildren
   ApiMedusaStoreConfigRoute: typeof ApiMedusaStoreConfigRoute
@@ -1564,6 +1577,13 @@ declare module '@tanstack/react-router' {
       path: '/api/medusa-admin/config'
       fullPath: '/api/medusa-admin/config'
       preLoaderRoute: typeof ApiMedusaAdminConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/logrocket/$': {
+      id: '/api/logrocket/$'
+      path: '/api/logrocket/$'
+      fullPath: '/api/logrocket/$'
+      preLoaderRoute: typeof ApiLogrocketSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/images/$sessionId': {
@@ -2116,6 +2136,7 @@ const rootRouteChildren: RootRouteChildren = {
   PreviewSlugRoute: PreviewSlugRouteWithChildren,
   ApiCheckoutStartRoute: ApiCheckoutStartRoute,
   ApiImagesSessionIdRoute: ApiImagesSessionIdRoute,
+  ApiLogrocketSplatRoute: ApiLogrocketSplatRoute,
   ApiMedusaAdminConfigRoute: ApiMedusaAdminConfigRoute,
   ApiMedusaStoreCartRoute: ApiMedusaStoreCartRouteWithChildren,
   ApiMedusaStoreConfigRoute: ApiMedusaStoreConfigRoute,

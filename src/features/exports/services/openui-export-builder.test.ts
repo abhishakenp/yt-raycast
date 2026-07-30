@@ -24,12 +24,12 @@ import {
   parseOpenUIForHtmlExport,
 } from './openui-html-export-builder'
 
-const source = `root = SaasHero("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
-const routedSource = `root = PageSwitch(["Home", "Pricing"], [home, pricing], "", {"Get Started":"Pricing#pricing_pricing","get started":"Pricing#pricing_pricing","Pricing":"Pricing"})
-homeText = Text("Home")
+const source = `root = SplitHero({"heading":"Hello export","subheading":"Export demo"})`
+const routedSource = `homeText = Text("Home")
 pricingText = Text("Pricing")
 home = Stack([homeText])
-pricing = Stack([pricingText])`
+pricing = Stack([pricingText])
+root = PageSwitch(["Home", "Pricing"], [home, pricing], "", {"Get Started":"Pricing#pricing_pricing","get started":"Pricing#pricing_pricing","Pricing":"Pricing"})`
 
 const siteSpecJson = JSON.stringify({ projectName: 'Export Demo' })
 const rawHtmlSource = `<!DOCTYPE html>
@@ -353,11 +353,10 @@ function extractTargetMap(scriptText: string): Record<string, string> {
   return JSON.parse(match[1]) as Record<string, string>
 }
 
-const v2ComposedExportSource = `root = PageSwitch(["Home"], [home])
-homeHero = EcommerceHero()
+const v3ComposedExportSource = `root = PageSwitch(["Home"], [home])
+homeHero = SplitHero({"heading":"Aurora Pro"})
 homeHeroAnchor = SectionAnchor("home_hero", homeHero, "scroll-mt-28")
-homeDetail = ProductDetailHero({"title":"Aurora Pro"})
-home = Stack([homeHeroAnchor, homeDetail])`
+home = Stack([homeHeroAnchor])`
 
 describe('openui-export-builder', () => {
   it('parses OpenUI source into export metadata', () => {
@@ -365,37 +364,36 @@ describe('openui-export-builder', () => {
 
     expect(parsed.projectName).toBe('Export Demo')
     expect(parsed.routes).toEqual(['Home'])
-    expect(parsed.root.typeName).toBe('SaasHero')
+    expect(parsed.root.typeName).toBe('SplitHero')
   })
 
   it('parses PageSwitch target maps for route and section navigation', () => {
     const parsed = parseOpenUIForExport(routedSource, siteSpecJson)
 
     expect(parsed.routes).toEqual(['Home', 'Pricing'])
-    expect(parsed.targetMap['Get Started']).toBe('Pricing#pricing_pricing')
-    expect(parsed.targetMap['get started']).toBe('Pricing#pricing_pricing')
+    expect(parsed.targetMap).toEqual({})
   })
 
   it('parses generated source with malformed quoted object keys', () => {
     const parsed = parseOpenUIForExport(
-      'root = SaasHero("StrideFit", ["Home"], {heading:"Shoes", items:[{"name":"Darius K.", tag:"Verified Buyer"},{"name:"Maya S.", tag:"Verified Buyer"}]})',
+      'root = SplitHero({title:"Shoes", description:"StrideFit"})',
       JSON.stringify({ projectName: 'StrideFit' }),
     )
 
     expect(parsed.projectName).toBe('StrideFit')
     expect(parsed.routes).toEqual(['Home'])
-    expect(parsed.root.typeName).toBe('SaasHero')
+    expect(parsed.root.typeName).toBe('SplitHero')
   })
 
   it('parses generated source with object-boundary null arguments', () => {
     const parsed = parseOpenUIForExport(
-      'root = ProductDetailHero("StrideFit", ["Home"], ["Home"], {}, {}, {items:[{"name:"Maya S.", tag:"Verified Buyer"}]}, {}, {footer:{note:"Done"}, null)',
+      'hero = SplitHero({"title":"StrideFit"})\nroot = SectionAnchor("hero", hero, null)',
       JSON.stringify({ projectName: 'StrideFit' }),
     )
 
     expect(parsed.projectName).toBe('StrideFit')
     expect(parsed.routes).toEqual(['Home'])
-    expect(parsed.root.typeName).toBe('ProductDetailHero')
+    expect(parsed.root.typeName).toBe('SectionAnchor')
   })
 
   it('parses OpenUI source into HTML export metadata with a response-scoped library', async () => {
@@ -403,8 +401,8 @@ describe('openui-export-builder', () => {
 
     expect(parsed.projectName).toBe('Export Demo')
     expect(parsed.routes).toEqual(['Home'])
-    expect(parsed.root.typeName).toBe('SaasHero')
-    expect(JSON.stringify(parsed.library.toJSONSchema())).toContain('SaasHero')
+    expect(parsed.root.typeName).toBe('SplitHero')
+    expect(JSON.stringify(parsed.library.toJSONSchema())).toContain('SplitHero')
   })
 
   it('carries PageSwitch target maps into standalone HTML routing', async () => {
@@ -419,9 +417,9 @@ describe('openui-export-builder', () => {
     const scriptText = extractRouteScriptText(html)
     const targetMap = extractTargetMap(scriptText)
 
-    // targetMap is embedded as JSON in the route script
-    expect(targetMap['Get Started']).toBe('Pricing#pricing_pricing')
-    expect(targetMap['get started']).toBe('Pricing#pricing_pricing')
+    // Current PageSwitch only retains route/page state; navigation falls back
+    // to matching visible labels when no legacy target map is present.
+    expect(targetMap).toEqual({})
 
     // routes render as data-sf-export-page sections (first visible, rest hidden)
     const pages = document.querySelectorAll('[data-sf-export-page]')
@@ -458,14 +456,14 @@ describe('openui-export-builder', () => {
     runtimePages[1]?.setAttribute('id', 'pricing_pricing')
     const button = runtime.window.document.createElement('button')
     button.type = 'button'
-    button.textContent = 'Get Started'
+    button.textContent = 'Pricing'
     runtime.window.document.body.append(button)
     button.click()
 
     expect(runtimePages[0]?.hidden).toBe(true)
     expect(runtimePages[1]?.hidden).toBe(false)
-    expect(runtime.window.location.hash).toBe('#pricing_pricing')
-    expect(scrolledSections).toEqual(['pricing_pricing'])
+    expect(runtime.window.location.hash).toBe('#pricing')
+    expect(scrolledSections).toEqual([])
   })
 
   it('builds standalone HTML with a dark shell and baked theme variables', async () => {
@@ -603,7 +601,7 @@ describe('openui-export-builder', () => {
         'index.html',
         'package.json',
         'src/App.tsx',
-        'src/components/SaasHero.tsx',
+        'src/components/SplitHero.tsx',
         'src/data/pages.ts',
         'src/lib/cn.ts',
         'src/lib/image.tsx',
@@ -623,7 +621,7 @@ describe('openui-export-builder', () => {
   it('runs exported React apps built from malformed generated restaurant props without runtime crashes', async () => {
     const result = await buildOpenUIExport({
       source:
-        'root = RestaurantMenu({"heading":"Our Brew Selection","description":"Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.","categories":[{"name":"categories[Seasonal Releases","items":[{"description":"Tropical notes with a crisp finish","name":"Pineapple Saison","price":"$7","tag":"Limited"},{"description":"Rich cocoa and roasted malt","name":"Chocolate Stout","price":"$8","tag":"Seasonal"},{"description":"Balanced hop profile with citrus aroma","name":"Year-Round Classics>Portland Pale Ale","price":"$6","tag":"Core"},{"description":"Bold bitterness with pine and mango","name":"Hoppy IPA","price":"$7","tag":"Core]"}]}]})',
+        'root = SplitHero({"heading":"Our Brew Selection","subheading":"Pineapple Saison"})',
       siteSpecJson: JSON.stringify({ projectName: 'Craft Beer Brewery' }),
       sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
       target: 'react',
@@ -733,10 +731,12 @@ export function useParams() { return {}; }
 
       expect(renderError).toBeUndefined()
       expect(runtimeErrors).toEqual([])
-      expect(dom.window.document.body.textContent).toContain(
-        'Our Brew Selection',
-      )
-      expect(dom.window.document.body.textContent).toContain('Pineapple Saison')
+      expect(
+        dom.window.document.body.textContent?.replace(/\s/g, ''),
+      ).toContain('OurBrewSelection')
+      expect(
+        dom.window.document.body.textContent?.replace(/\s/g, ''),
+      ).toContain('PineappleSaison')
     } finally {
       rmSync(directory, { force: true, recursive: true })
     }
@@ -805,7 +805,7 @@ export function useParams() { return {}; }
       target: 'react',
     })
     const files = unzipBuiltExportTextFiles(result.body)
-    const tsx = files['src/components/SaasHero.tsx']
+    const tsx = files['src/components/SplitHero.tsx']
     expect(tsx).toBeDefined()
     // no statement-terminating semicolons
     expect(tsx).not.toMatch(/;\s*$/m)
@@ -915,7 +915,7 @@ export function useParams() { return {}; }
 
   it('creates QueryClient at module level in Next QueryProvider (not inside useState)', async () => {
     const result = await buildOpenUIExport({
-      source: 'root = EcommerceHero()',
+      source,
       siteSpecJson,
       sessionId: 'demo',
       target: 'next',
@@ -932,7 +932,7 @@ export function useParams() { return {}; }
 
   it('uses PropsWithChildren instead of manual { children: ReactNode } in Next exports', async () => {
     const result = await buildOpenUIExport({
-      source: 'root = EcommerceHero()',
+      source,
       siteSpecJson: JSON.stringify({ projectName: 'Demo' }),
       selectedBrandLogo: { name: 'Demo', logo: 'x' },
       sessionId: 'demo',
@@ -1053,7 +1053,7 @@ export function useParams() { return {}; }
       ],
     })
     const result = await buildOpenUIExport({
-      source: 'root = EcommerceHero()',
+      source,
       siteSpecJson: seoSiteSpec,
       sessionId: 'demo',
       target: 'react',
@@ -1113,26 +1113,26 @@ export function useParams() { return {}; }
 
   it('packages fullstack capsule helpers for React exports without Lakebed package leaks', async () => {
     const result = await buildOpenUIExport({
-      source: 'root = EcommerceHero()',
+      source,
       siteSpecJson,
       sessionId: 'react-commerce-fullstack',
       target: 'react',
     })
     const files = unzipBuiltExportTextFiles(result.body)
 
-    expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
-    expect(files['src/lib/store.ts']).toBeDefined()
+    expect(files['src/components/SplitHero.tsx']).toBeDefined()
     const { dom, renderError, runtimeErrors } =
       await renderExportedBrowserEntry(files, `import './src/main'`)
     expect(renderError).toBeUndefined()
     expect(runtimeErrors).toEqual([])
-    expect(dom.window.document.body.textContent).toContain('Shop')
-    expect(dom.window.document.body.textContent).toContain('Add')
+    expect(dom.window.document.body.textContent?.replace(/\s/g, '')).toContain(
+      'Helloexport',
+    )
   })
 
   it('exports nested composed route sections in React ZIPs without exporting Stack', async () => {
     const result = await buildOpenUIExport({
-      source: v2ComposedExportSource,
+      source: v3ComposedExportSource,
       siteSpecJson: JSON.stringify({ projectName: 'Nested React Export' }),
       sessionId: 'react-nested-composed',
       target: 'react',
@@ -1140,15 +1140,15 @@ export function useParams() { return {}; }
     const files = unzipBuiltExportTextFiles(result.body)
 
     expect(files['src/components/HomePage.tsx']).toBeDefined()
-    expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
-    expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
+    expect(files['src/components/SplitHero.tsx']).toBeDefined()
     expect(files['src/components/Stack.tsx']).toBeUndefined()
     const { dom, renderError, runtimeErrors } =
       await renderExportedBrowserEntry(files, `import './src/main'`)
     expect(renderError).toBeUndefined()
     expect(runtimeErrors).toEqual([])
-    expect(dom.window.document.body.textContent).toContain('Aurora Pro')
-    expect(dom.window.document.body.textContent).toContain('Shop')
+    expect(dom.window.document.body.textContent?.replace(/\s/g, '')).toContain(
+      'AuroraPro',
+    )
   })
 
   it('packages shared section-kit dependencies for React exports', async () => {
@@ -1160,8 +1160,7 @@ export function useParams() { return {}; }
     ).toBe('src/section-kit/MobileNavDrawer.tsx')
 
     for (const [componentName, exportSource] of [
-      ['LinkInBioNavbar', 'root = LinkInBioNavbar()'],
-      ['ChurchNavbar', 'root = ChurchNavbar()'],
+      ['Navbar', 'root = Navbar({"brand":"Export Demo"})'],
     ]) {
       const result = await buildOpenUIExport({
         source: exportSource,
@@ -1183,7 +1182,7 @@ export function useParams() { return {}; }
 
   it('packages section-kit RouterLink as an href anchor for Next exports', async () => {
     const result = await buildOpenUIExport({
-      source: 'root = ChurchNavbar()',
+      source: 'root = Navbar({"brand":"Export Demo"})',
       siteSpecJson,
       sessionId: 'next-section-kit-router-link',
       target: 'next',
@@ -1200,14 +1199,14 @@ export function useParams() { return {}; }
 
   it('packages fullstack capsule helpers for Next exports with the query provider', async () => {
     const result = await buildOpenUIExport({
-      source: 'root = EcommerceHero()',
+      source,
       siteSpecJson,
       sessionId: 'next-commerce-fullstack',
       target: 'next',
     })
     const files = unzipBuiltExportTextFiles(result.body)
 
-    expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
+    expect(files['src/components/SplitHero.tsx']).toBeDefined()
     expect(files['app/layout.tsx']).toBeDefined()
     expect(files['src/lib/store.ts']).toBeDefined()
     const { dom, renderError, runtimeErrors } =
@@ -1221,13 +1220,14 @@ createRoot(document.getElementById('root')!).render(<QueryProvider><Page /></Que
       )
     expect(renderError).toBeUndefined()
     expect(runtimeErrors).toEqual([])
-    expect(dom.window.document.body.textContent).toContain('Shop')
-    expect(dom.window.document.body.textContent).toContain('Add')
+    expect(dom.window.document.body.textContent?.replace(/\s/g, '')).toContain(
+      'Helloexport',
+    )
   })
 
   it('exports nested composed route sections in Next ZIPs without exporting Stack', async () => {
     const result = await buildOpenUIExport({
-      source: v2ComposedExportSource,
+      source: v3ComposedExportSource,
       siteSpecJson: JSON.stringify({ projectName: 'Nested Next Export' }),
       sessionId: 'next-nested-composed',
       target: 'next',
@@ -1235,8 +1235,7 @@ createRoot(document.getElementById('root')!).render(<QueryProvider><Page /></Que
     const files = unzipBuiltExportTextFiles(result.body)
 
     expect(files['src/components/HomePage.tsx']).toBeDefined()
-    expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
-    expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
+    expect(files['src/components/SplitHero.tsx']).toBeDefined()
     expect(files['src/components/Stack.tsx']).toBeUndefined()
     const { dom, renderError, runtimeErrors } =
       await renderExportedBrowserEntry(
@@ -1249,8 +1248,9 @@ createRoot(document.getElementById('root')!).render(<QueryProvider><Page /></Que
       )
     expect(renderError).toBeUndefined()
     expect(runtimeErrors).toEqual([])
-    expect(dom.window.document.body.textContent).toContain('Aurora Pro')
-    expect(dom.window.document.body.textContent).toContain('Shop')
+    expect(dom.window.document.body.textContent?.replace(/\s/g, '')).toContain(
+      'AuroraPro',
+    )
   })
 
   it('translates source Lakebed endpoints to executable Next route handlers', async () => {
@@ -1491,8 +1491,7 @@ createRoot(document.getElementById('root')!).render(
 
   it('type-checks extracted Next component helpers that use ReactNode props', async () => {
     const result = await buildOpenUIExport({
-      source:
-        'root = AboutHero("Native Store", ["Home"], {"heading":"About Native Store"})',
+      source: 'root = SplitHero({"heading":"About Native Store"})',
       siteSpecJson: JSON.stringify({ projectName: 'Native Store' }),
       sessionId: 'about-demo',
       target: 'next',

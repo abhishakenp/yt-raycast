@@ -12,11 +12,11 @@ import { buildOpenUIArtifactFiles } from './openui-artifact-files'
 // not the old (brand, nav, props) KimiPage shape. Required text is placed in the
 // heading/title slot so it renders into the DOM and serializes into pages.ts.
 const source =
-  'root = SaasHero("Artifact Demo", "Hello artifact", "artifact", "Launch faster", "Start now")'
+  'root = SplitHero("Artifact Demo", "Hello artifact", "artifact", "Launch faster", "Start now")'
 
-const v1PublicationSource = `root = PageSwitch(["Home", "Admin"], [home, admin])
-home = BlogHero("Cover", "Newsroom", "Featured", "Artifact Gazette", "Audit ready story", "Maya", "5 min", "Today", "Read", "/posts")
-admin = DashboardHeader("Newsroom Admin", "Manage Artifact Gazette", "Search posts", "New post")`
+const v1PublicationSource = `home = SplitHero("Newsroom", "Artifact Gazette", "Featured", "Audit ready story")
+admin = SplitHero("Newsroom", "Manage Artifact Gazette", "Admin", "Publishing controls")
+root = PageSwitch(["Home", "Admin"], [home, admin])`
 
 const siteSpecJson = JSON.stringify({ projectName: 'Artifact Demo' })
 const siteSpecJsonWithGenUI = JSON.stringify({
@@ -255,9 +255,9 @@ describe('openui artifact files', () => {
 
     expect(download?.filename).toBe('artifact-demo-react.zip')
     expect(files['src/data/pages.ts']).toContain('Hello artifact')
-    await expect(
-      renderGeneratedRouteText(files, 'HomePage'),
-    ).resolves.toContain('Hello artifact')
+    await expect(renderGeneratedRouteText(files, 'HomePage')).resolves.toMatch(
+      /Hello\s*artifact/,
+    )
     expect(files['vite.config.js']).toBeUndefined()
   })
 
@@ -326,9 +326,9 @@ describe('openui artifact files', () => {
 
     expect(download?.filename).toBe('artifact-demo-next.zip')
     expect(files['src/data/pages.ts']).toContain('Hello artifact')
-    await expect(
-      renderGeneratedRouteText(files, 'HomePage'),
-    ).resolves.toContain('Hello artifact')
+    await expect(renderGeneratedRouteText(files, 'HomePage')).resolves.toMatch(
+      /Hello\s*artifact/,
+    )
     expect(files['next.config.js']).toBeUndefined()
   })
 
@@ -337,7 +337,7 @@ describe('openui artifact files', () => {
       (['react', 'next', 'lakebed'] as const).map((target) =>
         buildOpenUIArtifactFiles({
           source:
-            'home_nav = WineryBreweryNavbar("Craft Beer Brewery", ["Home"], "(503) 555-0148", "Home", "Book", "Home", "0")\nroot = PageSwitch(["Home"], [home_nav], "", {"Home":"home"})',
+            'home_nav = Navbar("Craft Beer Brewery", ["Home"])\nroot = PageSwitch(["Home"], [home_nav])',
           siteSpecJson,
           sessionId: 'demo',
           target,
@@ -379,7 +379,12 @@ describe('openui artifact files', () => {
     })
 
     expect(download?.filename).toBe('index.html')
-    expect(files['index.html']).toContain('Hello artifact')
+    expect(
+      new JSDOM(files['index.html']).window.document.body.textContent?.replace(
+        /\s/g,
+        '',
+      ),
+    ).toContain('Helloartifact')
     expect(files['index.html']).not.toContain(
       'Generated OpenUI source is ready',
     )

@@ -1624,4 +1624,115 @@ home = Stack([home_hero_anchor, home_nav_anchor, home_pricing_anchor])`
     // v10-1=9 (which would also wipe out whatever produced v10).
     expect(payloads[1]).toMatchObject({ version: 10 })
   })
+
+  it('warns when a section edit is served through the legacy OpenUI capsule path', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const mutation = vi.fn(async () => ({ saved: true, previewVersion: 60 }))
+    const generateWithTools = generateWithCodeModeProgram(`
+      await external_textRewrite({ afterText: 'New headline' })
+      return { ok: true }
+    `)
+
+    const response = await createSectionEditResponse(
+      'session_openui_deprecation_warning',
+      new Request(
+        'https://ship-fast.test/api/sessions/session_openui_deprecation_warning/section-edit',
+        {
+          method: 'POST',
+          headers: { 'x-anonymous-owner-secret': 'owner-secret' },
+          body: JSON.stringify({
+            instruction: 'change the headline',
+            selection: {
+              elementPath: 'main section h1',
+              tag: 'h1',
+              textContent: 'Headline',
+              outerHTML: '<h1>Headline</h1>',
+              boundingBox: { x: 0, y: 0, width: 400, height: 60 },
+              sectionAnchor: '[data-openui-var="home_hero"]',
+              openuiComponent: 'Hero',
+              openuiVar: 'home_hero',
+            },
+          }),
+        },
+      ),
+      {
+        client: {
+          query: async () => ({
+            homeModule: {
+              source: 'home_hero = Hero({})\nroot = Stack([home_hero])',
+            },
+            latestPreview: {
+              html: '<main><h1>Headline</h1></main>',
+              version: 59,
+            },
+          }),
+          mutation,
+        },
+        generateWithTools,
+      },
+    )
+
+    const body = await response.json()
+    expect(response.ok, JSON.stringify(body)).toBe(true)
+    expect(body).toMatchObject({ mode: 'tools', applied: 1 })
+    const deprecationWarnings = warn.mock.calls.filter(([message]) =>
+      String(message).includes('[ship-fast] Deprecated:'),
+    )
+    expect(deprecationWarnings).toHaveLength(1)
+    expect(String(deprecationWarnings[0]?.[0])).toContain(
+      'legacy capsule source path',
+    )
+    expect(String(deprecationWarnings[0]?.[0])).toContain(
+      'openuiComponent=Hero',
+    )
+  })
+
+  it('does not warn when a section edit is served through the DOM-based HTML path', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const fragment = '<h1 class="hero-title">Dreamy Pastel Whisper</h1>'
+    const replacementHtml =
+      '<!doctype html><html><body><h1 class="hero-title">Dreamier Pastel Whisper</h1></body></html>'
+    const mutation = vi.fn(async () => ({ saved: true, previewVersion: 61 }))
+    const generateWithTools = vi.fn(async () => ({
+      text: 'no tool calls',
+      toolCalls: [],
+    }))
+    const generate = vi.fn(async () => replacementHtml)
+
+    const response = await createSectionEditResponse(
+      'session_html_no_deprecation_warning',
+      new Request(
+        'https://ship-fast.test/api/sessions/session_html_no_deprecation_warning/section-edit',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            instruction: 'rewrite the whole tiny section',
+            selection: {
+              elementPath: 'h1.hero-title',
+              tag: 'h1',
+              textContent: 'Dreamy Pastel Whisper',
+              outerHTML: fragment,
+              boundingBox: { x: 40, y: 120, width: 520, height: 80 },
+            },
+          }),
+        },
+      ),
+      {
+        client: {
+          query: async () => ({
+            homeModule: { source: fragment },
+            latestPreview: { html: fragment },
+          }),
+          mutation,
+        },
+        generate,
+        generateWithTools,
+      },
+    )
+
+    const body = await response.json()
+    expect(response.ok, JSON.stringify(body)).toBe(true)
+    expect(body).toMatchObject({ mode: 'html', previewVersion: 61 })
+    expect(warn).not.toHaveBeenCalled()
+  })
 })

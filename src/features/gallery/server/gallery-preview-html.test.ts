@@ -14,7 +14,7 @@ vi.mock('../../../shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => ({ query }),
 }))
 
-const buildOpenUIHtmlExportMock = vi.hoisted(() =>
+const buildOpenUIHtmlThumbnailMock = vi.hoisted(() =>
   vi.fn(async () => ({
     body: '<!doctype html><html><body><main><h1>Rendered</h1></main></body></html>',
     contentType: 'text/html; charset=utf-8',
@@ -24,7 +24,7 @@ const buildOpenUIHtmlExportMock = vi.hoisted(() =>
 )
 
 vi.mock('../../exports/services/openui-html-export-builder', () => ({
-  buildOpenUIHtmlExport: buildOpenUIHtmlExportMock,
+  buildOpenUIHtmlThumbnail: buildOpenUIHtmlThumbnailMock,
 }))
 
 const { resolveGalleryPreviewHtml } = await import('./gallery-preview-html')
@@ -43,8 +43,8 @@ const { resolveGalleryPreviewHtml } = await import('./gallery-preview-html')
 describe('resolveGalleryPreviewHtml', () => {
   afterEach(() => {
     query.mockReset()
-    buildOpenUIHtmlExportMock.mockReset()
-    buildOpenUIHtmlExportMock.mockResolvedValue({
+    buildOpenUIHtmlThumbnailMock.mockReset()
+    buildOpenUIHtmlThumbnailMock.mockResolvedValue({
       body: '<!doctype html><html><body><main><h1>Rendered</h1></main></body></html>',
       contentType: 'text/html; charset=utf-8',
       filename: 'index.html',
@@ -52,7 +52,7 @@ describe('resolveGalleryPreviewHtml', () => {
     })
   })
 
-  it('renders from moduleSource via the OpenUI export builder (no html field present)', async () => {
+  it('renders from moduleSource via the OpenUI thumbnail builder (no html field present)', async () => {
     // Shape matches serializePublicGallerySession output — no `html` key.
     query.mockResolvedValueOnce({
       id: 'k57test00000000000000000000',
@@ -87,7 +87,7 @@ describe('resolveGalleryPreviewHtml', () => {
 
     expect(html).not.toBeNull()
     expect(html).toContain('<h1>Rendered</h1>')
-    expect(buildOpenUIHtmlExportMock).toHaveBeenCalledWith(
+    expect(buildOpenUIHtmlThumbnailMock).toHaveBeenCalledWith(
       expect.objectContaining({
         source: 'root = Stack([Hero("Cozy Bookstore")])',
         target: 'html',
@@ -129,7 +129,7 @@ describe('resolveGalleryPreviewHtml', () => {
     const html = await resolveGalleryPreviewHtml('k57empty00000000000000000000')
 
     expect(html).toBeNull()
-    expect(buildOpenUIHtmlExportMock).not.toHaveBeenCalled()
+    expect(buildOpenUIHtmlThumbnailMock).not.toHaveBeenCalled()
   })
 
   it('returns null when the session is not found or not public', async () => {
@@ -138,10 +138,10 @@ describe('resolveGalleryPreviewHtml', () => {
     const html = await resolveGalleryPreviewHtml('k57missing000000000000000000')
 
     expect(html).toBeNull()
-    expect(buildOpenUIHtmlExportMock).not.toHaveBeenCalled()
+    expect(buildOpenUIHtmlThumbnailMock).not.toHaveBeenCalled()
   })
 
-  it('returns null when the OpenUI export builder throws', async () => {
+  it('returns null when the OpenUI thumbnail builder throws', async () => {
     query.mockResolvedValueOnce({
       id: 'k57throw00000000000000000000',
       sessionId: 'k57throw00000000000000000000',
@@ -170,7 +170,9 @@ describe('resolveGalleryPreviewHtml', () => {
         previewReady: true,
       },
     })
-    buildOpenUIHtmlExportMock.mockRejectedValueOnce(new Error('compile failed'))
+    buildOpenUIHtmlThumbnailMock.mockRejectedValueOnce(
+      new Error('compile failed'),
+    )
 
     const html = await resolveGalleryPreviewHtml('k57throw00000000000000000000')
 
@@ -206,7 +208,7 @@ describe('resolveGalleryPreviewHtml', () => {
         previewReady: true,
       },
     })
-    buildOpenUIHtmlExportMock.mockResolvedValueOnce({
+    buildOpenUIHtmlThumbnailMock.mockResolvedValueOnce({
       body: '<!doctype html><html><body><div class="openui-error">Failed to render</div></body></html>',
       contentType: 'text/html; charset=utf-8',
       filename: 'index.html',

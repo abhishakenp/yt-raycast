@@ -3,6 +3,10 @@ import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { applyReferralDiscountForUser } from '@/features/referrals/server/referral-discount'
+import {
+  sendBusinessNotification,
+  paymentDoneEvent,
+} from '@/features/notifications/slack-business'
 
 type WebhookConvexClient = Pick<ConvexHttpClient, 'mutation'>
 type ApplyReferralDiscount = (
@@ -93,6 +97,14 @@ async function verifyStripeSignature(
       .filter(([key, value]) => key && value),
   )
   if (!parts.t || !parts.v1) return false
+
+  // Replay attack protection: reject timestamps older than 5 minutes
+  const timestamp = Number.parseInt(parts.t, 10)
+  if (!Number.isFinite(timestamp)) return false
+  const TOLERANCE_SECONDS = 300
+  const nowSeconds = Math.floor(Date.now() / 1000)
+  if (Math.abs(nowSeconds - timestamp) > TOLERANCE_SECONDS) return false
+
   const expected = await hmacSha256(secret, `${parts.t}.${rawBody}`)
   return timingSafeEqual(expected, parts.v1)
 }
@@ -487,6 +499,25 @@ export async function createWebhookApiResponse(
       })),
     ),
   )
+
+  // Best-effort Slack notification — never blocks the webhook response.
+  const subscriptionPayload =
+    'subscription' in mutationPayload ? mutationPayload.subscription : null
+  const creditsPayload =
+    'credits' in mutationPayload ? mutationPayload.credits : undefined
+  const paymentType: 'subscription' | 'credit_pack' = subscriptionPayload
+    ? 'subscription'
+    : 'credit_pack'
+  void sendBusinessNotification(
+    paymentDoneEvent({
+      provider: mutationPayload.provider,
+      userId: mutationPayload.userId,
+      type: paymentType,
+      planId: subscriptionPayload?.planId,
+      credits: creditsPayload,
+    }),
+    env,
+  ).catch(() => {})
 
   return json({ received: true })
 }

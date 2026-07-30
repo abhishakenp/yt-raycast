@@ -98,6 +98,10 @@ export async function getUserId(ctx: AuthCtx) {
  * checks — everything `VITE_DISABLE_CLERK`/`DISABLE_LIMIT`/`DISABLE_PAYWALL`
  * bypass. This is safe because the JWT is signed by Clerk and verified by
  * Convex `auth.config.ts` — no forgeable client-supplied value is involved.
+ *
+ * The super-admin account `hello@ship-fast.ai` has `system_role: admin` set
+ * in Clerk publicMetadata, so it is recognized as admin via the standard
+ * JWT role claim — no hardcoded email check needed.
  */
 export async function isUserAdmin(ctx: AuthCtx): Promise<boolean> {
   const identity = await ctx.auth.getUserIdentity()

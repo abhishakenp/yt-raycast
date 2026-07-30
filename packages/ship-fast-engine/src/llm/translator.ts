@@ -46,12 +46,110 @@ interface TranslationResult {
   error?: string
   qualityScore?: number
   qualityReason?: string
+  /** Score from the first quality pass, before corrections were applied. */
+  initialQualityScore?: number
+  /** Number of strings replaced by scorer-provided corrections (0 when none). */
+  correctionsApplied?: number
+  /** True when corrections were re-scored in a verification pass. */
+  correctionsVerified?: boolean
+}
+
+/**
+ * Quality signal for a single translateHtml pipeline run. Emitted via the
+ * `onQualityReport` callback and folded into the module-level aggregate
+ * returned by `getTranslationQualityMetrics()`.
+ */
+export interface TranslationQualityReport {
+  locale: string
+  translatedCount: number
+  /** First scoring-pass score (0-11), before corrections. */
+  initialScore: number
+  /** Final score after corrections (verification re-score when corrections
+   * were applied, otherwise identical to `initialScore`). */
+  finalScore: number
+  /** Number of strings replaced by scorer-provided corrections. */
+  correctionsApplied: number
+  /** True when corrections were confirmed by a verification re-score at or
+   * above the quality target. */
+  correctionsVerified: boolean
+}
+
+export interface TranslationQualityMetrics {
+  /** Pipeline runs that reached the LLM scoring pass. */
+  pipelinesScored: number
+  /** Runs where the scorer returned corrections (score below target). */
+  pipelinesWithCorrections: number
+  /** Total strings replaced by scorer-provided corrections. */
+  correctionsApplied: number
+  /** Fraction of scored runs that needed corrections (0-1). */
+  correctionRate: number
+  /** Mean first-pass score across scored runs. */
+  averageInitialScore: number
+  /** Mean final score across scored runs (post-correction). */
+  averageFinalScore: number
+  /** Runs where applied corrections passed the verification re-score. */
+  correctionsVerified: number
+  /** Fraction of corrected runs whose verification re-score passed (0-1). */
+  verificationPassRate: number
 }
 
 // llama-3.3-70b handles Indian language translation well
 const TRANSLATION_MODEL = 'llama-3.3-70b-versatile'
 const QUALITY_TARGET_SCORE = 11
 const MAX_QUALITY_REWRITE_ATTEMPTS = 3
+
+// ── Quality monitoring (in-memory aggregate) ─────────────────────────────
+// Counts how often the scorer has to provide corrections and whether those
+// corrections pass the verification re-score. Long-term persistence is the
+// caller's job via the `onQualityReport` option (e.g. write to Convex).
+const qualityMetricsState = {
+  pipelinesScored: 0,
+  pipelinesWithCorrections: 0,
+  correctionsApplied: 0,
+  initialScoreSum: 0,
+  finalScoreSum: 0,
+  correctionsVerified: 0,
+}
+
+function recordQualityReport(report: TranslationQualityReport): void {
+  qualityMetricsState.pipelinesScored += 1
+  qualityMetricsState.initialScoreSum += report.initialScore
+  qualityMetricsState.finalScoreSum += report.finalScore
+  if (report.correctionsApplied > 0) {
+    qualityMetricsState.pipelinesWithCorrections += 1
+    qualityMetricsState.correctionsApplied += report.correctionsApplied
+    if (report.correctionsVerified) qualityMetricsState.correctionsVerified += 1
+  }
+}
+
+/** Snapshot of aggregate translation-quality metrics for this process. */
+export function getTranslationQualityMetrics(): TranslationQualityMetrics {
+  const scored = qualityMetricsState.pipelinesScored
+  const corrected = qualityMetricsState.pipelinesWithCorrections
+  return {
+    pipelinesScored: scored,
+    pipelinesWithCorrections: corrected,
+    correctionsApplied: qualityMetricsState.correctionsApplied,
+    correctionRate: scored > 0 ? corrected / scored : 0,
+    averageInitialScore:
+      scored > 0 ? qualityMetricsState.initialScoreSum / scored : 0,
+    averageFinalScore:
+      scored > 0 ? qualityMetricsState.finalScoreSum / scored : 0,
+    correctionsVerified: qualityMetricsState.correctionsVerified,
+    verificationPassRate:
+      corrected > 0 ? qualityMetricsState.correctionsVerified / corrected : 0,
+  }
+}
+
+/** Reset the in-memory aggregate (primarily for tests). */
+export function resetTranslationQualityMetrics(): void {
+  qualityMetricsState.pipelinesScored = 0
+  qualityMetricsState.pipelinesWithCorrections = 0
+  qualityMetricsState.correctionsApplied = 0
+  qualityMetricsState.initialScoreSum = 0
+  qualityMetricsState.finalScoreSum = 0
+  qualityMetricsState.correctionsVerified = 0
+}
 
 function resolveTargetLanguage(
   languageMode: LanguageMode | undefined,
@@ -458,6 +556,13 @@ function replaceVisibleTextNodes(
  * Translate the visible text content of an HTML string into the target Indian
  * language using Groq. HTML structure, CSS, and JavaScript are never touched.
  *
+ * Pipeline: (1) high-quality translation pass with built-in self-review,
+ * (2) polish pass for naturalness, (3) quality-scoring pass that returns
+ * corrected copy for weak strings, and (4) a rewrite loop for strings that
+ * still fall short. Every scored run is folded into the in-memory quality
+ * aggregate (`getTranslationQualityMetrics()`) and emitted through the
+ * optional `onQualityReport` callback.
+ *
  * When a `cacheClient` is provided, the function checks the shared translation
  * cache (`translationCache` + `sessionTranslationOverrides`) before calling the
  * LLM. If all extracted texts are cached, the LLM is skipped entirely. After a
@@ -470,6 +575,9 @@ export async function translateHtml(
   options?: {
     cacheClient?: TranslationCacheClient
     sessionId?: string
+    /** Quality signal emitted once per scored pipeline run. Use it to persist
+     * quality monitoring data (e.g. to Convex). Errors are swallowed. */
+    onQualityReport?: (report: TranslationQualityReport) => void
   },
 ): Promise<TranslationResult> {
   const language = resolveTargetLanguage(languageMode)
@@ -524,7 +632,10 @@ export async function translateHtml(
     language,
   )
   let translations = polishedTranslations
-  let finalQuality = await scoreTranslations(texts, translations, language)
+  const initialQuality = await scoreTranslations(texts, translations, language)
+  const initialScore = initialQuality.score
+  let finalQuality = initialQuality
+  let correctionsApplied = 0
   for (
     let attempt = 0;
     finalQuality.score < QUALITY_TARGET_SCORE &&
@@ -546,9 +657,33 @@ export async function translateHtml(
         : suggested
     if (rewritten === translations) break
     translations = rewritten
+    if (attempt === 0 && suggested !== translations) {
+      correctionsApplied = Object.values(
+        finalQuality.translations || {},
+      ).filter(
+        (suggestion) => typeof suggestion === 'string' && suggestion.trim(),
+      ).length
+    }
     finalQuality = await scoreTranslations(texts, translations, language)
   }
+  const correctionsVerified = finalQuality.score >= QUALITY_TARGET_SCORE
   const translatedCount = Object.values(translations).filter(Boolean).length
+
+  // ── Quality monitoring ──────────────────────────────────────────────────
+  const qualityReport: TranslationQualityReport = {
+    locale,
+    translatedCount,
+    initialScore,
+    finalScore: finalQuality.score,
+    correctionsApplied,
+    correctionsVerified,
+  }
+  recordQualityReport(qualityReport)
+  try {
+    options?.onQualityReport?.(qualityReport)
+  } catch {
+    // Metrics sinks must never break translation.
+  }
   if (translatedCount === 0)
     return { content: html, error: 'no translations returned' }
 
@@ -574,6 +709,9 @@ export async function translateHtml(
     translatedCount,
     qualityScore: finalQuality.score,
     qualityReason: finalQuality.reason || '',
+    initialQualityScore: initialScore,
+    correctionsApplied,
+    correctionsVerified,
   }
 }
 
@@ -587,6 +725,7 @@ export async function translateHtmlSequential(
   options?: {
     cacheClient?: TranslationCacheClient
     sessionId?: string
+    onQualityReport?: (report: TranslationQualityReport) => void
   },
 ): Promise<string[]> {
   const out: string[] = []

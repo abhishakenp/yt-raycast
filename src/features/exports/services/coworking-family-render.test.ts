@@ -17,26 +17,63 @@ async function renderSource(source: string) {
     : new TextDecoder().decode(result.body)
 }
 
-// The coworking family was rewritten to a premium animated design (framer
-// springs, scroll Reveal, 3D tilt). Every section must still render fully
-// with NO props through the real OpenUI runtime + renderToString: framer
-// components must SSR to static, VISIBLE markup (no baked-in hidden styles),
-// and the section-kit motion helpers must never hide content server-side.
-describe('coworking family renders through the OpenUI runtime', () => {
+// V3 replaced vertical-specific families with generic, composable sections.
+// These fixtures retain the coworking rendering contract: every section must
+// SSR through the real OpenUI runtime with authored content visible without
+// client-side JavaScript.
+describe('generic coworking composition renders through the OpenUI runtime', () => {
   const sections = [
-    { name: 'CoworkingNavbar', mustContain: ['Northside'] },
-    { name: 'CoworkingHero', mustContain: ['Schedule', 'Tour'] },
-    { name: 'CoworkingFeatures', mustContain: ['WiFi'] },
-    { name: 'CoworkingPricing', mustContain: ['Hot Desk', 'Private Office'] },
-    { name: 'CoworkingTestimonials', mustContain: ['Maya Chen'] },
-    { name: 'CoworkingCta', mustContain: [] },
-    { name: 'CoworkingFooter', mustContain: ['Northside'] },
-    { name: 'CoworkingGallery', mustContain: [] },
+    {
+      name: 'Navbar',
+      source:
+        'root = Navbar({"brand":"Northside","links":["Spaces","Membership"]})',
+      mustContain: ['Northside', 'Spaces'],
+    },
+    {
+      name: 'SplitHero',
+      source:
+        'root = SplitHero("Northside", "Make room for your best work", "your team", "Schedule a tour")',
+      mustContain: ['Make room for your best work', 'Schedule a tour'],
+    },
+    {
+      name: 'FeatureList',
+      source:
+        'root = FeatureList({"features":[{"heading":"Reliable WiFi","description":"Work without interruption."}]})',
+      mustContain: ['Reliable WiFi'],
+    },
+    {
+      name: 'PricingTable',
+      source:
+        'root = PricingTable({"tiers":[{"name":"Hot Desk","price":"$199","features":["24/7 access"]},{"name":"Private Office","price":"$899","features":["Dedicated space"]}]})',
+      mustContain: ['Hot Desk', 'Private Office'],
+    },
+    {
+      name: 'TestimonialRow',
+      source:
+        'root = TestimonialRow({"testimonials":[{"quote":"Northside makes every day better.","author":"Maya Chen"}]})',
+      mustContain: ['Maya Chen'],
+    },
+    {
+      name: 'CtaBand',
+      source:
+        'root = CtaBand({"heading":"Find your desk","cta":"Book a tour"})',
+      mustContain: ['Find your desk'],
+    },
+    {
+      name: 'Footer',
+      source: 'root = Footer({"brand":"Northside"})',
+      mustContain: ['Northside'],
+    },
+    {
+      name: 'ImageGallery',
+      source: 'root = ImageGallery()',
+      mustContain: [],
+    },
   ]
 
   for (const section of sections) {
-    it(`${section.name} renders with no props`, async () => {
-      const html = await renderSource(`root = ${section.name}()`)
+    it(`${section.name} renders authored content`, async () => {
+      const html = await renderSource(section.source)
       expect(html).not.toContain('Failed to render')
       // Non-trivial DOM must exist inside the export page wrapper.
       expect(html).toMatch(/data-sf-export-page="Home">\s*<[^>]*\s/)
@@ -63,16 +100,24 @@ describe('coworking family renders through the OpenUI runtime', () => {
   it('a full composed coworking home renders end-to-end', async () => {
     const html = await renderSource(`
 root = PageSwitch(["Home"], [home])
-home = Stack([CoworkingNavbar(), CoworkingHero(), CoworkingFeatures(), CoworkingPricing(), CoworkingTestimonials(), CoworkingCta(), CoworkingFooter()])
+home = Stack([
+  Navbar({"brand":"Northside","links":["Spaces","Membership"]}),
+  SplitHero("Northside", "Make room for your best work", "your team", "Schedule a tour"),
+  FeatureList({"features":[{"heading":"Reliable WiFi","description":"Work without interruption."}]}),
+  PricingTable({"tiers":[{"name":"Hot Desk","price":"$199","features":["24/7 access"]},{"name":"Private Office","price":"$899","features":["Dedicated space"]}]}),
+  TestimonialRow({"testimonials":[{"quote":"Northside makes every day better.","author":"Maya Chen"}]}),
+  CtaBand({"heading":"Find your desk","cta":"Book a tour"}),
+  Footer({"brand":"Northside"})
+])
 `)
     expect(html).not.toContain('Failed to render')
     expect(html).toContain('Northside')
     expect(html).toContain('Hot Desk')
   })
 
-  it('sections accept authored props (positional OpenUI call)', async () => {
+  it('sections accept authored props', async () => {
     const html = await renderSource(
-      `root = CoworkingHero("Now open in Austin", "Do your best work", "every single day")`,
+      `root = SplitHero("Northside", "Now open in Austin", "your team", "every single day")`,
     )
     expect(html).not.toContain('Failed to render')
     expect(html).toContain('Now open in Austin')

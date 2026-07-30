@@ -12,6 +12,10 @@ import type {
   ExportTarget,
 } from '../src/features/exports/services/openui-export-types'
 import type { FormatFileCache } from '../src/features/exports/services/format-export-files'
+import type {
+  StableEngineArtifact,
+  StableExportInput,
+} from '../src/features/exports/services/stable-artifact-contract'
 
 type PreparedExportArtifact = {
   sessionId: Id<'sessions'>
@@ -99,6 +103,59 @@ function createProgressReporter(
   }
 }
 
+function stableArtifactInput(
+  prepared: PreparedExportArtifact,
+  options: {
+    formatCache?: FormatFileCache
+    onProgress?: (stageKey: string) => void | Promise<void>
+  } = {},
+): StableExportInput | null {
+  const finalHtml =
+    prepared.previewHtml?.trim() ||
+    (/^\s*<!doctype html\b|^\s*<html\b/i.test(prepared.source)
+      ? prepared.html.trim()
+      : '')
+  if (!finalHtml) return null
+
+  let siteSpec: StableEngineArtifact['siteSpec']
+  if (prepared.siteSpecJson) {
+    try {
+      const parsed: unknown = JSON.parse(prepared.siteSpecJson)
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        !Array.isArray(parsed)
+      ) {
+        siteSpec = parsed as StableEngineArtifact['siteSpec']
+      }
+    } catch {
+      // A malformed optional spec must not block a final-HTML export.
+    }
+  }
+
+  return {
+    artifact: {
+      html: finalHtml,
+      ...(siteSpec === undefined ? {} : { siteSpec }),
+    },
+    sessionId: prepared.sessionId,
+    target: prepared.target,
+    theme: {
+      name: prepared.themeName,
+      isDark: prepared.isDark,
+      locale: prepared.locale,
+    },
+    includeBadge: prepared.includeBadge === true,
+    prompt: prepared.prompt,
+    ...(options.formatCache === undefined
+      ? {}
+      : { formatCache: options.formatCache }),
+    ...(options.onProgress === undefined
+      ? {}
+      : { onProgress: options.onProgress }),
+  }
+}
+
 async function buildGitHubFiles(
   ctx: ActionCtx,
   prepared: PreparedExportArtifact,
@@ -108,6 +165,15 @@ async function buildGitHubFiles(
   download?: BuiltExport
 }> {
   try {
+    const stableInput = stableArtifactInput(prepared, {
+      formatCache: createFormatFileCache(ctx),
+      onProgress: createProgressReporter(ctx, prepared, willDeploy),
+    })
+    if (stableInput !== null) {
+      const { buildExportFromStableArtifact } =
+        await import('../src/features/exports/services/stable-export-builder')
+      return await buildExportFromStableArtifact(stableInput)
+    }
     const { buildOpenUIArtifactFiles } =
       await import('../src/features/exports/services/openui-artifact-files')
     return await buildOpenUIArtifactFiles({
@@ -147,6 +213,16 @@ async function buildDownload(
     download?: BuiltExport
   },
 ): Promise<BuiltExport> {
+  const stableInput = stableArtifactInput(prepared)
+  if (stableInput !== null) {
+    const { buildDownloadFromStableArtifact } =
+      await import('../src/features/exports/services/stable-export-builder')
+    return await buildDownloadFromStableArtifact(
+      stableInput,
+      artifact.files,
+      artifact.download,
+    )
+  }
   const { buildDownloadFromArtifactFiles } =
     await import('../src/features/exports/services/openui-artifact-files')
   return await buildDownloadFromArtifactFiles(

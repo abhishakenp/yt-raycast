@@ -1,0 +1,3 @@
+home_hero = SplitHero("Fresh Market", "Groceries delivered today", "Local produce", "Everything for a better weekly shop")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])

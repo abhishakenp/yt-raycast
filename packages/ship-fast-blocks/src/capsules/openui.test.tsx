@@ -1,4 +1,10 @@
-import { createLakebedHandlerContext } from '@ship-fast/lakebed/server'
+import {
+  createLakebedHandlerContext,
+  createLakebedDefinition,
+  number,
+  string,
+  table,
+} from '@ship-fast/lakebed/server'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -9,12 +15,6 @@ import {
   withLakebed,
   type CapsuleComponentRenderer,
 } from './openui.ts'
-import {
-  createLakebedDefinition,
-  number,
-  string,
-  table,
-} from '@ship-fast/lakebed/server'
 
 // Inline lakebed definition replacing the deleted commerce cart-lakebed module.
 // Tests the same custom-lakebed contract: shared data key, custom queries/mutations.

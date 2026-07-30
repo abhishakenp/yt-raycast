@@ -7,9 +7,18 @@ const execAsync = promisify(exec)
 
 const SHARED_NETWORK = 'medusa_default'
 const SHARED_POSTGRES_CONTAINER = 'medusa-postgres-1'
-const SHARED_DB_USER = 'medusa'
-const SHARED_DB_PASSWORD = 'medusa'
+const SHARED_DB_USER = process.env.MEDUSA_DB_USER ?? 'medusa'
 const TENANT_IMAGE = 'ship-fast-medusa-tenant:latest'
+
+function getSharedDbPassword(): string {
+  const password = process.env.MEDUSA_DB_PASSWORD
+  if (!password) {
+    throw new Error(
+      'MEDUSA_DB_PASSWORD must be set — hardcoded fallback removed for security',
+    )
+  }
+  return password
+}
 const PORT_RANGE_START = 9100
 const HEALTH_CHECK_TIMEOUT_MS = 120_000
 const HEALTH_CHECK_INTERVAL_MS = 2_000
@@ -222,7 +231,7 @@ export async function provisionSessionMedusaContainer(
     `http://localhost:${port},http://127.0.0.1:${port},http://localhost:3000,http://127.0.0.1:3000,http://localhost:7420,http://127.0.0.1:7420`
 
   const envFlags = [
-    `-e DATABASE_URL=postgres://${SHARED_DB_USER}:${SHARED_DB_PASSWORD}@postgres:5432/${databaseName}?sslmode=disable`,
+    `-e DATABASE_URL=postgres://${SHARED_DB_USER}:${getSharedDbPassword()}@postgres:5432/${databaseName}?sslmode=disable`,
     `-e REDIS_URL=redis://redis:6379`,
     `-e PORT=${port}`,
     `-e MEDUSA_BACKEND_URL=${backendUrl}`,

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 type ProvisionerTestController = {
   execCommands: Array<string>
@@ -123,10 +123,17 @@ function createHealthyFetchMock(): typeof fetch {
 }
 
 describe('provisionSessionMedusaContainer', () => {
+  const originalEnv = { ...process.env }
+
   beforeEach(() => {
     controller.infraOk = true
     controller.portFree = true
     controller.execCommands = []
+    process.env.MEDUSA_DB_PASSWORD = 'test-secure-password'
+  })
+
+  afterEach(() => {
+    process.env = { ...originalEnv }
   })
 
   it('provisions a container with derived names, port, and urls', async () => {
@@ -165,7 +172,7 @@ describe('provisionSessionMedusaContainer', () => {
     expect(runCmd).toContain('medusa_session_my_session_123')
     expect(runCmd).toContain('-p 9100:9100')
     expect(runCmd).toContain(
-      'DATABASE_URL=postgres://medusa:medusa@postgres:5432/medusa_session_my_session_123',
+      'DATABASE_URL=postgres://medusa:test-secure-password@postgres:5432/medusa_session_my_session_123',
     )
   })
 

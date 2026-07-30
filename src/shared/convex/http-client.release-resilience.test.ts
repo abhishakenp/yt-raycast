@@ -56,6 +56,7 @@ function stallUntilAbort(_input: RequestInfo | URL, init?: RequestInit) {
 beforeEach(() => {
   clientState.options.clear()
   observedSignals.length = 0
+  vi.stubEnv('CONVEX_SELF_HOSTED_URL', 'https://convex.example')
 })
 
 afterEach(() => {

@@ -1,4 +1,4 @@
-import { hasConfiguredValue } from '@/shared/env/app-env'
+import { hasConfiguredValue } from '@/shared/env/has-configured-value'
 
 export type ProviderMode = 'anonymous' | 'convex_anonymous' | 'clerk_convex'
 

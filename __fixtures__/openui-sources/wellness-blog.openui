@@ -1,0 +1,3 @@
+home_hero = SplitHero("Wellness Journal", "Small rituals, lasting energy", "Wellness", "Guides for a calmer everyday life")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home])

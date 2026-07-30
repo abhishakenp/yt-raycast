@@ -3,6 +3,10 @@ import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { applyReferralDiscountForUser } from '@/features/referrals/server/referral-discount'
+import {
+  sendBusinessNotification,
+  inviteeJoinedEvent,
+} from '@/features/notifications/slack-business'
 
 type ReferralConvexClient = Pick<
   ConvexHttpClient,
@@ -93,6 +97,39 @@ export async function createReferralRecordApiResponse(
       void applyDiscount(process.env, result.referrerJustUnlocked).catch(
         () => ({ applied: false, reason: 'unhandled' }),
       )
+    }
+
+    // Best-effort Slack notification when a referral is successfully recorded.
+    if (result.recorded) {
+      let referredUserId = 'unknown'
+      let referredUserName: string | undefined
+      let referredUserEmail: string | undefined
+      try {
+        const token = getBearerToken(request)
+        if (token) {
+          const payload = token.split('.')[1]
+          if (payload) {
+            const decoded = JSON.parse(
+              Buffer.from(payload, 'base64url').toString('utf-8'),
+            )
+            referredUserId =
+              decoded.sub ?? decoded['https://clerk.com/user_id'] ?? 'unknown'
+            referredUserName = decoded.name ?? decoded['https://clerk.com/name']
+            referredUserEmail =
+              decoded.email ?? decoded['https://clerk.com/email']
+          }
+        }
+      } catch {}
+
+      void sendBusinessNotification(
+        inviteeJoinedEvent({
+          referredUserId,
+          referredUserName,
+          referredUserEmail: referredUserEmail ?? email,
+          referrerUserId: result.referrerJustUnlocked ?? 'unknown',
+          code,
+        }),
+      ).catch(() => {})
     }
 
     return json(result)

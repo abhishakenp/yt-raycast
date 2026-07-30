@@ -15,6 +15,7 @@ export const Route = createFileRoute('/api/storefront/medusa/config')({
         return Response.json({
           enabled: Boolean(publishableKey.trim()),
           backendUrl: baseUrl,
+          publishableKey,
         })
       },
     },

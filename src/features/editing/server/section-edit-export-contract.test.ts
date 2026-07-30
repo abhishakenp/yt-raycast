@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { renderOpenUIToHTML } from '@ship-fast/engine/openui-ssr.js'
@@ -11,7 +9,7 @@ import {
 import { patchOpenUiSourceWithAiCapsule } from './section-edit-response'
 
 /**
- * Contract test: a section edit patch applied to a real engine OpenUI source
+ * Contract test: a section edit patch applied to an export-compatible OpenUI source
  * must still parse, render, and export.
  *
  * The section edit flow is: user selects a section -> AI generates a
@@ -34,10 +32,19 @@ import { patchOpenUiSourceWithAiCapsule } from './section-edit-response'
  *    content changes but the source remains structurally valid.
  */
 
-const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
+const exportCompatibleFixtures = {
+  'primitive-product': `home_hero = Text("Boutique Coffee Roastery")
+home_supporting = Text("Fresh beans for every morning")
+home = Stack([home_hero, home_supporting])
+root = PageSwitch(["Home"], [home], "", {"Home":"Home"})`,
+  'primitive-review': `home_hero = Text("Coffee lovers recommend us")
+home_supporting = Text("Stories from our subscribers")
+home = Stack([home_hero, home_supporting])
+root = PageSwitch(["Home"], [home], "", {"Home":"Home"})`,
+} as const
 
-function loadFixture(name: string): string {
-  return readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+function loadFixture(name: keyof typeof exportCompatibleFixtures): string {
+  return exportCompatibleFixtures[name]
 }
 
 /**
@@ -56,10 +63,10 @@ function simulateSectionEdit(
   newFirstArg: string,
   newSecondArg?: string,
 ): string {
-  // Match the full section line: `varName = CapsuleName("first", "second", ...`
-  // We replace the first (and optionally second) string literal argument.
+  // Export fixtures contain positional capsule arguments, while current
+  // generated fixtures use named arguments. Support both grammar forms.
   const linePattern = new RegExp(
-    `(${varName}\\s*=\\s*${capsuleName}\\()"([^"]*)"`,
+    `(${varName}\\s*=\\s*${capsuleName}\\(\\s*(?:\\w+=)?)"([^"]*)"`,
   )
   expect(source).toMatch(linePattern)
 
@@ -68,7 +75,7 @@ function simulateSectionEdit(
   if (newSecondArg !== undefined) {
     // After the first arg replacement, the next string literal is the second arg.
     const secondArgPattern = new RegExp(
-      `(${varName}\\s*=\\s*${capsuleName}\\("${escapeRegExp(newFirstArg)}",\\s*)"([^"]*)"`,
+      `(${varName}\\s*=\\s*${capsuleName}\\([^\\n]*?"${escapeRegExp(newFirstArg)}",\\s*(?:\\w+=)?)"([^"]*)"`,
     )
     expect(patched).toMatch(secondArgPattern)
     patched = patched.replace(secondArgPattern, `$1"${newSecondArg}"`)
@@ -109,10 +116,10 @@ async function expectExports(source: string, sessionId: string) {
   return exported
 }
 
-// ─── Fixture specs ──────────────────────────────────────────────────────────
+// ─── Export-compatible fixture specs ─────────────────────────────────────────
 
 type FixtureSpec = {
-  name: string
+  name: keyof typeof exportCompatibleFixtures
   /** Section var name to edit (e.g. `home_hero`). */
   varName: string
   /** Capsule component name used in that section line (e.g. `BlogPostHero`). */
@@ -125,31 +132,22 @@ type FixtureSpec = {
 
 const fixtures: FixtureSpec[] = [
   {
-    name: 'food-blog',
+    name: 'primitive-product',
     varName: 'home_hero',
-    capsuleName: 'BlogPostHero',
-    newFirstArg: 'New Season',
-    newSecondArg: 'Updated Headline for the Food Blog',
+    capsuleName: 'Text',
+    newFirstArg: 'Freshly Roasted Coffee',
   },
   {
-    name: 'sneaker-ecommerce',
+    name: 'primitive-review',
     varName: 'home_hero',
-    capsuleName: 'FashionStoreHero',
-    newFirstArg: 'New Drop',
-    newSecondArg: 'Updated Headline',
-  },
-  {
-    name: 'popcorn-mania',
-    varName: 'home_hero',
-    capsuleName: 'ManufacturingHero',
-    newFirstArg: 'New Flavor',
-    newSecondArg: 'Updated Headline',
+    capsuleName: 'Text',
+    newFirstArg: 'Member Coffee Club',
   },
 ]
 
-// ─── patchOpenUiSourceWithAiCapsule on real fixtures ────────────────────────
+// ─── patchOpenUiSourceWithAiCapsule on export-compatible fixtures ───────────
 
-describe('patchOpenUiSourceWithAiCapsule (real engine fixtures)', () => {
+describe('patchOpenUiSourceWithAiCapsule (export-compatible fixtures)', () => {
   it.each(fixtures)(
     '$name: patches the capsule name reference in the section line',
     (spec) => {
@@ -192,7 +190,7 @@ describe('patchOpenUiSourceWithAiCapsule (real engine fixtures)', () => {
 
 // ─── Simulated section edit: parse + render + export ────────────────────────
 
-describe('section edit export contract (real engine fixtures)', () => {
+describe('section edit export contract (export-compatible fixtures)', () => {
   it.each(fixtures)(
     '$name: simulated section edit still parses, renders, and exports',
     async (spec) => {
@@ -230,34 +228,36 @@ describe('section edit export contract (real engine fixtures)', () => {
     },
   )
 
-  it('food-blog: multiple sequential section edits remain parseable + renderable + exportable', async () => {
-    const original = loadFixture('food-blog')
+  it('primitive-product: multiple sequential section edits remain parseable + renderable + exportable', async () => {
+    const original = loadFixture('primitive-product')
 
     // First edit: swap the hero headline.
     const firstEdit = simulateSectionEdit(
       original,
       'home_hero',
-      'BlogPostHero',
+      'Text',
       'First Edit',
-      'First Edited Headline',
     )
 
     // Second edit: swap the story grid title on top of the first edit.
     const secondEdit = firstEdit.replace(
-      'Trending This Week',
-      'Fresh From Our Kitchen',
+      'Fresh beans for every morning',
+      'Fresh From Our Roastery',
     )
 
-    expect(secondEdit).toContain('First Edited Headline')
-    expect(secondEdit).toContain('Fresh From Our Kitchen')
+    expect(secondEdit).toContain('First Edit')
+    expect(secondEdit).toContain('Fresh From Our Roastery')
 
     const parsed = expectParses(secondEdit)
     expect(parsed.pages.length).toBeGreaterThan(0)
 
     const html = await expectRenders(secondEdit)
-    expect(html).toContain('First Edited Headline')
-    expect(html).toContain('Fresh From Our Kitchen')
+    expect(html).toContain('First Edit')
+    expect(html).toContain('Fresh From Our Roastery')
 
-    await expectExports(secondEdit, 'session-food-blog-stacked-section-edits')
+    await expectExports(
+      secondEdit,
+      'session-primitive-product-stacked-section-edits',
+    )
   })
 })

@@ -18,6 +18,10 @@ import {
   applyCachedTranslationsToSource,
   loadCachedTranslationsForSource,
 } from './session_translation_cache_helpers'
+import {
+  sendConvexBusinessNotification,
+  paywallTriggeredEvent,
+} from './slack_business_notifications'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { resolveDeploymentBadgeEntitlement } from './deployment_badge_helpers'
 import { progressForStage } from './export_progress_stages'
@@ -1031,6 +1035,14 @@ export async function getExportEntitlement(
   }
 
   if (userId === undefined) {
+    // Best-effort Slack notification — paywall hit by anonymous user.
+    void sendConvexBusinessNotification(
+      paywallTriggeredEvent({
+        sessionId,
+        entitlement: 'anonymous',
+        reason: 'Anonymous user attempted export without subscription',
+      }),
+    ).catch(() => {})
     return {
       status: 'payment_required',
       requiresPayment: true,
@@ -1084,6 +1096,16 @@ export async function getExportEntitlement(
       remainingCredits,
     }
   }
+
+  // Best-effort Slack notification — authenticated user without subscription.
+  void sendConvexBusinessNotification(
+    paywallTriggeredEvent({
+      userId,
+      sessionId,
+      entitlement: 'payment_required',
+      reason: 'Authenticated user has no active subscription or credits',
+    }),
+  ).catch(() => {})
 
   return {
     status: 'payment_required',

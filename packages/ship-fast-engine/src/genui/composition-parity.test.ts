@@ -12,7 +12,10 @@ import { generateConvexBackend } from './convex-codegen.ts'
 import { validateSvelteSource, compileSvelteBlock } from './svelte-compiler.ts'
 import { getInteraction } from './interactions.ts'
 import { pickThemeForDesignIntent } from './theme-affinity.ts'
-import { DEFAULT_DESIGN } from '../../../ship-fast-blocks/src/primitives/design-system.ts'
+import {
+  DEFAULT_DESIGN,
+  type DesignIntent,
+} from '../../../ship-fast-blocks/src/primitives/design-system.ts'
 import { THEME_NAMES } from '../../../ship-fast-blocks/src/theme-apply.ts'
 
 describe('composition parity — full feature set', async () => {
@@ -149,7 +152,10 @@ describe('composition parity — full feature set', async () => {
   })
 
   it('theme pick is deterministic for same seed', async () => {
-    const design = { ...DEFAULT_DESIGN, typography: 'editorial' }
+    const design: DesignIntent = {
+      ...DEFAULT_DESIGN,
+      typography: 'editorial',
+    }
     const rng1 = () => 0.5
     const rng2 = () => 0.5
     expect(pickThemeForDesignIntent(design, rng1)).toBe(

@@ -41,6 +41,7 @@ import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { SessionGeneratedPreview } from '@/features/dashboard/components/SessionGeneratedPreview'
 import { PreviewErrorBoundary } from '@/features/dashboard/components/PreviewErrorBoundary'
 import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
+import { useGalleryThumbnailRegeneration } from '@/features/gallery/hooks/useGalleryThumbnailRegeneration'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { createPendingDashboardSaves } from '@/features/dashboard/lib/pending-dashboard-saves'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
@@ -140,6 +141,7 @@ export type DashboardGenerationView = {
     sessionId: Id<'sessions'>
     status?: string
     previewVersion?: number
+    updatedAt?: number
     prompt: string
     preferredLanguage?: string
     preferredExportTarget?: string
@@ -486,6 +488,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
     new WeakMap<HTMLElement, PendingTextChange>(),
   )
   const [dashboardSaves] = useState(createPendingDashboardSaves)
+  const reloadInFlightRef = useRef(false)
   const trackDashboardSave = dashboardSaves.track
   const activeLinkEditsRef = useRef(0)
   // Capture the element's original style attribute when the toolbar opens
@@ -609,6 +612,14 @@ export function Dashboard({ sessionId }: DashboardProps) {
   // catches render crashes and the last-known-good logic keeps the previous
   // frame if a streaming chunk breaks. No need to wait for preview_ready.
   const isPreviewRenderable = !isMissingSession && hasRenderableHomeSource
+  const galleryThumbnailRevision = isPreviewReady
+    ? String(generationView?.session.updatedAt ?? '')
+    : undefined
+  useGalleryThumbnailRegeneration({
+    isPreviewReady,
+    revision: galleryThumbnailRevision,
+    sessionId: resolvedSessionId,
+  })
   const sidePanelQueryArgs =
     resolvedSessionId === undefined || !isPreviewReady
       ? 'skip'
@@ -853,6 +864,25 @@ export function Dashboard({ sessionId }: DashboardProps) {
     }
     void navigate({ to: '/' })
   }, [canGoBack, closeInlineEditingSurface, navigate, router])
+
+  const handlePreviewReload = () => {
+    closeInlineEditingSurface('cancel')
+    if (!dashboardSaves.hasPending()) {
+      window.location.reload()
+      return
+    }
+    if (reloadInFlightRef.current) return
+
+    reloadInFlightRef.current = true
+    void (async () => {
+      try {
+        await dashboardSaves.drain()
+        window.location.reload()
+      } finally {
+        reloadInFlightRef.current = false
+      }
+    })()
+  }
 
   useEffect(() => {
     const preventReloadDuringSave = (event: BeforeUnloadEvent) => {
@@ -1841,7 +1871,10 @@ export function Dashboard({ sessionId }: DashboardProps) {
                       }}
                     >
                       <svg
-                        className={cn('size-4', isRegenerating && 'animate-spin')}
+                        className={cn(
+                          'size-4',
+                          isRegenerating && 'animate-spin',
+                        )}
                         viewBox="0 0 24 24"
                         width="16"
                         height="16"
@@ -1857,7 +1890,33 @@ export function Dashboard({ sessionId }: DashboardProps) {
                         />
                       </svg>
                     </button>
-                  ) : null}
+                  ) : (
+                    <button
+                      type="button"
+                      className="dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white"
+                      id="preview-refresh-btn"
+                      data-tip="Refresh preview"
+                      aria-label="Reload page"
+                      onClick={handlePreviewReload}
+                    >
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16M21 21v-5h-5"
+                        />
+                      </svg>
+                    </button>
+                  )}
                   <div
                     className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1"
                     role="group"

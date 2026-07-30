@@ -126,9 +126,9 @@ export const PricingContent = ({
       >
         <span className="kicker">Pricing</span>
         <h1 id="pricing-heading">
-          Free to try.
+          One plan.
           <br />
-          Pro when you're ready.
+          Everything included.
         </h1>
         <p>
           Generate, iterate, export, and keep shipping with the full Ship Fast
@@ -140,54 +140,22 @@ export const PricingContent = ({
         <h2 id="plans-heading" className="sr-only">
           Plans
         </h2>
-        <div className="pricing-grid">
+        <div className="pricing-grid single-plan">
           <div className="pricing-card featured">
             <div className="popular-badge" aria-label="Most popular plan">
               Most Popular
             </div>
-            <p className="plan-label">Free</p>
-            <div className="plan-price-row">
-              <span className="plan-price">₹0</span>
-              <span className="plan-period">/forever</span>
-            </div>
-            <p className="plan-desc">
-              The first ones are on us. No credit card, no signup required
-              to try.
-            </p>
-            <div className="plan-divider" />
-            <ul className="plan-features">
-              <li>
-                <CheckIcon /> 3 generations/day without login
-              </li>
-              <li>
-                <CheckIcon /> 5 generations/day when logged in
-              </li>
-              <li>
-                <CheckIcon /> 10 free generations/month
-              </li>
-            </ul>
-            <GlassPillButton
-              className="plan-btn"
-              onClick={onShareClick as () => void}
-            >
-              Start Free
-            </GlassPillButton>
-            <p className="seats-note">
-              Just start generating. Sign up to save your work.
-            </p>
-          </div>
-          <div className="pricing-card">
             <p className="plan-label">Pro</p>
             <div className="plan-price-row">
               <span className="plan-price">₹999</span>
               <span className="plan-period">/month</span>
             </div>
             <span className="plan-save">
-              Bring 2 paying subscribers · get 50% off
+              Bring 2 active users · get 50% off
             </span>
             <p className="plan-desc">
-              The full generator, CMS, export flow, AI iteration, and monthly
-              drops in one subscription.
+              The full generator, export flow, AI iteration, and monthly drops
+              in one subscription.
             </p>
             <div className="plan-divider" />
             <ul className="plan-features">
@@ -202,9 +170,6 @@ export const PricingContent = ({
               </li>
               <li>
                 <CheckIcon /> AI iteration &amp; refinement
-              </li>
-              <li>
-                <CheckIcon /> Better image generation
               </li>
               <li>
                 <CheckIcon /> Community access
@@ -234,10 +199,10 @@ export const PricingContent = ({
       >
         <div className="affiliate-card">
           <span className="kicker">Affiliation</span>
-          <h2 id="affiliate-heading">Bring 2 paying subscribers</h2>
+          <h2 id="affiliate-heading">Bring 2 people</h2>
           <div
             className="affiliate-diagram"
-            aria-label="Bring two paying subscribers to receive a 50 percent discount"
+            aria-label="Bring two active people to receive a 50 percent discount"
           >
             <div className="affiliate-people">
               <div className="affiliate-person" aria-label="Person 1">
@@ -264,7 +229,7 @@ export const PricingContent = ({
               visible
               onShareClick={onShareClick}
               referralCode={referralCode}
-              label="Bring 2 paying subscribers for 50% discount for life"
+              label="Bring 2 people for 50% discount for life"
               className="mt-5"
             />
           ) : null}
@@ -281,18 +246,13 @@ export const PricingContent = ({
         </div>
         <div className="faq-list">
           <FaqItem
-            question="What is included in Free?"
-            answer="Free gives you 3 generations per day without even logging in, 5 per day when signed in, and 10 free generations per month. No credit card required."
-            controlsId="pricing-faq-free"
-          />
-          <FaqItem
             question="What is included in Pro?"
-            answer="Pro includes website generation, CMS, ZIP export, the full template library, AI iteration, better image generation, community access, and monthly template drops."
+            answer="Pro includes website generation, ZIP export, the full template library, AI iteration, community access, and monthly template drops."
             controlsId="pricing-faq-pro"
           />
           <FaqItem
-            question="How does the bring-2-paying-subscribers discount work?"
-            answer="Refer 2 paying subscribers and your future subscription payments are discounted by 50%. The benefit is tied to active subscriptions: if you cancel, or if the paid referral count drops below 2, the discount no longer applies until the requirement is met again."
+            question="How does the bring-2-people discount work?"
+            answer="Refer 2 active users and your future subscription payments are discounted by 50%. The benefit is tied to active accounts: if you cancel, or if the active referral count drops below 2, the discount no longer applies until the requirement is met again."
             controlsId="pricing-faq-referrals"
           />
           <FaqItem
@@ -321,8 +281,8 @@ export const PricingContent = ({
           Ship with Pro.
         </h2>
         <p>
-          One plan, full access, and a referral discount when two paying
-          subscribers join through you.
+          One plan, full access, and a referral discount when two active users
+          join through you.
         </p>
         <GlassPillButton
           className="cta-btn"

@@ -88,8 +88,24 @@ module.exports = defineConfig({
       storeCors: process.env.STORE_CORS ?? '',
       adminCors: process.env.ADMIN_CORS ?? '',
       authCors: process.env.AUTH_CORS ?? '',
-      jwtSecret: process.env.JWT_SECRET ?? 'development-jwt-secret',
-      cookieSecret: process.env.COOKIE_SECRET ?? 'development-cookie-secret',
+      jwtSecret:
+        process.env.JWT_SECRET ??
+        (process.env.NODE_ENV === 'production'
+          ? (() => {
+              throw new Error(
+                'JWT_SECRET must be set in production — fallback removed for security',
+              )
+            })()
+          : 'development-jwt-secret'),
+      cookieSecret:
+        process.env.COOKIE_SECRET ??
+        (process.env.NODE_ENV === 'production'
+          ? (() => {
+              throw new Error(
+                'COOKIE_SECRET must be set in production — fallback removed for security',
+              )
+            })()
+          : 'development-cookie-secret'),
     },
   },
   modules: redisModules,

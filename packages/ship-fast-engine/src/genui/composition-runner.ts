@@ -8,7 +8,7 @@
  */
 import { writeFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { generateText, generateTextStream } from '../generate.ts'
+import { generateTextStream } from '../generate.ts'
 import { DEFAULT_MODEL } from '../model-list.ts'
 import { requirePromptText } from '../prompt'
 import { saveSiteSpec, type SiteSpecProject } from '../spec/index.ts'
@@ -22,6 +22,7 @@ import {
 import { serializeDesignIntent } from '../../../ship-fast-blocks/src/primitives/design-system.ts'
 import { pickThemeForDesignIntent } from './theme-affinity.ts'
 import type { PlanCacheClient } from './plan-cache-client.ts'
+import { validateCompositionQuality } from './composition-quality.ts'
 
 // ─── Session context (matches RunShipFastEngine) ─────────────────────────
 
@@ -102,7 +103,7 @@ export async function runComposition(
     {
       id: 'home.composition',
       label: 'Generate composition',
-      status: 'IN_PROGRESS' as const,
+      status: 'IN_PROGRESS' as 'IN_PROGRESS' | 'DONE',
       filename: 'home.openui',
       files: ['home.openui', 'site-spec.json'],
     },
@@ -169,24 +170,10 @@ export async function runComposition(
     )
   }
 
-  // ── Validate & repair page structure ──────────────────────────────
-  // Ensures sub-pages use different motifs from home and from each other,
-  // and that page-type-specific content requirements are met (e.g. about
-  // page has PersonGrid, blog page has ArticlePreview).
-  const { repairPageStructure } = await import('./page-structure-validator.ts')
-  const { repaired, violations } = repairPageStructure(parsed)
-  if (repaired) {
-    opts.sessionCtx?.broadcast?.({
-      type: 'log',
-      message: `Page structure repaired: ${violations.map((v) => v.message).join('; ')}`,
-    })
-  }
-
   // ── Compile ───────────────────────────────────────────────────────
   const compiled = await compileComposition(parsed, {
     brand: parsed.brand,
     title: parsed.title,
-    navbarVariant: genome.navbarVariant,
   })
 
   // ── Validate svelte blocks (if any) ───────────────────────────────
@@ -210,6 +197,9 @@ export async function runComposition(
       })
     }
   }
+
+  // ── Content quality gate (before anything is persisted) ───────────
+  enforceCompositionQuality(compiled.source, opts.sessionCtx)
 
   // ── Persist workspace artifacts ───────────────────────────────────
   // home.openui — the OpenUI source the renderer consumes
@@ -235,9 +225,6 @@ export async function runComposition(
     })),
     siteType: 'composition',
     userPrompt,
-    // Design intent — the @design axis values (radius, shadow, gradient, etc.)
-    // The renderer reads this to wrap the site in <DesignSystemProvider intent={...}>
-    design: compiled.design,
     // Fullstack wiring — lakebed, convex backend, data bindings
     lakebed: compiled.lakebed,
     convexBackend: compiled.convexBackend,
@@ -392,7 +379,7 @@ export async function streamComposition(
     {
       id: 'home.composition',
       label: 'Generate composition',
-      status: 'IN_PROGRESS' as const,
+      status: 'IN_PROGRESS' as 'IN_PROGRESS' | 'DONE',
       filename: 'home.openui',
       files: ['home.openui', 'site-spec.json'],
     },
@@ -454,25 +441,13 @@ export async function streamComposition(
     )
   }
 
-  // ── Validate & repair page structure ──────────────────────────────
-  {
-    const { repairPageStructure } = await import(
-      './page-structure-validator.ts'
-    )
-    const { repaired, violations } = repairPageStructure(parsed)
-    if (repaired) {
-      opts.sessionCtx?.broadcast?.({
-        type: 'log',
-        message: `Page structure repaired: ${violations.map((v) => v.message).join('; ')}`,
-      })
-    }
-  }
-
   const compiled = await compileComposition(parsed, {
     brand: parsed.brand,
     title: parsed.title,
-    navbarVariant: genome.navbarVariant,
   })
+
+  // ── Content quality gate (before anything is persisted) ───────────
+  enforceCompositionQuality(compiled.source, opts.sessionCtx)
 
   // Persist artifacts
   writeFileSync(join(ws, 'home.openui'), compiled.source)
@@ -496,9 +471,6 @@ export async function streamComposition(
     })),
     siteType: 'composition',
     userPrompt,
-    // Design intent — the @design axis values (radius, shadow, gradient, etc.)
-    // The renderer reads this to wrap the site in <DesignSystemProvider intent={...}>
-    design: compiled.design,
     // Fullstack wiring — lakebed, convex backend, data bindings
     lakebed: compiled.lakebed,
     convexBackend: compiled.convexBackend,
@@ -579,6 +551,32 @@ export async function streamComposition(
     compiled,
     raw,
     duration: Date.now() - t0,
+  }
+}
+
+// ─── Content quality gate ────────────────────────────────────────────────
+
+/**
+ * Reject compiled compositions that carry placeholder or template copy.
+ *
+ * The composition prompt forbids these phrases; this enforces it at the
+ * artifact boundary so generic copy never reaches the workspace. The throw is
+ * retried by the caller's generation attempt loop.
+ */
+function enforceCompositionQuality(
+  source: string,
+  sessionCtx?: CompositionSessionCtx,
+): void {
+  const quality = validateCompositionQuality(source)
+  if (quality.violations.length > 0) {
+    sessionCtx?.broadcast?.({ type: 'quality', ...quality })
+  }
+  if (!quality.valid) {
+    throw new Error(
+      `Composition quality gate rejected output: ${quality.violations
+        .map((violation) => violation.message)
+        .join('; ')}`,
+    )
   }
 }
 

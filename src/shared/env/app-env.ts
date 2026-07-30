@@ -1,5 +1,6 @@
-import isEmpty from 'lodash/isEmpty'
 import * as z from 'zod'
+
+export { hasConfiguredValue } from './has-configured-value'
 
 const appEnvSchema = z.object({
   APP_BASE_URL: z.string().url().default('http://localhost:3000'),
@@ -34,6 +35,7 @@ const appEnvSchema = z.object({
   NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: z.string().optional(),
   VITE_MEDUSA_BACKEND_URL: z.string().url().optional(),
   VITE_MEDUSA_PUBLISHABLE_KEY: z.string().optional(),
+  VITE_LOGROCKET_APP_ID: z.string().optional(),
 })
 
 export type AppEnv = z.infer<typeof appEnvSchema>
@@ -75,9 +77,6 @@ export function parseAppEnv(rawEnv: RawAppEnv): AppEnv {
       rawEnv.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
     VITE_MEDUSA_BACKEND_URL: rawEnv.VITE_MEDUSA_BACKEND_URL,
     VITE_MEDUSA_PUBLISHABLE_KEY: rawEnv.VITE_MEDUSA_PUBLISHABLE_KEY,
+    VITE_LOGROCKET_APP_ID: rawEnv.VITE_LOGROCKET_APP_ID,
   })
-}
-
-export function hasConfiguredValue(value: string | undefined): boolean {
-  return !isEmpty(value?.trim())
 }
