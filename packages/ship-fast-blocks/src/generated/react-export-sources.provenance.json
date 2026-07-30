@@ -9,6 +9,7 @@
   ],
   "outputs": [
     "src/generated/react-export-sources.json",
+    "src/generated/index.ts",
     "src/generated/react-export-sources.compressed.ts",
     "src/generated/block-source-files.compressed.ts",
     "src/generated/vendor-source-files.compressed.ts",
@@ -18,8 +19,8 @@
     "src/generated/capsule-categories.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 113,
-  "sectionComponentCount": 40,
+  "componentCount": 116,
+  "sectionComponentCount": 43,
   "components": [
     {
       "name": "Accordion",
@@ -55,6 +56,10 @@
     },
     {
       "name": "BentoGrid",
+      "sourceFile": "src/motifs/index.tsx"
+    },
+    {
+      "name": "BlogPost",
       "sourceFile": "src/motifs/index.tsx"
     },
     {
@@ -318,6 +323,10 @@
       "sourceFile": "src/motifs/index.tsx"
     },
     {
+      "name": "ProductDetail",
+      "sourceFile": "src/motifs/index.tsx"
+    },
+    {
       "name": "ProductGrid",
       "sourceFile": "src/motifs/index.tsx"
     },
@@ -368,6 +377,10 @@
     {
       "name": "Sheet",
       "sourceFile": "src/registry/primitives/sheet.tsx"
+    },
+    {
+      "name": "SidebarNav",
+      "sourceFile": "src/motifs/index.tsx"
     },
     {
       "name": "SignIn",

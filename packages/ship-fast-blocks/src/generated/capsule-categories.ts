@@ -45,6 +45,9 @@ export const capsuleCategories: Record<
   TeamShowcase: { category: 'core', functionalType: 'Generic' },
   ProjectGallery: { category: 'core', functionalType: 'Gallery' },
   DonationBand: { category: 'core', functionalType: 'Generic' },
+  ProductDetail: { category: 'core', functionalType: 'Generic' },
+  BlogPost: { category: 'core', functionalType: 'Generic' },
+  SidebarNav: { category: 'core', functionalType: 'Nav' },
 }
 
 /** Find similar capsule names by directory category + functional type. */

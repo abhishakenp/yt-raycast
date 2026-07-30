@@ -4,6 +4,7 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { brotliCompressSync, brotliDecompressSync, constants } from 'node:zlib'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import prettier from 'prettier'
+import { ensureLakebedBootstrapArtifacts } from '../../../scripts/generated-entrypoint-bootstrap.mjs'
 
 const blocksRoot = join(fileURLToPath(new URL('..', import.meta.url)))
 const repoRoot = join(blocksRoot, '..', '..')
@@ -225,4 +226,7 @@ export const lakebedAppCssSourcesBase64 = '${appCssCompressed}' as const
   )
 }
 
+if (!isCheckMode) {
+  ensureLakebedBootstrapArtifacts(join(blocksRoot, 'src', 'generated'))
+}
 await writeGeneratedFile()

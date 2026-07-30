@@ -18,7 +18,7 @@
     "generate:react-export-sources": "node packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs",
     "generate:lakebed-export-deps": "bun packages/ship-fast-blocks/scripts/generate-lakebed-export-deps.ts",
     "generate-routes": "tsr generate",
-    "prebuild": "bun run deploy:convex && bun run generate:react-export-sources && bun run generate:lakebed-export-deps",
+    "prebuild": "bun run generate:react-export-sources && bun run generate:lakebed-export-deps",
     "verify:generation": "node scripts/verify-generation-agent-browser.mjs",
     "verify:homepage-quality": "node scripts/homepage-quality-gate.mjs",
     "verify:gallery": "node scripts/verify-gallery.mjs",

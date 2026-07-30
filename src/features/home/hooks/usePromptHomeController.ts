@@ -1,10 +1,7 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import {
-  checkPromptContentPolicy,
-  CONTENT_POLICY_CLIENT_MESSAGE,
-} from '@/lib/content-policy'
+import { checkPromptContentPolicy } from '@/lib/content-policy'
 import {
   examplePrompts,
   normalizePromptDraft,
@@ -81,6 +78,12 @@ const admissionErrorFromResponse = (data: unknown): AppError | null => {
     data.code === 'AUTH_DAILY_LIMIT_REACHED'
   ) {
     return new AppError('DAILY_LIMIT_REACHED', data.error)
+  }
+  if (data.code === 'CONTENT_POLICY') {
+    return new AppError('VALIDATION_ERROR', data.error)
+  }
+  if (data.code === 'CONTENT_MODERATION_UNAVAILABLE') {
+    return new AppError('INTEGRATION_UNAVAILABLE', data.error)
   }
   return null
 }
@@ -464,7 +467,13 @@ export const usePromptHomeController = () => {
               }
             }
           })
-          .catch(() => {
+          .catch((error) => {
+            if (
+              error instanceof AppError &&
+              error.code === 'VALIDATION_ERROR'
+            ) {
+              return
+            }
             if (speculativeGenerationRef.current === speculativeGeneration) {
               speculativeGenerationRef.current = null
             }
@@ -496,12 +505,6 @@ export const usePromptHomeController = () => {
       )
       return
     }
-    const policyResult = checkPromptContentPolicy(runtimePrompt)
-    if (!policyResult.ok) {
-      setErrorMessage(policyResult.message ?? CONTENT_POLICY_CLIENT_MESSAGE)
-      return
-    }
-
     submitInFlightRef.current = true
     clearSpeculativeGenerationTimer()
     const launchFeedbackStartedAt = Date.now()
@@ -514,9 +517,7 @@ export const usePromptHomeController = () => {
         speculativeGenerationRef.current?.fingerprint === launch.fingerprint
           ? speculativeGenerationRef.current
           : null
-      if (speculativeGeneration === null) {
-        speculativeGenerationRef.current = null
-      }
+      speculativeGenerationRef.current = null
       const result = await (speculativeGeneration?.request ??
         createSessionWithRetry(createSessionFromHttp, launch.payload))
       const sessionId = result.sessionId
@@ -568,12 +569,14 @@ export const usePromptHomeController = () => {
     } catch (error) {
       await waitForMinimumLaunchFeedback(launchFeedbackStartedAt)
       submitInFlightRef.current = false
-      const isQuotaOrAuthError =
+      const isPublicServerError =
         error instanceof AppError &&
         (error.code === 'UNAUTHENTICATED' ||
           error.code === 'QUOTA_EXCEEDED' ||
-          error.code === 'DAILY_LIMIT_REACHED')
-      if (isQuotaOrAuthError) {
+          error.code === 'DAILY_LIMIT_REACHED' ||
+          error.code === 'VALIDATION_ERROR' ||
+          error.code === 'INTEGRATION_UNAVAILABLE')
+      if (isPublicServerError) {
         setErrorMessage(error.message)
       } else {
         setErrorMessage('Generation could not start. Try again.')
