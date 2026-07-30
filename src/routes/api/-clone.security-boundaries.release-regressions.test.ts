@@ -5,6 +5,7 @@ const cloneMocks = vi.hoisted(() => ({
     mutation: vi.fn(),
     setAuth: vi.fn(),
   },
+  moderate: vi.fn(),
   runCloneJob: vi.fn(),
 }))
 
@@ -16,6 +17,23 @@ vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => cloneMocks.client,
 }))
 
+vi.mock(
+  '@/features/moderation/server/enforce-user-input-moderation',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@/features/moderation/server/enforce-user-input-moderation')
+      >()
+    return {
+      ...actual,
+      enforceUserInputModeration: cloneMocks.moderate,
+    }
+  },
+)
+
+import { CONTENT_POLICY_CLIENT_MESSAGE } from '@/lib/content-policy'
+import { ContentModerationError } from '@/features/moderation/server/enforce-user-input-moderation'
+import { CONTENT_MODERATION_UNAVAILABLE_MESSAGE } from '@/features/moderation/server/moderation-classifier'
 import { Route } from './clone'
 import { callRouteHandler } from './-route-handler.test-helper'
 
@@ -32,6 +50,7 @@ function postClone(body: unknown, headers?: HeadersInit) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  cloneMocks.moderate.mockResolvedValue(undefined)
   cloneMocks.runCloneJob.mockResolvedValue(undefined)
 })
 
@@ -119,6 +138,13 @@ describe('/api/clone security boundaries', () => {
     })
 
     expect(response.status).toBe(202)
+    expect(cloneMocks.moderate).toHaveBeenCalledWith({
+      anonymousClientId: 'owner-secret',
+      bearerToken: undefined,
+      fields: { cloneBrief: 'clone a public product page' },
+      sessionId,
+      surface: 'clone_brief',
+    })
     expect(cloneMocks.runCloneJob).toHaveBeenCalledWith({
       anonymousOwnerSecret: 'owner-secret',
       bearer: undefined,
@@ -126,5 +152,53 @@ describe('/api/clone security boundaries', () => {
       seedUrl: 'https://example.com/product',
       sessionId,
     })
+  })
+
+  it('blocks harmful clone briefs before starting background work', async () => {
+    cloneMocks.moderate.mockRejectedValueOnce(
+      new ContentModerationError(
+        'CONTENT_POLICY',
+        CONTENT_POLICY_CLIENT_MESSAGE,
+        422,
+      ),
+    )
+
+    const response = await postClone({
+      anonymousOwnerSecret: 'owner-secret',
+      brief: 'clone a pornography storefront',
+      seedUrl: 'https://example.com/product',
+      sessionId,
+    })
+
+    expect(response.status).toBe(422)
+    await expect(response.json()).resolves.toEqual({
+      code: 'CONTENT_POLICY',
+      error: CONTENT_POLICY_CLIENT_MESSAGE,
+    })
+    expect(cloneMocks.runCloneJob).not.toHaveBeenCalled()
+  })
+
+  it('fails closed when clone brief moderation is unavailable', async () => {
+    cloneMocks.moderate.mockRejectedValueOnce(
+      new ContentModerationError(
+        'CONTENT_MODERATION_UNAVAILABLE',
+        CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
+        503,
+      ),
+    )
+
+    const response = await postClone({
+      anonymousOwnerSecret: 'owner-secret',
+      brief: 'clone a public product page',
+      seedUrl: 'https://example.com/product',
+      sessionId,
+    })
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      code: 'CONTENT_MODERATION_UNAVAILABLE',
+      error: CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
+    })
+    expect(cloneMocks.runCloneJob).not.toHaveBeenCalled()
   })
 })

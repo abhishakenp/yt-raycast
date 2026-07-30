@@ -1,5 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock(
+  '@/features/moderation/server/enforce-user-input-moderation',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@/features/moderation/server/enforce-user-input-moderation')
+      >()
+    return {
+      ...actual,
+      enforceUserInputModeration: vi.fn(async () => undefined),
+    }
+  },
+)
+
 import { createSectionEditResponse } from './section-edit-response'
 
 const SESSION_ID = 'k574ms14ma9f94keq30r7dq24x89n1k2'

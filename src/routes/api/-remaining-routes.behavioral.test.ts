@@ -14,6 +14,7 @@ const routeMocks = vi.hoisted(() => ({
   medusaProducts: vi.fn(),
   medusaProvision: vi.fn(),
   cloneJob: vi.fn(),
+  moderate: vi.fn(),
   convexClient: {
     mutation: vi.fn(),
     query: vi.fn(),
@@ -58,6 +59,20 @@ vi.mock('@/features/clone/server/clone-orchestrator-response', () => ({
   runCloneJob: routeMocks.cloneJob,
 }))
 
+vi.mock(
+  '@/features/moderation/server/enforce-user-input-moderation',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@/features/moderation/server/enforce-user-input-moderation')
+      >()
+    return {
+      ...actual,
+      enforceUserInputModeration: routeMocks.moderate,
+    }
+  },
+)
+
 vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => routeMocks.convexClient,
 }))
@@ -90,6 +105,7 @@ describe('remaining API route behavior', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     routeMocks.cloneJob.mockResolvedValue(undefined)
+    routeMocks.moderate.mockResolvedValue(undefined)
     routeMocks.convexClient.mutation.mockResolvedValue({
       sessionId: realSessionId,
     })
