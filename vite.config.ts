@@ -608,9 +608,6 @@ function subdomainRewriteDevMiddleware(): Plugin {
 
 const config = defineConfig({
   define: {
-    'import.meta.env.MEDUSA_BACKEND_URL': JSON.stringify(
-      devEnv.MEDUSA_BACKEND_URL || process.env.MEDUSA_BACKEND_URL || '',
-    ),
     // site-config.ts reads BASE_DOMAIN via process.env.NEXT_PUBLIC_BASE_DOMAIN.
     // Vite's envPrefix only exposes vars via import.meta.env, not process.env,
     // so explicitly define it for the client bundle.
@@ -625,7 +622,6 @@ const config = defineConfig({
     'NEXT_PUBLIC_',
     'CONVEX_URL',
     'CONVEX_SELF_HOSTED_URL',
-    'MEDUSA_ADMIN_URL',
     'MEDUSA_STOREFRONT_',
     'MEDUSA_PUBLISHABLE_',
   ],

@@ -29,11 +29,13 @@ function runtimeEnv(): MedusaEnv {
 }
 
 function viteEnv(): MedusaEnv {
+  // Only expose PUBLIC vars via import.meta.env.
+  // Sensitive credentials (ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_API_TOKEN) are
+  // read exclusively from process.env / local .env — never from the client
+  // bundle — to prevent accidental leakage if this module is ever imported
+  // client-side.
   return {
     MEDUSA_ADMIN_URL: import.meta.env.MEDUSA_ADMIN_URL,
-    MEDUSA_ADMIN_EMAIL: import.meta.env.MEDUSA_ADMIN_EMAIL,
-    MEDUSA_ADMIN_PASSWORD: import.meta.env.MEDUSA_ADMIN_PASSWORD,
-    MEDUSA_ADMIN_API_TOKEN: import.meta.env.MEDUSA_ADMIN_API_TOKEN,
     MEDUSA_BACKEND_URL: import.meta.env.MEDUSA_BACKEND_URL,
     MEDUSA_PUBLISHABLE_API_KEY: import.meta.env.MEDUSA_PUBLISHABLE_API_KEY,
     MEDUSA_PUBLISHABLE_KEY: import.meta.env.MEDUSA_PUBLISHABLE_KEY,

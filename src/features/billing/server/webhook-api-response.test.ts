@@ -18,13 +18,52 @@ async function sign(secret: string, payload: string): Promise<string> {
   ).join('')
 }
 
+function currentTimestamp(): string {
+  return String(Math.floor(Date.now() / 1000))
+}
+
+async function stripeSignature(
+  secret: string,
+  body: string,
+  timestampOverride?: string,
+): Promise<string> {
+  const t = timestampOverride ?? currentTimestamp()
+  return `t=${t},v1=${await sign(secret, `${t}.${body}`)}`
+}
+
 describe('createWebhookApiResponse', () => {
   it('rejects invalid signatures', async () => {
     const response = await createWebhookApiResponse(
       new Request('https://ship-fast.test/api/stripe/webhook', {
         method: 'POST',
-        headers: { 'stripe-signature': 't=1,v1=bad' },
+        headers: { 'stripe-signature': 't=1,v1=bad' }, // stale timestamp + bad sig
         body: JSON.stringify({ id: 'evt_1' }),
+      }),
+      'stripe',
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_test',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+      },
+      { mutation: vi.fn() },
+    )
+
+    expect(response.status).toBe(400)
+  })
+
+  it('rejects validly-signed but stale timestamps (replay attack protection)', async () => {
+    const body = JSON.stringify({ id: 'evt_replay', data: { object: {} } })
+    // Valid signature but timestamp from 10 minutes ago
+    const signature = await stripeSignature(
+      'whsec_test',
+      body,
+      String(Math.floor(Date.now() / 1000) - 600),
+    )
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': signature },
+        body,
       }),
       'stripe',
       {
@@ -51,7 +90,7 @@ describe('createWebhookApiResponse', () => {
         },
       },
     })
-    const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`
+    const signature = await stripeSignature('whsec_test', body)
     const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
 
     const response = await createWebhookApiResponse(
@@ -238,7 +277,7 @@ describe('createWebhookApiResponse', () => {
         },
       },
     })
-    const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`
+    const signature = await stripeSignature('whsec_test', body)
     const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
 
     const response = await createWebhookApiResponse(
@@ -397,7 +436,7 @@ describe('createWebhookApiResponse', () => {
 
   it('returns JSON instead of throwing for a signed malformed webhook body', async () => {
     const body = '{not-json'
-    const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`
+    const signature = await stripeSignature('whsec_test', body)
     const client = { mutation: vi.fn() }
 
     const response = await createWebhookApiResponse(
@@ -435,7 +474,7 @@ describe('createWebhookApiResponse', () => {
         },
       },
     })
-    const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`
+    const signature = await stripeSignature('whsec_test', body)
     const client = {
       mutation: vi
         .fn()

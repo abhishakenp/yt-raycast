@@ -7,6 +7,6 @@ COPY packages/canva ./packages/canva
 WORKDIR /app/packages/canva
 RUN bun run build
 
-FROM nginx:alpine
+FROM nginxinc/nginx-unprivileged:alpine
 COPY --from=build /app/packages/canva/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080

@@ -394,9 +394,7 @@ export async function resolveStockImage({
   }
 
   if (!pexelsKey && !unsplashKey) {
-    console.warn(
-      'No stock image API keys configured (PEXELS_API_KEY / VITE_PEXELS_API_KEY / UNSPLASH_ACCESS_KEY / VITE_UNSPLASH_ACCESS_KEY); using picsum fallback',
-    )
+    console.warn('No stock image API keys configured; using picsum fallback')
   }
 
   const fallback: ResolveResult = {

@@ -97,6 +97,14 @@ async function verifyStripeSignature(
       .filter(([key, value]) => key && value),
   )
   if (!parts.t || !parts.v1) return false
+
+  // Replay attack protection: reject timestamps older than 5 minutes
+  const timestamp = Number.parseInt(parts.t, 10)
+  if (!Number.isFinite(timestamp)) return false
+  const TOLERANCE_SECONDS = 300
+  const nowSeconds = Math.floor(Date.now() / 1000)
+  if (Math.abs(nowSeconds - timestamp) > TOLERANCE_SECONDS) return false
+
   const expected = await hmacSha256(secret, `${parts.t}.${rawBody}`)
   return timingSafeEqual(expected, parts.v1)
 }

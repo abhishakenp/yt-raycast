@@ -80,7 +80,7 @@ async function hmacSha256Hex(secret: string, payload: string) {
 
 async function buildSignedStripeRequest(event: unknown) {
   const rawBody = JSON.stringify(event)
-  const t = '1700000000'
+  const t = String(Math.floor(Date.now() / 1000))
   const v1 = await hmacSha256Hex(STRIPE_SECRET, `${t}.${rawBody}`)
   return new Request('https://ship-fast.ai/api/stripe/webhook', {
     method: 'POST',

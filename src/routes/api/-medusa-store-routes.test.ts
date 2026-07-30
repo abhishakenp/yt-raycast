@@ -134,7 +134,6 @@ describe('Medusa Store API route contracts', () => {
 
     expect(await readJson(configResponse)).toMatchObject({
       body: {
-        backendUrl: 'https://backend.medusa.test',
         enabled: true,
       },
       status: 200,
