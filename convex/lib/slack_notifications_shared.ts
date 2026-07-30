@@ -1,6 +1,6 @@
 /**
  * Shared Slack notification functionality — used by both Convex and src/
- * 
+ *
  * This module contains the core notification building and sending logic
  * to avoid duplication between convex/lib and src/features/notifications.
  */
@@ -60,9 +60,7 @@ function isDevEnv(env: NotificationEnv): boolean {
   return env.NODE_ENV !== 'production'
 }
 
-function buildBlocks(
-  event: SharedNotificationEvent,
-): SlackBlock[] {
+function buildBlocks(event: SharedNotificationEvent): SlackBlock[] {
   const blocks: SlackBlock[] = []
 
   if (event.fields.length > 0) {
@@ -156,6 +154,9 @@ export function formatUser(args: {
   if (userId && userId.trim()) parts.push(`(\`${userId}\`)`)
   return parts.length > 0 ? parts.join(' ') : '_Unknown_'
 }
+
+const escapeSlackMrkdwn = (value: string): string =>
+  value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
 // ─── Event builders ─────────────────────────────────────────────────────────
 
@@ -388,6 +389,111 @@ export function generationFailedEvent(args: {
       ...(promptStr ? [{ label: 'Prompt', value: promptStr }] : []),
     ],
     footer: 'Ship Fast • Generation',
+  }
+}
+
+export const contentModerationBlockedEvent = (args: {
+  flagId: string
+  category: string
+  surface: string
+  matchedField: string
+  ruleId?: string
+  decisionSource: 'deterministic' | 'semantic'
+  classifierModel?: string
+  userId?: string
+  userName?: string
+  userEmail?: string
+  anonymousClientIdHash?: string
+  clientIpHash?: string
+  sessionId?: string
+  prompt: string
+}): SharedNotificationEvent => {
+  const owner = args.userId
+    ? {
+        label: 'User',
+        value: formatUser({
+          userId: escapeSlackMrkdwn(args.userId),
+          userName: args.userName
+            ? escapeSlackMrkdwn(args.userName)
+            : undefined,
+          userEmail: args.userEmail
+            ? escapeSlackMrkdwn(args.userEmail)
+            : undefined,
+        }),
+      }
+    : {
+        label: 'Anonymous',
+        value: args.anonymousClientIdHash
+          ? `\`${escapeSlackMrkdwn(args.anonymousClientIdHash)}\``
+          : '_Anonymous_',
+      }
+  const promptExcerpt =
+    args.prompt.length > 500 ? `${args.prompt.slice(0, 500)}…` : args.prompt
+
+  return {
+    emoji: '🛑',
+    title: 'Harmful Prompt Blocked',
+    color: SLACK_COLORS.BLOCKER_RED,
+    fields: [
+      {
+        label: 'Flag ID',
+        value: `\`${escapeSlackMrkdwn(args.flagId)}\``,
+      },
+      {
+        label: 'Category',
+        value: `\`${escapeSlackMrkdwn(args.category)}\``,
+      },
+      {
+        label: 'Surface',
+        value: `\`${escapeSlackMrkdwn(args.surface)}\``,
+      },
+      {
+        label: 'Matched Field',
+        value: `\`${escapeSlackMrkdwn(args.matchedField)}\``,
+      },
+      ...(args.ruleId
+        ? [
+            {
+              label: 'Rule',
+              value: `\`${escapeSlackMrkdwn(args.ruleId)}\``,
+            },
+          ]
+        : []),
+      {
+        label: 'Source',
+        value: `\`${args.decisionSource}\``,
+      },
+      ...(args.classifierModel
+        ? [
+            {
+              label: 'Model',
+              value: `\`${escapeSlackMrkdwn(args.classifierModel)}\``,
+            },
+          ]
+        : []),
+      owner,
+      ...(args.clientIpHash
+        ? [
+            {
+              label: 'IP Hash',
+              value: `\`${escapeSlackMrkdwn(args.clientIpHash)}\``,
+            },
+          ]
+        : []),
+      ...(args.sessionId
+        ? [
+            {
+              label: 'Session',
+              value: `\`${escapeSlackMrkdwn(args.sessionId)}\``,
+            },
+          ]
+        : []),
+      {
+        label: 'Prompt',
+        value: escapeSlackMrkdwn(promptExcerpt),
+      },
+    ],
+    footer: 'Ship Fast • Content Moderation',
   }
 }
 

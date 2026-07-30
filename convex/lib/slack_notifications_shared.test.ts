@@ -13,6 +13,7 @@ import {
   paymentDoneEvent,
   generationDoneEvent,
   generationFailedEvent,
+  contentModerationBlockedEvent,
   subscriptionCancelledEvent,
   referralRewardUnlockedEvent,
   exportCompletedEvent,
@@ -149,7 +150,8 @@ describe('userRegisteredEvent', () => {
       userId: 'user123',
       userName: 'John Doe',
       userEmail: 'john@example.com',
-      ipHash: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+      ipHash:
+        'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
     })
 
     expect(result.emoji).toBe('👋')
@@ -308,7 +310,7 @@ describe('generationDoneEvent', () => {
       prompt: longPrompt,
     })
 
-    const promptField = result.fields.find(f => f.label === 'Prompt')
+    const promptField = result.fields.find((f) => f.label === 'Prompt')
     expect(promptField).toBeDefined()
     expect(promptField?.value).toHaveLength(501) // 500 + '…'
     expect(promptField?.value.endsWith('…')).toBe(true)
@@ -317,10 +319,11 @@ describe('generationDoneEvent', () => {
   it('should build generation done event with IP hash fallback', () => {
     const result = generationDoneEvent({
       sessionId: 'session123',
-      ipHash: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+      ipHash:
+        'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
     })
 
-    const ownerField = result.fields.find(f => f.label === 'Owner')
+    const ownerField = result.fields.find((f) => f.label === 'Owner')
     expect(ownerField).toBeDefined()
     expect(ownerField?.value).toContain('abcdef1234567890…')
   })
@@ -330,7 +333,7 @@ describe('generationDoneEvent', () => {
       sessionId: 'session123',
     })
 
-    const ownerField = result.fields.find(f => f.label === 'Owner')
+    const ownerField = result.fields.find((f) => f.label === 'Owner')
     expect(ownerField).toBeDefined()
     expect(ownerField?.value).toBe('_Unknown_')
   })
@@ -378,10 +381,88 @@ describe('generationFailedEvent', () => {
       prompt: longPrompt,
     })
 
-    const promptField = result.fields.find(f => f.label === 'Prompt')
+    const promptField = result.fields.find((f) => f.label === 'Prompt')
     expect(promptField).toBeDefined()
     expect(promptField?.value).toHaveLength(501) // 500 + '…'
     expect(promptField?.value.endsWith('…')).toBe(true)
+  })
+})
+
+describe('contentModerationBlockedEvent', () => {
+  it('builds a red blocker alert with authenticated moderation context', () => {
+    const prompt = `Build <!channel> <https://attacker.test|click> & ${'A'.repeat(600)}`
+    const result = contentModerationBlockedEvent({
+      flagId: 'flag123',
+      category: 'hate_extremism',
+      surface: 'session_create',
+      matchedField: 'prompt',
+      ruleId: 'semantic-hate',
+      decisionSource: 'semantic',
+      classifierModel: 'openai/gpt-oss-safeguard-20b',
+      userId: 'user<123>',
+      userName: 'A <!channel> User',
+      userEmail: 'a&b@example.com',
+      anonymousClientIdHash: 'unused-anonymous-hash',
+      clientIpHash: 'client-ip-hash',
+      sessionId: 'session123',
+      prompt,
+    })
+
+    expect(result).toEqual({
+      emoji: '🛑',
+      title: 'Harmful Prompt Blocked',
+      color: SLACK_COLORS.BLOCKER_RED,
+      fields: [
+        { label: 'Flag ID', value: '`flag123`' },
+        { label: 'Category', value: '`hate_extremism`' },
+        { label: 'Surface', value: '`session_create`' },
+        { label: 'Matched Field', value: '`prompt`' },
+        { label: 'Rule', value: '`semantic-hate`' },
+        { label: 'Source', value: '`semantic`' },
+        {
+          label: 'Model',
+          value: '`openai/gpt-oss-safeguard-20b`',
+        },
+        {
+          label: 'User',
+          value:
+            '*A &lt;!channel&gt; User* a&amp;b@example.com (`user&lt;123&gt;`)',
+        },
+        { label: 'IP Hash', value: '`client-ip-hash`' },
+        { label: 'Session', value: '`session123`' },
+        {
+          label: 'Prompt',
+          value: `${prompt
+            .slice(0, 500)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')}…`,
+        },
+      ],
+      footer: 'Ship Fast • Content Moderation',
+    })
+  })
+
+  it('uses the anonymous hash and omits absent optional context', () => {
+    const result = contentModerationBlockedEvent({
+      flagId: 'flag456',
+      category: 'explicit_sexual_content',
+      surface: 'rewrite_text',
+      matchedField: 'text',
+      decisionSource: 'deterministic',
+      anonymousClientIdHash: 'anonymous-hash',
+      prompt: 'Unsafe <script> request',
+    })
+
+    expect(result.fields).toEqual([
+      { label: 'Flag ID', value: '`flag456`' },
+      { label: 'Category', value: '`explicit_sexual_content`' },
+      { label: 'Surface', value: '`rewrite_text`' },
+      { label: 'Matched Field', value: '`text`' },
+      { label: 'Source', value: '`deterministic`' },
+      { label: 'Anonymous', value: '`anonymous-hash`' },
+      { label: 'Prompt', value: 'Unsafe &lt;script&gt; request' },
+    ])
   })
 })
 
@@ -482,11 +563,12 @@ describe('exportCompletedEvent', () => {
   it('should build export completed event with IP hash', () => {
     const result = exportCompletedEvent({
       sessionId: 'session123',
-      ipHash: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+      ipHash:
+        'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
       target: 'github',
     })
 
-    const ownerField = result.fields.find(f => f.label === 'Owner')
+    const ownerField = result.fields.find((f) => f.label === 'Owner')
     expect(ownerField).toBeDefined()
     expect(ownerField?.value).toContain('abcdef1234567890…')
   })
@@ -497,7 +579,7 @@ describe('exportCompletedEvent', () => {
       target: 'github',
     })
 
-    const ownerField = result.fields.find(f => f.label === 'Owner')
+    const ownerField = result.fields.find((f) => f.label === 'Owner')
     expect(ownerField).toBeDefined()
     expect(ownerField?.value).toBe('_Anonymous_')
   })
@@ -522,20 +604,20 @@ describe('sendSharedNotification', () => {
 
     const result = await sendSharedNotification(
       event,
-      { SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test', NODE_ENV: 'production' },
+      {
+        SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
+        NODE_ENV: 'production',
+      },
       mockFetch as any,
     )
 
     expect(result).toEqual({ sent: true })
     expect(mockFetch).toHaveBeenCalledTimes(1)
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://hooks.slack.com/test',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: expect.stringContaining('Test Event'),
-      },
-    )
+    expect(mockFetch).toHaveBeenCalledWith('https://hooks.slack.com/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: expect.stringContaining('Test Event'),
+    })
   })
 
   it('should return no_webhook_url when missing webhook URL', async () => {
@@ -607,7 +689,10 @@ describe('sendSharedNotification', () => {
 
     await sendSharedNotification(
       event,
-      { SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test', NODE_ENV: 'development' },
+      {
+        SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
+        NODE_ENV: 'development',
+      },
       mockFetch as any,
     )
 
@@ -629,7 +714,10 @@ describe('sendSharedNotification', () => {
 
     await sendSharedNotification(
       event,
-      { SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test', NODE_ENV: 'production' },
+      {
+        SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
+        NODE_ENV: 'production',
+      },
       mockFetch as any,
     )
 
