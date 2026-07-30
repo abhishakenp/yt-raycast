@@ -36,6 +36,7 @@ describe('app env', () => {
       LINKFORTY_API_URL: 'https://links.ship-fast.ai',
       LINKFORTY_SERVICE_USER_ID: '00000000-0000-0000-0000-000000000001',
       LINKFORTY_WEBHOOK_SECRET: 'lf-webhook-secret',
+      LINKFORTY_WEBHOOK_MUTATION_SECRET: 'lf-mutation-secret',
       VITE_LINKFORTY_ENABLED: 'true',
       VITE_LINKFORTY_BASE_URL: 'https://links.ship-fast.ai',
     })
@@ -71,6 +72,7 @@ describe('app env', () => {
       '00000000-0000-0000-0000-000000000001',
     )
     expect(env.LINKFORTY_WEBHOOK_SECRET).toBe('lf-webhook-secret')
+    expect(env.LINKFORTY_WEBHOOK_MUTATION_SECRET).toBe('lf-mutation-secret')
     expect(env.VITE_LINKFORTY_ENABLED).toBe('true')
     expect(env.VITE_LINKFORTY_BASE_URL).toBe('https://links.ship-fast.ai')
   })

@@ -143,7 +143,7 @@ export async function createLinkFortyWebhookResponse(
   try {
     const client = dependencies.convexClient ?? createRuntimeConvexHttpClient()
     await client.mutation(api.linkforty.recordClickEvent, {
-      secret: process.env.BILLING_WEBHOOK_MUTATION_SECRET ?? '',
+      secret: process.env.LINKFORTY_WEBHOOK_MUTATION_SECRET ?? '',
       clickId: click.id,
       shortCode: click.shortCode,
       linkId: click.linkId,

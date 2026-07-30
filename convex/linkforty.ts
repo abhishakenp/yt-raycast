@@ -50,7 +50,7 @@ export const recordClickEvent = mutation({
     referrer: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (args.secret !== process.env.BILLING_WEBHOOK_MUTATION_SECRET) {
+    if (args.secret !== process.env.LINKFORTY_WEBHOOK_MUTATION_SECRET) {
       throw new Error('Unauthorized.')
     }
 
