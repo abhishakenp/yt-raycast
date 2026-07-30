@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
+  enforceUserInputModeration: vi.fn(async () => undefined),
+  moderationErrorResponse: vi.fn(() => null),
+}))
+
 import { createTranslateResponse } from './translate-response'
 
 const SESSION_ID = 's1'

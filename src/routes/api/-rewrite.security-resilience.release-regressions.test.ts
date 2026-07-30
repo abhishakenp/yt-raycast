@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const generateTextMock = vi.hoisted(() => vi.fn())
+const enforceUserInputModerationMock = vi.hoisted(() =>
+  vi.fn(async () => undefined),
+)
 
 vi.mock('@ship-fast/engine', () => ({
   generateText: generateTextMock,
@@ -8,6 +11,11 @@ vi.mock('@ship-fast/engine', () => ({
 
 vi.mock('@ship-fast/engine/model-list.js', () => ({
   DEFAULT_MODEL: 'test-model',
+}))
+
+vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
+  enforceUserInputModeration: enforceUserInputModerationMock,
+  moderationErrorResponse: vi.fn(() => null),
 }))
 
 import { Route } from './rewrite'

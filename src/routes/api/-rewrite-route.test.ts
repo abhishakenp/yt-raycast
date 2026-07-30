@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const generateTextMock = vi.hoisted(() => vi.fn())
+const enforceUserInputModerationMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (path: string) => (options: Record<string, unknown>) => ({
@@ -16,6 +17,18 @@ vi.mock('@ship-fast/engine', () => ({
 vi.mock('@ship-fast/engine/model-list.js', () => ({
   DEFAULT_MODEL: 'test-model',
 }))
+
+vi.mock(
+  '@/features/moderation/server/enforce-user-input-moderation',
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import('@/features/moderation/server/enforce-user-input-moderation')
+    >()),
+    enforceUserInputModeration: enforceUserInputModerationMock,
+  }),
+)
+
+import { ContentModerationError } from '@/features/moderation/server/enforce-user-input-moderation'
 
 type RouteWithHandlers = {
   path: string
@@ -47,6 +60,8 @@ describe('rewrite API route', () => {
   // the authenticated path with VITE_DISABLE_CLERK='false'.
   beforeEach(() => {
     process.env.VITE_DISABLE_CLERK = 'true'
+    enforceUserInputModerationMock.mockReset()
+    enforceUserInputModerationMock.mockResolvedValue(undefined)
   })
 
   const realConvexText = 'Pineapple Saison'
@@ -109,6 +124,72 @@ describe('rewrite API route', () => {
       expect.any(AbortSignal),
       2,
     )
+    expect(enforceUserInputModerationMock).toHaveBeenCalledWith({
+      bearerToken: null,
+      fields: {
+        rewriteInstruction: 'shorten',
+        rewriteText: 'original',
+      },
+      surface: 'rewrite_instruction',
+    })
+  })
+
+  it.each(['deterministic', 'semantic'])(
+    'blocks %s moderation decisions before loading the rewrite engine',
+    async () => {
+      enforceUserInputModerationMock.mockRejectedValue(
+        new ContentModerationError(
+          'CONTENT_POLICY',
+          '🚫 Not shipping that. Ship Fast blocks harmful, hateful, explicit, or exploitative content. This request was flagged—try a safe idea instead.',
+          422,
+        ),
+      )
+      const Route = await importRoute()
+
+      const response = await Route.options.server.handlers.POST({
+        request: new Request('https://ship-fast.test/api/rewrite', {
+          method: 'POST',
+          body: JSON.stringify({
+            text: 'Harmful source text',
+            instruction: 'Make this hateful',
+          }),
+        }),
+      })
+
+      expect(response.status).toBe(422)
+      await expect(response.json()).resolves.toEqual({
+        code: 'CONTENT_POLICY',
+        error:
+          '🚫 Not shipping that. Ship Fast blocks harmful, hateful, explicit, or exploitative content. This request was flagged—try a safe idea instead.',
+      })
+      expect(generateTextMock).not.toHaveBeenCalled()
+    },
+  )
+
+  it('returns moderation unavailable before loading the rewrite engine', async () => {
+    enforceUserInputModerationMock.mockRejectedValue(
+      new ContentModerationError(
+        'CONTENT_MODERATION_UNAVAILABLE',
+        'Ship Fast’s safety check is temporarily unavailable. Try again shortly.',
+        503,
+      ),
+    )
+    const Route = await importRoute()
+
+    const response = await Route.options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/rewrite', {
+        method: 'POST',
+        body: JSON.stringify({ text: 'original', instruction: 'shorten' }),
+      }),
+    })
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      code: 'CONTENT_MODERATION_UNAVAILABLE',
+      error:
+        'Ship Fast’s safety check is temporarily unavailable. Try again shortly.',
+    })
+    expect(generateTextMock).not.toHaveBeenCalled()
   })
 
   it('returns a stable public JSON error when the rewrite model fails', async () => {

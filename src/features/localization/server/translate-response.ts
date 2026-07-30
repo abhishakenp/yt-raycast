@@ -1,6 +1,12 @@
 import { isTranslatableLocale, lookupKnownLanguage } from '@/config/languages'
+import {
+  enforceUserInputModeration,
+  moderationErrorResponse,
+} from '@/features/moderation/server/enforce-user-input-moderation'
+import { CONTENT_MODERATION_UNAVAILABLE_MESSAGE } from '@/features/moderation/server/moderation-classifier'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import { shouldPreserveTranslationText } from '../native-script'
 
 type TranslationEntitlementCode =
@@ -27,6 +33,8 @@ type TranslateModel = (
   user: string,
   signal: AbortSignal,
 ) => Promise<string>
+
+type EnforceTranslationModeration = typeof enforceUserInputModeration
 
 const MAX_TRANSLATION_TEXT_LENGTH = 1200
 const MAX_TRANSLATION_BATCH_SIZE = 120
@@ -604,6 +612,7 @@ export async function createTranslateResponse(
   translateModel: TranslateModel = defaultTranslateModel,
   cacheClient: TranslationCacheClient | null = createDefaultTranslationCacheClient(),
   entitlementClient: TranslationEntitlementClient = createDefaultTranslationEntitlementClient(),
+  enforceModeration: EnforceTranslationModeration = enforceUserInputModeration,
 ): Promise<Response> {
   let body: TranslationRequestBody = {}
 
@@ -680,6 +689,35 @@ export async function createTranslateResponse(
     entitlementClient,
   )
   if (guard.response !== null) return guard.response
+
+  try {
+    const anonymousClientId =
+      typeof body.anonymousOwnerSecret === 'string'
+        ? body.anonymousOwnerSecret
+        : undefined
+    const rawSessionId =
+      typeof body.sessionId === 'string' ? body.sessionId.trim() : ''
+    const sessionId = rawSessionId
+      ? (rawSessionId as Id<'sessions'>)
+      : undefined
+    await enforceModeration({
+      anonymousClientId,
+      bearerToken: getBearerToken(request),
+      fields: { translationSource: JSON.stringify(texts) },
+      sessionId,
+      surface: 'translation_source',
+    })
+  } catch (error) {
+    const response = moderationErrorResponse(error)
+    if (response) return response
+    return json(
+      {
+        code: 'CONTENT_MODERATION_UNAVAILABLE',
+        error: CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
+      },
+      { status: 503 },
+    )
+  }
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 12_000)
