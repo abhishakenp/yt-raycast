@@ -8,6 +8,7 @@ import {
 
 export const CONTENT_MODERATION_MODEL = 'openai/gpt-oss-safeguard-20b'
 export const CONTENT_MODERATION_TIMEOUT_MS = 4000
+export const CONTENT_MODERATION_MAX_CHUNK_CHARS = 32_000
 export const CONTENT_MODERATION_UNAVAILABLE_MESSAGE =
   'Ship Fast’s safety check is temporarily unavailable. Try again shortly.'
 
@@ -38,6 +39,8 @@ type UnavailableDecision = {
     | 'provider_timeout'
     | 'invalid_provider_response'
 }
+
+type SuppliedField = [ModerationField, string]
 
 export type UserInputModerationResult =
   | SafeDecision
@@ -114,9 +117,32 @@ const nonemptyStringFields = (fields: ModerationFields) =>
       entry[1].trim().length > 0,
   )
 
+const createClassificationBatches = (
+  fields: SuppliedField[],
+): SuppliedField[][] => {
+  const totalChars = fields.reduce((sum, [, value]) => sum + value.length, 0)
+  if (totalChars <= CONTENT_MODERATION_MAX_CHUNK_CHARS) return [fields]
+
+  const batches: SuppliedField[][] = []
+  const overlapChars = 256
+  for (const [field, value] of fields) {
+    let start = 0
+    while (start < value.length) {
+      const end = Math.min(
+        start + CONTENT_MODERATION_MAX_CHUNK_CHARS,
+        value.length,
+      )
+      batches.push([[field, value.slice(start, end)]])
+      if (end === value.length) break
+      start = end - overlapChars
+    }
+  }
+  return batches
+}
+
 const createLabeledInput = (
   surface: ModerationSurface,
-  fields: Array<[ModerationField, string]>,
+  fields: SuppliedField[],
 ) =>
   [
     `surface: ${surface}`,
@@ -125,7 +151,8 @@ const createLabeledInput = (
 
 const parseDecision = (
   content: string,
-  fields: Array<[ModerationField, string]>,
+  fields: SuppliedField[],
+  originalFields: SuppliedField[],
 ): SafeDecision | SemanticBlockedDecision | undefined => {
   let parsed: unknown
   try {
@@ -152,33 +179,37 @@ const parseDecision = (
   )
     return undefined
 
-  const matched = fields.find(([field]) => field === matchedField)
-  if (!matched) return undefined
+  if (!fields.some(([field]) => field === matchedField)) return undefined
+  const originalMatched = originalFields.find(
+    ([field]) => field === matchedField,
+  )
+  if (!originalMatched) return undefined
   return {
     decision: 'blocked',
     category: category as ModerationCategory,
     ruleId: `semantic-${category}`,
     matchedField: matchedField as ModerationField,
     source: 'semantic',
-    prompt: matched[1],
+    prompt: originalMatched[1],
     classifierModel: CONTENT_MODERATION_MODEL,
   }
 }
 
-export const classifyUserInput = async ({
+const classifySemanticBatch = async ({
   surface,
   fields,
-  apiKey = process.env.GROQ_API_KEY,
-  fetchImpl = fetch,
-  timeoutMs = CONTENT_MODERATION_TIMEOUT_MS,
-}: ClassifyUserInputOptions): Promise<UserInputModerationResult> => {
-  const deterministic = classifyDeterministicModeration(fields)
-  if (deterministic.decision === 'blocked') return deterministic
-
-  const suppliedFields = nonemptyStringFields(fields)
-  if (suppliedFields.length === 0) return { decision: 'safe' }
-  if (!apiKey) return unavailable('missing_api_key')
-
+  originalFields,
+  apiKey,
+  fetchImpl,
+  timeoutMs,
+}: {
+  surface: ModerationSurface
+  fields: SuppliedField[]
+  originalFields: SuppliedField[]
+  apiKey: string
+  fetchImpl: typeof fetch
+  timeoutMs: number
+}): Promise<SafeDecision | SemanticBlockedDecision | UnavailableDecision> => {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -196,7 +227,7 @@ export const classifyUserInput = async ({
             { role: 'system', content: policy },
             {
               role: 'user',
-              content: createLabeledInput(surface, suppliedFields),
+              content: createLabeledInput(surface, fields),
             },
           ],
           response_format: responseFormat,
@@ -218,14 +249,42 @@ export const classifyUserInput = async ({
       return unavailable('invalid_provider_response')
 
     return (
-      parseDecision(content, suppliedFields) ??
+      parseDecision(content, fields, originalFields) ??
       unavailable('invalid_provider_response')
     )
-  } catch (error) {
+  } catch {
     return unavailable(
       controller.signal.aborted ? 'provider_timeout' : 'provider_error',
     )
   } finally {
     clearTimeout(timer)
   }
+}
+
+export const classifyUserInput = async ({
+  surface,
+  fields,
+  apiKey = process.env.GROQ_API_KEY,
+  fetchImpl = fetch,
+  timeoutMs = CONTENT_MODERATION_TIMEOUT_MS,
+}: ClassifyUserInputOptions): Promise<UserInputModerationResult> => {
+  const deterministic = classifyDeterministicModeration(fields)
+  if (deterministic.decision === 'blocked') return deterministic
+
+  const suppliedFields = nonemptyStringFields(fields)
+  if (suppliedFields.length === 0) return { decision: 'safe' }
+  if (!apiKey) return unavailable('missing_api_key')
+
+  for (const batch of createClassificationBatches(suppliedFields)) {
+    const result = await classifySemanticBatch({
+      surface,
+      fields: batch,
+      originalFields: suppliedFields,
+      apiKey,
+      fetchImpl,
+      timeoutMs,
+    })
+    if (result.decision !== 'safe') return result
+  }
+  return { decision: 'safe' }
 }

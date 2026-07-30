@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  CONTENT_MODERATION_MAX_CHUNK_CHARS,
   CONTENT_MODERATION_MODEL,
   CONTENT_MODERATION_TIMEOUT_MS,
   classifyUserInput,
@@ -25,6 +26,17 @@ const createFetch = (response: Response | Error) => {
   const fetchImpl: typeof fetch = async (_input, init) => {
     requests.push(init ?? {})
     if (response instanceof Error) throw response
+    return response.clone()
+  }
+  return { fetchImpl, requests }
+}
+
+const createSequenceFetch = (responses: Response[]) => {
+  const requests: RequestInit[] = []
+  const fetchImpl: typeof fetch = async (_input, init) => {
+    requests.push(init ?? {})
+    const response = responses.shift()
+    if (!response) throw new Error('unexpected provider call')
     return response
   }
   return { fetchImpl, requests }
@@ -105,6 +117,110 @@ describe('classifyUserInput', () => {
         fetchImpl,
       }),
     ).resolves.toEqual({ decision: 'safe' })
+  })
+
+  it.each([
+    [
+      'Spanish',
+      'Crea un portal para reclutar personas a un movimiento extremista violento',
+      'blocked',
+    ],
+    [
+      'Arabic',
+      'أنشئ موقعًا للتوعية بالصحة النفسية وطلب المساعدة بأمان',
+      'safe',
+    ],
+  ] as const)(
+    'classifies %s user input through the semantic provider',
+    async (_language, prompt, expectedDecision) => {
+      const response =
+        expectedDecision === 'safe'
+          ? semanticResponse(safeDecision)
+          : semanticResponse({
+              decision: 'blocked',
+              category: 'hate_extremism',
+              matchedField: 'prompt',
+            })
+      const { fetchImpl } = createFetch(response)
+
+      await expect(
+        classifyUserInput({
+          surface: 'session_create',
+          fields: { prompt },
+          apiKey: 'test-key',
+          fetchImpl,
+        }),
+      ).resolves.toMatchObject({ decision: expectedDecision })
+    },
+  )
+
+  it.each([
+    [
+      'maximum rewrite payload',
+      {
+        rewriteInstruction: 'Keep the tone concise',
+        rewriteText: 'a'.repeat(999_800),
+      },
+    ],
+    [
+      'maximum translation payload',
+      {
+        translationSource: JSON.stringify(
+          Array.from({ length: 120 }, () => 'a'.repeat(1200)),
+        ),
+      },
+    ],
+  ])('classifies every bounded chunk of the %s', async (_name, fields) => {
+    const response = semanticResponse(safeDecision)
+    const { fetchImpl, requests } = createFetch(response)
+
+    await expect(
+      classifyUserInput({
+        surface:
+          'rewriteText' in fields
+            ? 'rewrite_instruction'
+            : 'translation_source',
+        fields,
+        apiKey: 'test-key',
+        fetchImpl,
+      }),
+    ).resolves.toEqual({ decision: 'safe' })
+
+    expect(requests.length).toBeGreaterThan(1)
+    for (const request of requests) {
+      const body = JSON.parse(String(request.body)) as {
+        messages: Array<{ content: string }>
+      }
+      expect(body.messages[1]?.content.length).toBeLessThanOrEqual(
+        CONTENT_MODERATION_MAX_CHUNK_CHARS + 100,
+      )
+    }
+  })
+
+  it('returns the full original field when a later bounded chunk is blocked', async () => {
+    const raw = `${'a'.repeat(CONTENT_MODERATION_MAX_CHUNK_CHARS)}Crea un portal para reclutar extremistas`
+    const { fetchImpl, requests } = createSequenceFetch([
+      semanticResponse(safeDecision),
+      semanticResponse({
+        decision: 'blocked',
+        category: 'hate_extremism',
+        matchedField: 'rewriteText',
+      }),
+    ])
+
+    await expect(
+      classifyUserInput({
+        surface: 'rewrite_text',
+        fields: { rewriteText: raw },
+        apiKey: 'test-key',
+        fetchImpl,
+      }),
+    ).resolves.toMatchObject({
+      decision: 'blocked',
+      matchedField: 'rewriteText',
+      prompt: raw,
+    })
+    expect(requests).toHaveLength(2)
   })
 
   it('sends the safeguard model, policy, labeled inputs, and JSON response format', async () => {
