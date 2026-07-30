@@ -84,6 +84,14 @@ const FIELD_ORDER: ModerationField[] = [
   'customLanguage',
 ]
 
+const UNCONDITIONAL_CATEGORIES = new Set<ModerationCategory>([
+  'sexual_minors',
+  'non_consensual_exploitative',
+])
+
+const ACTIONABLE_REQUEST_RE =
+  /\b(build|create|make|launch|design|develop|deploy|generate|write|add|provide|produce|host|publish|promote|recruit|sell|buy|market|clone|copy|set\s+up|show\s+me|teach\s+me|give\s+me|help\s+me|how\s+to)\b/i
+
 const phraseRules: Array<[ModerationCategory, string, string[]]> = [
   [
     'sexual_minors',
@@ -401,6 +409,13 @@ const RULES = [
   ),
 ]
 
+const isActionableRuleMatch = (
+  category: ModerationCategory,
+  normalized: NormalizedPolicyText,
+) =>
+  UNCONDITIONAL_CATEGORIES.has(category) ||
+  ACTIONABLE_REQUEST_RE.test(normalized.leetSpaced)
+
 export const classifyDeterministicModeration = (
   fields: ModerationFields,
 ): ModerationDecision => {
@@ -408,7 +423,11 @@ export const classifyDeterministicModeration = (
     const prompt = fields[matchedField]
     if (typeof prompt !== 'string' || !prompt.trim()) continue
     const normalized = normalizePolicyText(prompt)
-    const rule = RULES.find((candidate) => candidate.matches(normalized))
+    const rule = RULES.find(
+      (candidate) =>
+        candidate.matches(normalized) &&
+        isActionableRuleMatch(candidate.category, normalized),
+    )
     if (rule)
       return {
         decision: 'blocked',
