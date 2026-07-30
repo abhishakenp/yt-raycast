@@ -18,6 +18,7 @@ const appEnvSchema = z.object({
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
   BILLING_WEBHOOK_MUTATION_SECRET: z.string().optional(),
+  CONTENT_MODERATION_MUTATION_SECRET: z.string().optional(),
   DUB_API_KEY: z.string().optional(),
   DUB_PARTNER_GROUP_ID: z.string().optional(),
   DUB_PARTNERS_ENABLED: z.string().optional(),
@@ -59,6 +60,8 @@ export function parseAppEnv(rawEnv: RawAppEnv): AppEnv {
     RAZORPAY_KEY_ID: rawEnv.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: rawEnv.RAZORPAY_KEY_SECRET,
     BILLING_WEBHOOK_MUTATION_SECRET: rawEnv.BILLING_WEBHOOK_MUTATION_SECRET,
+    CONTENT_MODERATION_MUTATION_SECRET:
+      rawEnv.CONTENT_MODERATION_MUTATION_SECRET,
     DUB_API_KEY: rawEnv.DUB_API_KEY,
     DUB_PARTNER_GROUP_ID: rawEnv.DUB_PARTNER_GROUP_ID,
     DUB_PARTNERS_ENABLED: rawEnv.DUB_PARTNERS_ENABLED,
