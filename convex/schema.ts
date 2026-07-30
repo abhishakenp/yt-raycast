@@ -312,6 +312,7 @@ export default defineSchema({
   previews: defineTable({
     sessionId: v.id('sessions'),
     version: v.number(),
+    html: v.optional(v.string()),
     openUiSource: v.optional(v.string()),
     siteSpecJson: v.optional(v.string()),
     createdAt: v.number(),
