@@ -3,7 +3,10 @@ import {
   validatePageStructure,
   repairPageStructure,
 } from './page-structure-validator.ts'
-import type { ParsedComposition, CompositionSection } from './composition-parser.ts'
+import type {
+  ParsedComposition,
+  CompositionSection,
+} from './composition-parser.ts'
 import { DEFAULT_DESIGN } from '../../../ship-fast-blocks/src/primitives/design-system.ts'
 
 function makeSection(
@@ -70,7 +73,9 @@ describe('validatePageStructure', () => {
     )
     const violations = validatePageStructure(parsed)
     expect(violations.length).toBeGreaterThanOrEqual(1)
-    const dup = violations.find((v) => v.type === 'duplicate_motif_across_pages')
+    const dup = violations.find(
+      (v) => v.type === 'duplicate_motif_across_pages',
+    )
     expect(dup).toBeTruthy()
     expect(dup?.motifs).toContain('CardGrid')
     expect(dup?.motifs).toContain('TestimonialRow')
@@ -229,7 +234,9 @@ describe('page-type keyword collision fix', () => {
         makeSection('SplitHero', 'home'),
         makeSection('Footer', 'home'),
         makeSection('Navbar', 'documentation-menu'),
-        makeSection('SidebarNav', 'documentation-menu', { heading: 'API Menu' }),
+        makeSection('SidebarNav', 'documentation-menu', {
+          heading: 'API Menu',
+        }),
         makeSection('Footer', 'documentation-menu'),
       ],
     }
@@ -299,7 +306,9 @@ describe('i18n repair heading fix', () => {
         makeSection('SplitHero', 'home'),
         makeSection('Footer', 'home'),
         makeSection('Navbar', 'about'),
-        makeSection('CtaBand', 'about', { heading: 'Visitez notre boulangerie' }),
+        makeSection('CtaBand', 'about', {
+          heading: 'Visitez notre boulangerie',
+        }),
         makeSection('Footer', 'about'),
       ],
     }
@@ -362,9 +371,7 @@ describe('pageTypeFromId equal-length tiebreaker', () => {
     const violations = validatePageStructure(parsed)
     // If "blog" is the page type, ArticlePreview satisfies it → no violation.
     // If "post" is the page type, ArticlePreview does NOT satisfy it → violation.
-    const blogPostViolations = violations.filter(
-      (v) => v.page === 'blog-post',
-    )
+    const blogPostViolations = violations.filter((v) => v.page === 'blog-post')
     expect(blogPostViolations).toHaveLength(0)
   })
 
@@ -388,5 +395,100 @@ describe('pageTypeFromId equal-length tiebreaker', () => {
       (v) => v.page === 'documentation-menu',
     )
     expect(docViolations).toHaveLength(0)
+  })
+})
+
+describe('empty page detection and repair', () => {
+  it('detects pages with zero content sections as empty_page violations', () => {
+    const parsed = makeComposition(
+      ['home', 'collections', 'contact'],
+      [
+        makeSection('Navbar', 'home'),
+        makeSection('SplitHero', 'home'),
+        makeSection('Footer', 'home'),
+        // collections page: only navbar + footer, no content
+        makeSection('Navbar', 'collections'),
+        makeSection('Footer', 'collections'),
+        // contact page: has content
+        makeSection('Navbar', 'contact'),
+        makeSection('ContactForm', 'contact'),
+        makeSection('Footer', 'contact'),
+      ],
+    )
+    const violations = validatePageStructure(parsed)
+    const emptyViolations = violations.filter((v) => v.type === 'empty_page')
+    expect(emptyViolations).toHaveLength(1)
+    expect(emptyViolations[0].page).toBe('collections')
+  })
+
+  it('repairPageStructure injects a content section into empty pages', () => {
+    const parsed = makeComposition(
+      ['home', 'collections'],
+      [
+        makeSection('Navbar', 'home'),
+        makeSection('SplitHero', 'home'),
+        makeSection('Footer', 'home'),
+        makeSection('Navbar', 'collections'),
+        makeSection('Footer', 'collections'),
+      ],
+    )
+    const result = repairPageStructure(parsed)
+    expect(result.repaired).toBe(true)
+    // The collections page should now have a content section
+    const collectionsContent = parsed.sections.filter(
+      (s) =>
+        s.page === 'collections' &&
+        s.motif !== 'Navbar' &&
+        s.motif !== 'Footer',
+    )
+    expect(collectionsContent.length).toBeGreaterThanOrEqual(1)
+    // Should use a page-type-appropriate motif (ProductGrid for collections)
+    expect(collectionsContent[0].motif).toBe('ProductGrid')
+  })
+
+  it('repairPageStructure injects CardGrid for unknown page types', () => {
+    const parsed = makeComposition(
+      ['home', 'custom-page'],
+      [
+        makeSection('Navbar', 'home'),
+        makeSection('SplitHero', 'home'),
+        makeSection('Footer', 'home'),
+        makeSection('Navbar', 'custom-page'),
+        makeSection('Footer', 'custom-page'),
+      ],
+    )
+    const result = repairPageStructure(parsed)
+    expect(result.repaired).toBe(true)
+    const customContent = parsed.sections.filter(
+      (s) =>
+        s.page === 'custom-page' &&
+        s.motif !== 'Navbar' &&
+        s.motif !== 'Footer',
+    )
+    expect(customContent.length).toBeGreaterThanOrEqual(1)
+    expect(customContent[0].motif).toBe('CardGrid')
+  })
+
+  it('detects collections and lookbook page types', () => {
+    const parsed = makeComposition(
+      ['home', 'collections', 'lookbook'],
+      [
+        makeSection('Navbar', 'home'),
+        makeSection('SplitHero', 'home'),
+        makeSection('Footer', 'home'),
+        makeSection('Navbar', 'collections'),
+        makeSection('ProductGrid', 'collections'),
+        makeSection('Footer', 'collections'),
+        makeSection('Navbar', 'lookbook'),
+        makeSection('ImageGallery', 'lookbook'),
+        makeSection('Footer', 'lookbook'),
+      ],
+    )
+    const violations = validatePageStructure(parsed)
+    // Both pages have appropriate motifs → no missing_required_motif violations
+    const missingViolations = violations.filter(
+      (v) => v.type === 'missing_required_motif',
+    )
+    expect(missingViolations).toHaveLength(0)
   })
 })

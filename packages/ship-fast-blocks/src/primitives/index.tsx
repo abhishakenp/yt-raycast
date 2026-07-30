@@ -46,7 +46,11 @@ export function Container({
 
   if (layout === 'full-bleed') {
     return (
-      <div className={cn('w-full', className)} {...props}>
+      <div
+        data-d-role="container"
+        className={cn('w-full', className)}
+        {...props}
+      >
         {children}
       </div>
     )
@@ -57,6 +61,7 @@ export function Container({
     const total = left + right
     return (
       <div
+        data-d-role="container"
         className={cn(base, SIZE_MAP[size], 'grid gap-10 lg:gap-16', className)}
         style={{
           gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))`,
@@ -71,6 +76,7 @@ export function Container({
   if (layout === 'grid') {
     return (
       <div
+        data-d-role="grid"
         className={cn(base, SIZE_MAP[size], d.density.grid, className)}
         style={{
           display: 'grid',
@@ -84,7 +90,11 @@ export function Container({
   }
 
   return (
-    <div className={cn(base, SIZE_MAP[size], className)} {...props}>
+    <div
+      data-d-role="container"
+      className={cn(base, SIZE_MAP[size], className)}
+      {...props}
+    >
       {children}
     </div>
   )
@@ -103,6 +113,7 @@ export function Section({
   const d = useDesign()
   return (
     <section
+      data-d-role="section"
       className={cn(d.density.section, 'scroll-mt-20 bg-background', className)}
       {...props}
     >
@@ -137,14 +148,19 @@ export function Heading({
   const { before, hl, after } = parseHighlight(text, highlight, highlightIndex)
 
   if (level === 'eyebrow' || level === 'mono-label') {
-    return <span className={cn(classes, className)}>{text}</span>
+    return (
+      <span data-d-role="eyebrow" className={cn(classes, className)}>
+        {text}
+      </span>
+    )
   }
 
   const Tag = level === 'display' ? 'h1' : level
+  const role = level === 'display' ? 'display' : 'heading'
 
   if (hl) {
     return (
-      <Tag className={cn(classes, className)}>
+      <Tag data-d-role={role} className={cn(classes, className)}>
         {before}
         <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
           <span
@@ -160,7 +176,11 @@ export function Heading({
     )
   }
 
-  return <Tag className={cn(classes, className)}>{text}</Tag>
+  return (
+    <Tag data-d-role={role} className={cn(classes, className)}>
+      {text}
+    </Tag>
+  )
 }
 
 function resolveHeadingClasses(level: HeadingLevel, d: DesignClasses): string {
@@ -237,7 +257,11 @@ export function Text({
 }) {
   const d = useDesign()
   const classes = resolveTextClasses(variant, d)
-  return <p className={cn(classes, className)}>{text}</p>
+  return (
+    <p data-d-role="body" className={cn(classes, className)}>
+      {text}
+    </p>
+  )
 }
 
 function resolveTextClasses(variant: TextVariant, d: DesignClasses): string {
@@ -282,14 +306,22 @@ export function Button({
 
   if (href) {
     return (
-      <a href={href} className={cn(base, variantClasses, className)}>
+      <a
+        href={href}
+        data-d-role="btn"
+        className={cn(base, variantClasses, className)}
+      >
         {label}
       </a>
     )
   }
 
   return (
-    <button className={cn(base, variantClasses, className)} onClick={onClick}>
+    <button
+      data-d-role="btn"
+      className={cn(base, variantClasses, className)}
+      onClick={onClick}
+    >
       {label}
     </button>
   )
@@ -331,6 +363,7 @@ export function Card({
   const d = useDesign()
   return (
     <div
+      data-d-role="card"
       className={cn(
         'border-b border-r border-border bg-card',
         d.radius.card,
@@ -342,7 +375,7 @@ export function Card({
       )}
     >
       {index && (
-        <span className={d.typography.eyebrow}>
+        <span data-d-role="eyebrow" className={d.typography.eyebrow}>
           {index}
           <span className="text-primary"> /</span>
         </span>
@@ -357,12 +390,18 @@ export function Card({
         />
       )}
       {title && (
-        <h3 className="mt-3 text-xl font-bold tracking-tight text-foreground">
+        <h3
+          data-d-role="heading"
+          className="mt-3 text-xl font-bold tracking-tight text-foreground"
+        >
           {title}
         </h3>
       )}
       {description && (
-        <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+        <p
+          data-d-role="body"
+          className="mt-2 max-w-md text-sm leading-6 text-muted-foreground"
+        >
           {description}
         </p>
       )}
@@ -391,6 +430,7 @@ export function Grid({
   if (variant === 'collapsed-border') {
     return (
       <div
+        data-d-role="grid"
         className={cn('grid border-l border-t border-border', className)}
         style={{
           gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
@@ -406,6 +446,7 @@ export function Grid({
     // First cell spans 7, rest span 5 each (on md+)
     return (
       <div
+        data-d-role="grid"
         className={cn(
           'grid border-l border-t border-border md:grid-cols-12',
           d.density.grid,
@@ -419,6 +460,7 @@ export function Grid({
 
   return (
     <div
+      data-d-role="grid"
       className={cn('grid', d.density.grid, className)}
       style={{
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
@@ -447,6 +489,7 @@ export function Stat({
   const d = useDesign()
   return (
     <div
+      data-d-role="card"
       className={cn(
         'border-b border-r border-border p-5 sm:p-7',
         inverted && 'bg-primary text-primary-foreground',
@@ -454,6 +497,7 @@ export function Stat({
       )}
     >
       <span
+        data-d-role="display"
         className={cn(
           'block text-[clamp(2.25rem,4.5vw,3.75rem)] font-extrabold leading-none tracking-tight tabular-nums',
           inverted ? 'text-primary-foreground' : 'text-foreground',
@@ -462,6 +506,7 @@ export function Stat({
         {value}
       </span>
       <span
+        data-d-role="eyebrow"
         className={cn(
           'mt-2 block',
           d.typography.eyebrow,
@@ -520,30 +565,43 @@ export function List({
       <div className={cn('flex flex-col gap-10', className)}>
         {groups.map((group, gi) => (
           <div key={gi}>
-            <h3 className="mb-5 text-lg font-bold tracking-tight text-foreground">
+            <h3
+              data-d-role="heading"
+              className="mb-5 text-lg font-bold tracking-tight text-foreground"
+            >
               {group.name}
             </h3>
-            <ul className="flex flex-col gap-2">
+            <ul data-d-role="list" className="flex flex-col gap-2">
               {group.items.map((item, ii) => (
                 <li
                   key={ii}
+                  data-d-role="card"
                   className={cn(
                     'flex items-baseline justify-between gap-4 border-b border-r border-border bg-card p-4',
                     d.radius.card,
                   )}
                 >
                   <div>
-                    <span className="font-medium text-foreground">
+                    <span
+                      data-d-role="heading"
+                      className="font-medium text-foreground"
+                    >
                       {item.title}
                     </span>
                     {item.description && (
-                      <span className="ml-3 text-sm text-muted-foreground">
+                      <span
+                        data-d-role="body"
+                        className="ml-3 text-sm text-muted-foreground"
+                      >
                         {item.description}
                       </span>
                     )}
                   </div>
                   {item.price && (
-                    <span className="font-mono text-sm font-semibold tabular-nums text-primary">
+                    <span
+                      data-d-role="eyebrow"
+                      className="font-mono text-sm font-semibold tabular-nums text-primary"
+                    >
                       {item.price}
                     </span>
                   )}
@@ -558,25 +616,34 @@ export function List({
 
   const flatItems = items ?? []
   return (
-    <ul className={cn('flex flex-col gap-2', className)}>
+    <ul data-d-role="list" className={cn('flex flex-col gap-2', className)}>
       {flatItems.map((item, ii) => (
         <li
           key={ii}
+          data-d-role="card"
           className={cn(
             'flex items-baseline justify-between gap-4 border-b border-r border-border bg-card p-4',
             d.radius.card,
           )}
         >
           <div>
-            <span className="font-medium text-foreground">{item.title}</span>
+            <span data-d-role="heading" className="font-medium text-foreground">
+              {item.title}
+            </span>
             {item.description && (
-              <span className="ml-3 text-sm text-muted-foreground">
+              <span
+                data-d-role="body"
+                className="ml-3 text-sm text-muted-foreground"
+              >
                 {item.description}
               </span>
             )}
           </div>
           {item.price && (
-            <span className="font-mono text-sm font-semibold tabular-nums text-primary">
+            <span
+              data-d-role="eyebrow"
+              className="font-mono text-sm font-semibold tabular-nums text-primary"
+            >
               {item.price}
             </span>
           )}
@@ -604,9 +671,15 @@ export function CtaBand({
   const d = useDesign()
   return (
     <div
+      data-d-role="container"
       className={cn('flex flex-col items-center gap-6 text-center', className)}
     >
-      <h2 className={cn(d.typography.heading, 'max-w-2xl')}>{heading}</h2>
+      <h2
+        data-d-role="heading"
+        className={cn(d.typography.heading, 'max-w-2xl')}
+      >
+        {heading}
+      </h2>
       {subheading && (
         <Text variant="lead" text={subheading} className="max-w-lg" />
       )}
@@ -630,9 +703,15 @@ export function Divider({
 }) {
   if (variant === 'rule') {
     return (
-      <div className={cn('flex items-center gap-4', className)}>
+      <div
+        data-d-role="divider"
+        className={cn('flex items-center gap-4', className)}
+      >
         {text && (
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <span
+            data-d-role="eyebrow"
+            className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+          >
             {text}
           </span>
         )}
@@ -644,6 +723,7 @@ export function Divider({
   if (variant === 'watermark') {
     return (
       <div
+        data-d-role="watermark"
         className={cn(
           'pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden',
           className,
@@ -660,12 +740,14 @@ export function Divider({
   if (variant === 'marquee' && text) {
     return (
       <div
+        data-d-role="divider"
         className={cn('overflow-hidden border-y border-border py-3', className)}
       >
         <div className="flex w-max animate-[marquee_20s_linear_infinite] gap-8 whitespace-nowrap pr-8">
           {Array.from({ length: 2 }).map((_, i) => (
             <span
               key={i}
+              data-d-role="eyebrow"
               className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
               aria-hidden={i === 1}
             >
@@ -680,6 +762,7 @@ export function Divider({
   // dot-grid
   return (
     <div
+      data-d-role="decor"
       className={cn(
         'pointer-events-none absolute inset-0 opacity-[0.04]',
         className,
@@ -718,9 +801,11 @@ export function ImageBlock({
       src={src?.trim() ? src : undefined}
       w={w}
       h={h}
+      data-d-role="image"
       className={cn(
         'h-auto w-full object-cover',
         rounded && d.radius.card,
+        d.image.treatment,
         className,
       )}
     />
@@ -743,20 +828,27 @@ export function Accordion({
 }) {
   const d = useDesign()
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
+    <div data-d-role="list" className={cn('flex flex-col gap-2', className)}>
       {items.map((item, i) => (
         <details
           key={i}
+          data-d-role="card"
           className={cn(
             'border-b border-r border-border bg-card',
             d.radius.card,
             d.density.card,
           )}
         >
-          <summary className="cursor-pointer font-semibold text-foreground">
+          <summary
+            data-d-role="heading"
+            className="cursor-pointer font-semibold text-foreground"
+          >
             {item.question}
           </summary>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          <p
+            data-d-role="body"
+            className="mt-3 text-sm leading-6 text-muted-foreground"
+          >
             {item.answer}
           </p>
         </details>
@@ -782,19 +874,24 @@ export function Navbar({
 }) {
   return (
     <nav
+      data-d-role="nav"
       className={cn(
         'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur',
         className,
       )}
     >
       <Container size="xl" className="flex h-16 items-center justify-between">
-        <span className="text-lg font-bold tracking-tight text-foreground">
+        <span
+          data-d-role="heading"
+          className="text-lg font-bold tracking-tight text-foreground"
+        >
           {brand}
         </span>
         <div className="hidden items-center gap-6 md:flex">
           {links.map((link, i) => (
             <span
               key={i}
+              data-d-role="link"
               className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               {link}
@@ -827,24 +924,32 @@ export function Footer({
 }) {
   return (
     <footer
+      data-d-role="footer"
       className={cn('border-t border-border bg-background py-12', className)}
     >
       <Container size="xl">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div>
-            <span className="text-lg font-bold tracking-tight text-foreground">
+            <span
+              data-d-role="heading"
+              className="text-lg font-bold tracking-tight text-foreground"
+            >
               {brand}
             </span>
           </div>
           {columns.map((col, i) => (
             <div key={i}>
-              <h4 className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              <h4
+                data-d-role="eyebrow"
+                className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              >
                 {col.title}
               </h4>
-              <ul className="flex flex-col gap-2">
+              <ul data-d-role="list" className="flex flex-col gap-2">
                 {col.links.map((link, ii) => (
                   <li
                     key={ii}
+                    data-d-role="link"
                     className="text-sm text-muted-foreground hover:text-foreground"
                   >
                     {link}
@@ -893,14 +998,22 @@ export function Form({
 }) {
   const d = useDesign()
   return (
-    <form className={cn('flex flex-col gap-4', className)} onSubmit={onSubmit}>
+    <form
+      data-d-role="form"
+      className={cn('flex flex-col gap-4', className)}
+      onSubmit={onSubmit}
+    >
       {fields.map((field, i) => (
         <div key={i} className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-foreground">
+          <label
+            data-d-role="eyebrow"
+            className="text-sm font-medium text-foreground"
+          >
             {field.label}
           </label>
           {field.type === 'textarea' ? (
             <textarea
+              data-d-role="input"
               name={field.label.toLowerCase().replace(/\s+/g, '_')}
               placeholder={field.placeholder}
               className={cn(
@@ -911,6 +1024,7 @@ export function Form({
             />
           ) : field.type === 'select' ? (
             <select
+              data-d-role="input"
               name={field.label.toLowerCase().replace(/\s+/g, '_')}
               className={cn(
                 'min-h-12 border border-border bg-background px-4 text-sm text-foreground',
@@ -923,6 +1037,7 @@ export function Form({
             </select>
           ) : (
             <input
+              data-d-role="input"
               type={field.type ?? 'text'}
               name={field.label.toLowerCase().replace(/\s+/g, '_')}
               placeholder={field.placeholder}

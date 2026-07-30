@@ -34,7 +34,49 @@ export type Typography = (typeof TYPOGRAPHY_VALUES)[number]
 export const MOTION_VALUES = ['none', 'subtle', 'lively'] as const
 export type Motion = (typeof MOTION_VALUES)[number]
 
+// ── New atomic axes ──
+
+export const BORDER_VALUES = ['hairline', 'medium', 'bold'] as const
+export type Border = (typeof BORDER_VALUES)[number]
+
+export const TRACKING_VALUES = ['tight', 'normal', 'wide'] as const
+export type Tracking = (typeof TRACKING_VALUES)[number]
+
+export const LEADING_VALUES = ['compact', 'normal', 'relaxed'] as const
+export type Leading = (typeof LEADING_VALUES)[number]
+
+export const WEIGHT_VALUES = ['light', 'normal', 'bold', 'black'] as const
+export type Weight = (typeof WEIGHT_VALUES)[number]
+
+export const TRANSFORM_VALUES = ['none', 'uppercase', 'lowercase'] as const
+export type Transform = (typeof TRANSFORM_VALUES)[number]
+
+export const IMAGE_VALUES = ['plain', 'grayscale', 'duotone', 'zoom'] as const
+export type ImageTreatment = (typeof IMAGE_VALUES)[number]
+
+export const OPACITY_VALUES = ['solid', 'subtle', 'ghost'] as const
+export type Opacity = (typeof OPACITY_VALUES)[number]
+
+// ── Compositional axes (cascade through @design, not just per-section props) ──
+
+export const CHROME_VALUES = [
+  'none',
+  'hairline',
+  'brutalist',
+  'terminal',
+  'editorial',
+  'gradient',
+] as const
+export type Chrome = (typeof CHROME_VALUES)[number]
+
+export const DECOR_VALUES = ['none', 'dot-grid', 'graph-paper', 'glow'] as const
+export type Decor = (typeof DECOR_VALUES)[number]
+
 // ─── Design intent (serializable — flows through DSL → parser → compiler) ──
+//
+// All axes are optional except the original 6 (which have defaults).
+// New axes are optional with `undefined` sentinel meaning "not set —
+// component uses its own default / hardcoded value".
 
 export interface DesignIntent {
   radius: Radius
@@ -43,6 +85,17 @@ export interface DesignIntent {
   density: Density
   typography: Typography
   motion: Motion
+  // New atomic axes — undefined = not set, component decides
+  border?: Border
+  tracking?: Tracking
+  leading?: Leading
+  weight?: Weight
+  transform?: Transform
+  image?: ImageTreatment
+  opacity?: Opacity
+  // Compositional axes — undefined = not set, component decides
+  chrome?: Chrome
+  decor?: Decor
 }
 
 export const DEFAULT_DESIGN: DesignIntent = {
@@ -52,6 +105,9 @@ export const DEFAULT_DESIGN: DesignIntent = {
   density: 'balanced',
   typography: 'editorial',
   motion: 'subtle',
+  // New axes default to undefined — components use their own hardcoded
+  // values unless @design explicitly sets them. This preserves backward
+  // compatibility: existing sites look identical until you opt in.
 }
 
 // ─── Resolution: enum value → Tailwind classes per target ──────────────────
@@ -66,11 +122,15 @@ export interface DesignClasses {
     input: string
     badge: string
     container: string
+    link: string
+    image: string
+    icon: string
   }
   shadow: {
     btn: string
     card: string
     container: string
+    image: string
   }
   gradient: {
     highlight: string // text highlight block behind a word
@@ -81,6 +141,10 @@ export interface DesignClasses {
     section: string // py-* on section wrappers
     grid: string // gap-* on grids
     card: string // p-* on cards
+    nav: string // py-* on nav
+    footer: string // py-* on footer
+    list: string // gap-* on lists
+    form: string // gap-* on forms
   }
   typography: {
     display: string // hero h1 classes
@@ -94,18 +158,59 @@ export interface DesignClasses {
     hover: string // hover transform on cards/buttons
     transition: string // transition-* base
   }
+  // New atomic axes — per-role Tailwind classes
+  border: {
+    btn: string
+    card: string
+    input: string
+    container: string
+    divider: string
+    image: string
+  }
+  tracking: {
+    display: string
+    heading: string
+    body: string
+    eyebrow: string
+  }
+  leading: {
+    display: string
+    heading: string
+    body: string
+  }
+  weight: {
+    display: string
+    heading: string
+    body: string
+    eyebrow: string
+  }
+  transform: {
+    eyebrow: string
+    display: string
+    heading: string
+  }
+  image: {
+    treatment: string // grayscale, zoom, etc.
+  }
+  opacity: {
+    decor: string
+    watermark: string
+    divider: string
+  }
 }
 
 // ─── Resolution tables ───────────────────────────────────────────────────
 
-const RADIUS_TABLE: Record<Radius, Omit<DesignClasses['radius'], 'container'>> &
-  Record<Radius, Pick<DesignClasses['radius'], 'container'>> = {
+const RADIUS_TABLE: Record<Radius, DesignClasses['radius']> = {
   sharp: {
     btn: 'rounded-none',
     card: 'rounded-none',
     input: 'rounded-none',
     badge: 'rounded-none',
     container: 'rounded-none',
+    link: 'rounded-none',
+    image: 'rounded-none',
+    icon: 'rounded-none',
   },
   soft: {
     btn: 'rounded-lg',
@@ -113,6 +218,9 @@ const RADIUS_TABLE: Record<Radius, Omit<DesignClasses['radius'], 'container'>> &
     input: 'rounded-lg',
     badge: 'rounded-md',
     container: 'rounded-xl',
+    link: 'rounded-md',
+    image: 'rounded-lg',
+    icon: 'rounded-full',
   },
   rounded: {
     btn: 'rounded-xl',
@@ -120,6 +228,9 @@ const RADIUS_TABLE: Record<Radius, Omit<DesignClasses['radius'], 'container'>> &
     input: 'rounded-xl',
     badge: 'rounded-lg',
     container: 'rounded-2xl',
+    link: 'rounded-lg',
+    image: 'rounded-xl',
+    icon: 'rounded-full',
   },
   pill: {
     btn: 'rounded-full',
@@ -127,6 +238,9 @@ const RADIUS_TABLE: Record<Radius, Omit<DesignClasses['radius'], 'container'>> &
     input: 'rounded-full',
     badge: 'rounded-full',
     container: 'rounded-3xl',
+    link: 'rounded-full',
+    image: 'rounded-3xl',
+    icon: 'rounded-full',
   },
 }
 
@@ -135,21 +249,25 @@ const SHADOW_TABLE: Record<Shadow, DesignClasses['shadow']> = {
     btn: '',
     card: '',
     container: '',
+    image: '',
   },
   soft: {
     btn: 'shadow-sm hover:shadow-md',
     card: 'shadow-sm',
     container: 'shadow-sm',
+    image: 'shadow-sm',
   },
   hard: {
     btn: 'shadow-[4px_4px_0_0] shadow-foreground hover:-translate-y-0.5',
     card: 'shadow-[4px_4px_0_0] shadow-foreground',
     container: 'shadow-[4px_4px_0_0] shadow-foreground',
+    image: 'shadow-[4px_4px_0_0] shadow-foreground',
   },
   brutalist: {
     btn: 'shadow-[8px_8px_0_0] shadow-foreground hover:-translate-y-1 active:translate-x-1 active:translate-y-1 active:shadow-none',
     card: 'shadow-[8px_8px_0_0] shadow-foreground',
     container: 'shadow-[8px_8px_0_0] shadow-foreground',
+    image: 'shadow-[8px_8px_0_0] shadow-foreground',
   },
 }
 
@@ -181,16 +299,28 @@ const DENSITY_TABLE: Record<Density, DesignClasses['density']> = {
     section: 'py-10',
     grid: 'gap-3',
     card: 'p-4',
+    nav: 'py-2',
+    footer: 'py-8',
+    list: 'gap-2',
+    form: 'gap-3',
   },
   balanced: {
     section: 'py-16',
     grid: 'gap-6',
     card: 'p-6',
+    nav: 'py-3',
+    footer: 'py-12',
+    list: 'gap-4',
+    form: 'gap-5',
   },
   airy: {
     section: 'py-24',
     grid: 'gap-10',
     card: 'p-8',
+    nav: 'py-4',
+    footer: 'py-16',
+    list: 'gap-6',
+    form: 'gap-6',
   },
 }
 
@@ -252,7 +382,191 @@ const MOTION_TABLE: Record<Motion, DesignClasses['motion']> = {
   },
 }
 
+// ── New axis resolution tables ──
+
+const BORDER_TABLE: Record<Border, DesignClasses['border']> = {
+  hairline: {
+    btn: 'border',
+    card: 'border',
+    input: 'border',
+    container: 'border',
+    divider: 'border-t',
+    image: 'border',
+  },
+  medium: {
+    btn: 'border-2',
+    card: 'border-2',
+    input: 'border-2',
+    container: 'border-2',
+    divider: 'border-t-2',
+    image: 'border-2',
+  },
+  bold: {
+    btn: 'border-4',
+    card: 'border-4',
+    input: 'border-4',
+    container: 'border-4',
+    divider: 'border-t-4',
+    image: 'border-4',
+  },
+}
+
+const TRACKING_TABLE: Record<Tracking, DesignClasses['tracking']> = {
+  tight: {
+    display: 'tracking-tighter',
+    heading: 'tracking-tight',
+    body: 'tracking-tight',
+    eyebrow: 'tracking-tight',
+  },
+  normal: {
+    display: 'tracking-normal',
+    heading: 'tracking-normal',
+    body: 'tracking-normal',
+    eyebrow: 'tracking-[0.1em]',
+  },
+  wide: {
+    display: 'tracking-wide',
+    heading: 'tracking-wide',
+    body: 'tracking-wide',
+    eyebrow: 'tracking-[0.2em]',
+  },
+}
+
+const LEADING_TABLE: Record<Leading, DesignClasses['leading']> = {
+  compact: {
+    display: 'leading-[0.85]',
+    heading: 'leading-tight',
+    body: 'leading-snug',
+  },
+  normal: {
+    display: 'leading-[0.92]',
+    heading: 'leading-normal',
+    body: 'leading-relaxed',
+  },
+  relaxed: {
+    display: 'leading-[0.98]',
+    heading: 'leading-relaxed',
+    body: 'leading-7',
+  },
+}
+
+const WEIGHT_TABLE: Record<Weight, DesignClasses['weight']> = {
+  light: {
+    display: 'font-extralight',
+    heading: 'font-light',
+    body: 'font-light',
+    eyebrow: 'font-light',
+  },
+  normal: {
+    display: 'font-normal',
+    heading: 'font-normal',
+    body: 'font-normal',
+    eyebrow: 'font-normal',
+  },
+  bold: {
+    display: 'font-extrabold',
+    heading: 'font-bold',
+    body: 'font-medium',
+    eyebrow: 'font-semibold',
+  },
+  black: {
+    display: 'font-black',
+    heading: 'font-black',
+    body: 'font-bold',
+    eyebrow: 'font-bold',
+  },
+}
+
+const TRANSFORM_TABLE: Record<Transform, DesignClasses['transform']> = {
+  none: {
+    eyebrow: 'normal-case',
+    display: 'normal-case',
+    heading: 'normal-case',
+  },
+  uppercase: {
+    eyebrow: 'uppercase',
+    display: 'uppercase',
+    heading: 'uppercase',
+  },
+  lowercase: {
+    eyebrow: 'lowercase',
+    display: 'lowercase',
+    heading: 'lowercase',
+  },
+}
+
+const IMAGE_TABLE: Record<ImageTreatment, DesignClasses['image']> = {
+  plain: {
+    treatment: '',
+  },
+  grayscale: {
+    treatment: 'grayscale',
+  },
+  duotone: {
+    treatment: 'grayscale contrast-125 brightness-110',
+  },
+  zoom: {
+    treatment: 'transition-transform duration-300 hover:scale-[1.05]',
+  },
+}
+
+const OPACITY_TABLE: Record<Opacity, DesignClasses['opacity']> = {
+  solid: {
+    decor: 'opacity-100',
+    watermark: 'opacity-[0.08]',
+    divider: 'opacity-100',
+  },
+  subtle: {
+    decor: 'opacity-50',
+    watermark: 'opacity-[0.04]',
+    divider: 'opacity-50',
+  },
+  ghost: {
+    decor: 'opacity-20',
+    watermark: 'opacity-[0.02]',
+    divider: 'opacity-20',
+  },
+}
+
 // ─── Resolver ────────────────────────────────────────────────────────────
+
+// ── Empty class defaults for new axes (when axis is undefined) ──
+const EMPTY_BORDER: DesignClasses['border'] = {
+  btn: '',
+  card: '',
+  input: '',
+  container: '',
+  divider: '',
+  image: '',
+}
+const EMPTY_TRACKING: DesignClasses['tracking'] = {
+  display: '',
+  heading: '',
+  body: '',
+  eyebrow: '',
+}
+const EMPTY_LEADING: DesignClasses['leading'] = {
+  display: '',
+  heading: '',
+  body: '',
+}
+const EMPTY_WEIGHT: DesignClasses['weight'] = {
+  display: '',
+  heading: '',
+  body: '',
+  eyebrow: '',
+}
+const EMPTY_TRANSFORM: DesignClasses['transform'] = {
+  eyebrow: '',
+  display: '',
+  heading: '',
+}
+const EMPTY_IMAGE: DesignClasses['image'] = { treatment: '' }
+const EMPTY_OPACITY: DesignClasses['opacity'] = {
+  decor: '',
+  watermark: '',
+  divider: '',
+}
 
 export function resolveDesign(intent: DesignIntent): DesignClasses {
   return {
@@ -262,98 +576,242 @@ export function resolveDesign(intent: DesignIntent): DesignClasses {
     density: DENSITY_TABLE[intent.density],
     typography: TYPOGRAPHY_TABLE[intent.typography],
     motion: MOTION_TABLE[intent.motion],
+    // New axes — empty strings when undefined (backward compat)
+    border: intent.border ? BORDER_TABLE[intent.border] : EMPTY_BORDER,
+    tracking: intent.tracking
+      ? TRACKING_TABLE[intent.tracking]
+      : EMPTY_TRACKING,
+    leading: intent.leading ? LEADING_TABLE[intent.leading] : EMPTY_LEADING,
+    weight: intent.weight ? WEIGHT_TABLE[intent.weight] : EMPTY_WEIGHT,
+    transform: intent.transform
+      ? TRANSFORM_TABLE[intent.transform]
+      : EMPTY_TRANSFORM,
+    image: intent.image ? IMAGE_TABLE[intent.image] : EMPTY_IMAGE,
+    opacity: intent.opacity ? OPACITY_TABLE[intent.opacity] : EMPTY_OPACITY,
   }
 }
 
 // ─── Parser: "@design radius:rounded gradients:vibrant ..." → DesignIntent ──
 
 /**
- * Alias maps: values the prompt documents (but aren't in the enum) map to
- * valid enum values. This prevents silent drops when the LLM emits a
- * documented-but-invalid value like "motion:gentle" or "motion:kinetic".
+ * Axis registry — single source of truth for all @design axes.
+ * Adding a new axis = add one entry here. Everything else (parsing,
+ * serialization, key aliases, value aliases) derives from this.
  */
-const RADIUS_ALIASES: Record<string, Radius> = {
-  soft: 'rounded',
-  square: 'sharp',
-  hard: 'sharp',
-}
-const SHADOW_ALIASES: Record<string, Shadow> = {}
-const GRADIENT_ALIASES: Record<string, Gradient> = {}
-const DENSITY_ALIASES: Record<string, Density> = {}
-const TYPOGRAPHY_ALIASES: Record<string, Typography> = {}
-const MOTION_ALIASES: Record<string, Motion> = {
-  static: 'none',
-  gentle: 'subtle',
-  kinetic: 'lively',
-  animated: 'lively',
-  lively: 'lively',
+interface AxisDef {
+  /** Key in DesignIntent (e.g. 'radius') */
+  name: string
+  /** Alternative DSL keys that map to this axis (e.g. ['shadows', 'type']) */
+  keyAliases?: string[]
+  /** Valid enum values */
+  values: readonly string[]
+  /** Value aliases: LLM-emitted value → canonical enum value */
+  valueAliases?: Record<string, string>
 }
 
-function resolveAxis<T extends string>(
-  v: string,
-  values: readonly T[],
-  aliases: Record<string, T>,
-): T | undefined {
-  if (values.includes(v as T)) return v as T
-  if (aliases[v]) return aliases[v]
-  return undefined
+const AXIS_REGISTRY: readonly AxisDef[] = [
+  {
+    name: 'radius',
+    keyAliases: [],
+    values: RADIUS_VALUES,
+    valueAliases: { soft: 'rounded', square: 'sharp', hard: 'sharp' },
+  },
+  {
+    name: 'shadow',
+    keyAliases: ['shadows'],
+    values: SHADOW_VALUES,
+  },
+  {
+    name: 'gradient',
+    keyAliases: ['gradients'],
+    values: GRADIENT_VALUES,
+  },
+  {
+    name: 'density',
+    values: DENSITY_VALUES,
+  },
+  {
+    name: 'typography',
+    keyAliases: ['type'],
+    values: TYPOGRAPHY_VALUES,
+  },
+  {
+    name: 'motion',
+    values: MOTION_VALUES,
+    valueAliases: {
+      static: 'none',
+      gentle: 'subtle',
+      kinetic: 'lively',
+      animated: 'lively',
+    },
+  },
+  {
+    name: 'border',
+    keyAliases: ['borders'],
+    values: BORDER_VALUES,
+    valueAliases: {
+      thin: 'hairline',
+      light: 'hairline',
+      normal: 'medium',
+      thick: 'bold',
+      heavy: 'bold',
+    },
+  },
+  {
+    name: 'tracking',
+    keyAliases: ['letterspacing', 'letter-spacing'],
+    values: TRACKING_VALUES,
+    valueAliases: { narrow: 'tight', loose: 'wide', spaced: 'wide' },
+  },
+  {
+    name: 'leading',
+    keyAliases: ['lineheight', 'line-height'],
+    values: LEADING_VALUES,
+    valueAliases: { tight: 'compact', loose: 'relaxed', wide: 'relaxed' },
+  },
+  {
+    name: 'weight',
+    keyAliases: ['fontweight', 'font-weight'],
+    values: WEIGHT_VALUES,
+    valueAliases: {
+      thin: 'light',
+      regular: 'normal',
+      medium: 'normal',
+      heavy: 'bold',
+      extrabold: 'bold',
+    },
+  },
+  {
+    name: 'transform',
+    keyAliases: ['texttransform', 'text-transform'],
+    values: TRANSFORM_VALUES,
+    valueAliases: { caps: 'uppercase', upper: 'uppercase', lower: 'lowercase' },
+  },
+  {
+    name: 'image',
+    keyAliases: ['imagetreatment', 'image-treatment'],
+    values: IMAGE_VALUES,
+    valueAliases: {
+      bw: 'grayscale',
+      mono: 'grayscale',
+      color: 'plain',
+      hover: 'zoom',
+    },
+  },
+  {
+    name: 'opacity',
+    values: OPACITY_VALUES,
+    valueAliases: { full: 'solid', faint: 'ghost', transparent: 'ghost' },
+  },
+  {
+    name: 'chrome',
+    values: CHROME_VALUES,
+    valueAliases: {
+      minimal: 'hairline',
+      bold: 'brutalist',
+      mono: 'terminal',
+      magazine: 'editorial',
+    },
+  },
+  {
+    name: 'decor',
+    values: DECOR_VALUES,
+    valueAliases: {
+      dots: 'dot-grid',
+      grid: 'graph-paper',
+      paper: 'graph-paper',
+      orbs: 'glow',
+    },
+  },
+] as const
+
+/** Lookup: lowercased key → axis name (covers name + all keyAliases) */
+const KEY_TO_AXIS: Map<string, string> = (() => {
+  const m = new Map<string, string>()
+  for (const axis of AXIS_REGISTRY) {
+    m.set(axis.name.toLowerCase(), axis.name)
+    for (const alias of axis.keyAliases ?? []) {
+      m.set(alias.toLowerCase(), axis.name)
+    }
+  }
+  return m
+})()
+
+/** Lookup: axis name → AxisDef */
+const AXIS_BY_NAME: Map<string, AxisDef> = new Map(
+  AXIS_REGISTRY.map((a) => [a.name, a]),
+)
+
+function resolveAxisValue(axis: AxisDef, v: string): string | undefined {
+  if (axis.values.includes(v)) return v
+  return axis.valueAliases?.[v]
 }
 
+/**
+ * Parse a single axis token (key:value) into a resolved enum value.
+ * Data-driven from AXIS_REGISTRY — no switch/case to maintain.
+ */
+function parseAxisToken(key: string, v: string): Partial<DesignIntent> {
+  const axisName = KEY_TO_AXIS.get(key.toLowerCase())
+  if (!axisName) return {}
+  const axis = AXIS_BY_NAME.get(axisName)!
+  const resolved = resolveAxisValue(axis, v.toLowerCase())
+  return resolved ? ({ [axisName]: resolved } as Partial<DesignIntent>) : {}
+}
+
+/**
+ * Parse a @design line into a FULL DesignIntent, filling unspecified axes
+ * with DEFAULT_DESIGN. Use this for the global @design line where there's
+ * no parent to inherit from.
+ */
 export function parseDesignLine(line: string): DesignIntent {
-  const intent: Partial<DesignIntent> = { ...DEFAULT_DESIGN }
-  // Strip leading "@design" token
   const body = line.replace(/^@design\s+/i, '').trim()
   if (!body) return DEFAULT_DESIGN
-  // Split on whitespace, each token is "key:value"
+  const override = parseDesignOverride(body)
+  return { ...DEFAULT_DESIGN, ...override }
+}
+
+/**
+ * Parse a @design string into a PARTIAL DesignIntent — only axes that
+ * appear in the string are set, everything else is undefined.
+ *
+ * Use this for section/element overrides where unspecified axes should
+ * inherit from the parent context (cascade merge), not reset to defaults.
+ *
+ * Accepts both "@design radius:sharp" and bare "radius:sharp".
+ */
+export function parseDesignOverride(input: string): Partial<DesignIntent> {
+  const body = input.replace(/^@design\s+/i, '').trim()
+  if (!body) return {}
+  const override: Partial<DesignIntent> = {}
   for (const token of body.split(/\s+/)) {
-    // Split on ":" and take the last non-empty part as the value.
-    // This handles double-colons ("radius::sharp") and trailing colons.
     const parts = token.split(':').filter((p) => p.length > 0)
     if (parts.length < 2) continue
     const key = parts[0]
     const value = parts[parts.length - 1]
     const v = value.toLowerCase()
-    switch (key.toLowerCase()) {
-      case 'radius': {
-        const resolved = resolveAxis(v, RADIUS_VALUES, RADIUS_ALIASES)
-        if (resolved) intent.radius = resolved
-        break
-      }
-      case 'shadow':
-      case 'shadows': {
-        const resolved = resolveAxis(v, SHADOW_VALUES, SHADOW_ALIASES)
-        if (resolved) intent.shadow = resolved
-        break
-      }
-      case 'gradient':
-      case 'gradients': {
-        const resolved = resolveAxis(v, GRADIENT_VALUES, GRADIENT_ALIASES)
-        if (resolved) intent.gradient = resolved
-        break
-      }
-      case 'density': {
-        const resolved = resolveAxis(v, DENSITY_VALUES, DENSITY_ALIASES)
-        if (resolved) intent.density = resolved
-        break
-      }
-      case 'typography':
-      case 'type': {
-        const resolved = resolveAxis(v, TYPOGRAPHY_VALUES, TYPOGRAPHY_ALIASES)
-        if (resolved) intent.typography = resolved
-        break
-      }
-      case 'motion': {
-        const resolved = resolveAxis(v, MOTION_VALUES, MOTION_ALIASES)
-        if (resolved) intent.motion = resolved
-        break
-      }
-    }
+    Object.assign(override, parseAxisToken(key, v))
   }
-  return intent as DesignIntent
+  return override
+}
+
+/**
+ * Merge a partial override onto a parent DesignIntent.
+ * Only axes present in the override are replaced; everything else
+ * inherits from the parent. This is the cascade: element → section → global.
+ */
+export function mergeDesign(
+  parent: DesignIntent,
+  override: Partial<DesignIntent>,
+): DesignIntent {
+  return { ...parent, ...override }
 }
 
 // ─── Serialization (for OpenUI compiler — provider needs serializable intent) ──
 
 export function serializeDesignIntent(intent: DesignIntent): string {
-  return `@design radius:${intent.radius} shadow:${intent.shadow} gradient:${intent.gradient} density:${intent.density} typography:${intent.typography} motion:${intent.motion}`
+  const parts = Object.entries(intent)
+    .filter(([, v]) => v !== undefined && v !== null)
+    .map(([k, v]) => `${k}:${v}`)
+  return `@design ${parts.join(' ')}`
 }

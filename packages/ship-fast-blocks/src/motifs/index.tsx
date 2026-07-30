@@ -17,10 +17,14 @@ import { useState } from 'react'
 import { cn } from '#/lib/utils.ts'
 import { useFormSubmit } from '#/lib/use-form-submit.ts'
 import * as P from '#/primitives/index.tsx'
-import { DesignSystemProvider } from '#/primitives/design-context.tsx'
+import {
+  DesignSystemProvider,
+  useDesignIntent,
+  useDesignCompositional,
+} from '#/primitives/design-context.tsx'
 import { useDesign } from '#/primitives/design-context.tsx'
 import type { DesignIntent } from '#/primitives/design-system.ts'
-import { DEFAULT_DESIGN, parseDesignLine } from '#/primitives/design-system.ts'
+import { parseDesignOverride, mergeDesign } from '#/primitives/design-system.ts'
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 import {
   SiteFooter,
@@ -204,16 +208,59 @@ function withDesign(intent: DesignIntent, children: React.ReactNode) {
   return <DesignSystemProvider intent={intent}>{children}</DesignSystemProvider>
 }
 
-// Helper for motifs: only override design context when props.design is explicit.
-// Without this, every motif would replace the parent's design intent with
-// DEFAULT_DESIGN, ignoring the @design axis from the composition.
+// Helper for motifs: merge a per-section @design override onto the parent
+// (global) design intent. Unspecified axes inherit from the parent context —
+// this is the cascade: section → global. Only wraps when props.design is
+// explicit; otherwise children inherit the parent provider unchanged.
 function withOptionalDesign(
   design: string | undefined,
   children: React.ReactNode,
 ) {
-  return design
-    ? withDesign(parseDesignFromString(design), children)
-    : <>{children}</>
+  if (!design) return <>{children}</>
+  const override = parseDesignOverride(design)
+  // If the override is empty (e.g. "@design" with no axes), skip wrapping
+  if (Object.keys(override).length === 0) return <>{children}</>
+  return (
+    <DesignOverrideFromProp override={override}>
+      {children}
+    </DesignOverrideFromProp>
+  )
+}
+
+/**
+ * Resolve chrome prop with cascade: prop → @design chrome axis → hardcoded fallback.
+ * Lets @design chrome:brutalist set a site-wide default that individual sections
+ * can still override via the chrome prop.
+ */
+function useChrome(
+  propsChrome: ChromeVariant | undefined,
+  fallback: ChromeVariant = 'editorial',
+): ChromeVariant {
+  const { chrome: ctxChrome } = useDesignCompositional()
+  return propsChrome ?? ctxChrome ?? fallback
+}
+
+/**
+ * Resolve decor prop with cascade: prop → @design decor axis → 'none'.
+ */
+function useDecor(propsDecor: DecorVariant | undefined): DecorVariant {
+  const { decor: ctxDecor } = useDesignCompositional()
+  return propsDecor ?? ctxDecor ?? 'none'
+}
+
+// Internal: reads parent intent from context and merges the override.
+// Can't call useDesignIntent() inside withOptionalDesign because it's a
+// plain function, not a component — so we need a thin wrapper component.
+function DesignOverrideFromProp({
+  override,
+  children,
+}: {
+  override: Partial<DesignIntent>
+  children: React.ReactNode
+}) {
+  const parentIntent = useDesignIntent()
+  const merged = mergeDesign(parentIntent, override)
+  return <DesignSystemProvider intent={merged}>{children}</DesignSystemProvider>
 }
 
 // ─── 1. splitHero ────────────────────────────────────────────────────────
@@ -254,7 +301,10 @@ export const SplitHero = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <SplitHeroInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <SplitHeroInner {...props} />,
+    )
   },
 })
 
@@ -402,7 +452,10 @@ function SplitHeroInner(props: Record<string, unknown>) {
   const imageAlt =
     (props.imageAlt as string) ??
     'Modern design studio workspace with natural light and creative team collaboration'
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
 
   // Parse [hl]...[/hl] markers to extract highlight phrase. If no markers,
@@ -410,7 +463,7 @@ function SplitHeroInner(props: Record<string, unknown>) {
   const hlMatch = rawHeading.match(/\[hl\](.+?)\[\/hl\]/)
   const heading = rawHeading.replace(/\[hl\]|\[\/hl\]/g, '')
   const highlight = (props.highlight as string) ?? (hlMatch ? hlMatch[1] : '')
-  const decor = (props.decor as DecorVariant) ?? 'none'
+  const decor = useDecor(props.decor as DecorVariant | undefined)
 
   if (variant === 'full-bleed' && imageAlt) {
     return (
@@ -821,7 +874,10 @@ export const CenteredHero = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <CenteredHeroInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <CenteredHeroInner {...props} />,
+    )
   },
 })
 
@@ -878,7 +934,10 @@ export const PosterHero = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <PosterHeroInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <PosterHeroInner {...props} />,
+    )
   },
 })
 
@@ -919,7 +978,10 @@ export const ComingSoonHero = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ComingSoonHeroInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ComingSoonHeroInner {...props} />,
+    )
   },
 })
 
@@ -981,7 +1043,10 @@ export const CardGrid = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <CardGridInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <CardGridInner {...props} />,
+    )
   },
 })
 
@@ -1021,10 +1086,13 @@ function CardGridInner(props: Record<string, unknown>) {
   const variant =
     (props.variant as 'standard' | 'collapsed-border' | 'asymmetric') ??
     'standard'
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
   const watermark = props.watermark as string | undefined
-  const decor = (props.decor as DecorVariant) ?? 'none'
+  const decor = useDecor(props.decor as DecorVariant | undefined)
   const columns = cols === 2 ? 2 : cols === 4 ? 4 : 3
 
   // ── Editorial: ArchitectureFirm-style hairline ledger grid — collapsed-border cells, ghost numerals ──
@@ -1034,7 +1102,7 @@ function CardGridInner(props: Record<string, unknown>) {
         <Container>
           <EditorialSectionHeader
             index="01 /"
-            eyebrow="Services"
+            eyebrow={eyebrow ?? 'Collection'}
             heading={heading}
             description={subheading}
             metaLabel="Catalog"
@@ -1071,7 +1139,8 @@ function CardGridInner(props: Record<string, unknown>) {
                     </div>
                   )}
                   <MonoTag className="text-foreground">
-                    {String(i + 1).padStart(2, '0')} / Service
+                    {String(i + 1).padStart(2, '0')}
+                    {eyebrow ? ` / ${eyebrow}` : ''}
                   </MonoTag>
                   <h3 className="mt-3 text-xl font-light tracking-tight text-foreground">
                     {card.title}
@@ -1270,7 +1339,10 @@ export const BentoGrid = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <BentoGridInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <BentoGridInner {...props} />,
+    )
   },
 })
 
@@ -1308,7 +1380,10 @@ function BentoGridInner(props: Record<string, unknown>) {
     },
   ]
   const layout = (props.layout as string) ?? '2-lg-4'
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
   const spanToClass = (span?: string): string => {
     if (span === 'wide') return 'col-span-2 row-span-1'
@@ -1480,7 +1555,10 @@ export const ImageGallery = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ImageGalleryInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ImageGalleryInner {...props} />,
+    )
   },
 })
 
@@ -1507,7 +1585,10 @@ function ImageGalleryInner(props: Record<string, unknown>) {
     },
   ]
   const cols = (props.cols as number) ?? 4
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
 
   // Chrome-driven: editorial/brutalist with image-zoom hover
@@ -1599,7 +1680,10 @@ export const LogoStrip = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <LogoStripInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <LogoStripInner {...props} />,
+    )
   },
 })
 
@@ -1630,6 +1714,7 @@ export const TestimonialRow = defineCapsule({
     'Testimonial row: grid of quote cards with author name and optional role. Chrome: hairline (collapsed-border + mono indices), brutalist (border-2 + hard shadows + rotated stickers).',
   props: z.object({
     heading: z.string().optional(),
+    eyebrow: z.string().optional(),
     testimonials: z
       .array(
         z.object({
@@ -1648,12 +1733,16 @@ export const TestimonialRow = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <TestimonialRowInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <TestimonialRowInner {...props} />,
+    )
   },
 })
 
 function TestimonialRowInner(props: Record<string, unknown>) {
   const heading = (props.heading as string) ?? 'What people say'
+  const eyebrow = props.eyebrow as string | undefined
   const testimonials = (props.testimonials as Array<{
     quote: string
     author: string
@@ -1679,7 +1768,10 @@ function TestimonialRowInner(props: Record<string, unknown>) {
     },
   ]
   const cols = (props.cols as number) ?? 3
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
   const columns = cols === 2 ? 2 : 3
 
@@ -1697,7 +1789,7 @@ function TestimonialRowInner(props: Record<string, unknown>) {
         <Container className="relative">
           <EditorialSectionHeader
             index="04 /"
-            eyebrow="Client Words"
+            eyebrow={eyebrow ?? 'Client Words'}
             heading={heading}
             metaLabel="Transcripts"
             meta={String(testimonials.length).padStart(2, '0')}
@@ -1851,7 +1943,10 @@ export const PersonGrid = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <PersonGridInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <PersonGridInner {...props} />,
+    )
   },
 })
 
@@ -1883,7 +1978,7 @@ function PersonGridInner(props: Record<string, unknown>) {
     },
   ]
   const cols = (props.cols as number) ?? 3
-  const chrome = (props.chrome as ChromeVariant) ?? 'none'
+  const chrome = useChrome(props.chrome as ChromeVariant | undefined, 'none')
 
   // Editorial: asymmetric ledger — first person featured large, rest in
   // smaller cells. Grayscale portraits with hover color reveal, ghost
@@ -2078,7 +2173,10 @@ export const PricingTable = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <PricingTableInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <PricingTableInner {...props} />,
+    )
   },
 })
 
@@ -2112,7 +2210,7 @@ function PricingTableInner(props: Record<string, unknown>) {
       cta: 'Contact us',
     },
   ]
-  const chrome = (props.chrome as ChromeVariant) ?? 'none'
+  const chrome = useChrome(props.chrome as ChromeVariant | undefined, 'none')
   const index = props.index as string | undefined
   const watermark = props.watermark as string | undefined
   // Split price into amount and period (e.g. "$12/user/mo" → "$12", "/user/mo")
@@ -2350,7 +2448,10 @@ export const StatsStrip = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <StatsStripInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <StatsStripInner {...props} />,
+    )
   },
 })
 
@@ -2367,10 +2468,13 @@ function StatsStripInner(props: Record<string, unknown>) {
     { value: '2B+', label: 'Requests/day' },
   ]
   const cols = (props.cols as number) ?? 4
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
   const watermark = props.watermark as string | undefined
-  const decor = (props.decor as DecorVariant) ?? 'none'
+  const decor = useDecor(props.decor as DecorVariant | undefined)
   const columns = cols === 2 ? 2 : cols === 3 ? 3 : 4
 
   // Brutalist: inverted dark band with slanted seam + watermark
@@ -2584,7 +2688,10 @@ export const FeatureList = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <FeatureListInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <FeatureListInner {...props} />,
+    )
   },
 })
 
@@ -2610,7 +2717,10 @@ function FeatureListInner(props: Record<string, unknown>) {
         'Minimalist interior with dramatic natural daylight streaming through large windows onto warm wood surfaces',
     },
   ]
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
   const watermark = props.watermark as string | undefined
 
@@ -2756,7 +2866,10 @@ export const GroupedList = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <GroupedListInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <GroupedListInner {...props} />,
+    )
   },
 })
 
@@ -2820,6 +2933,7 @@ export const NumberedList = defineCapsule({
     'Numbered list: sequential steps with index, title, and description. Chrome: terminal (terminal window chrome + $ prompts + ghost numerals + exit 0), hairline (collapsed-border + mono indices), brutalist (border-2 + hard shadows).',
   props: z.object({
     heading: z.string().optional(),
+    eyebrow: z.string().optional(),
     subheading: z.string().optional(),
     steps: z
       .array(
@@ -2837,12 +2951,16 @@ export const NumberedList = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <NumberedListInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <NumberedListInner {...props} />,
+    )
   },
 })
 
 function NumberedListInner(props: Record<string, unknown>) {
   const heading = (props.heading as string) ?? 'How it works'
+  const eyebrow = props.eyebrow as string | undefined
   const subheading = props.subheading as string | undefined
   const steps = (props.steps as Array<{
     title: string
@@ -2864,7 +2982,10 @@ function NumberedListInner(props: Record<string, unknown>) {
         'We maintain involvement through construction, conducting site reviews and collaborating closely with builders to ensure the built work matches the design intent.',
     },
   ]
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
 
   // ── Editorial: ArchitectureFirmProcess-style — collapsed-border hairline cells, ghost numerals, graph paper ──
@@ -2875,7 +2996,7 @@ function NumberedListInner(props: Record<string, unknown>) {
         <Container className="relative">
           <EditorialSectionHeader
             index="03 /"
-            eyebrow="How We Work"
+            eyebrow={eyebrow ?? 'How We Work'}
             heading={heading}
             metaLabel="Scale 1:100"
             meta="Rev. C"
@@ -3106,7 +3227,10 @@ export const SimpleList = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <SimpleListInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <SimpleListInner {...props} />,
+    )
   },
 })
 
@@ -3172,7 +3296,10 @@ export const FaqAccordion = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <FaqAccordionInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <FaqAccordionInner {...props} />,
+    )
   },
 })
 
@@ -3185,7 +3312,10 @@ function FaqAccordionInner(props: Record<string, unknown>) {
     { question: 'What is this?', answer: 'A thing that does stuff.' },
     { question: 'How much?', answer: 'It is free.' },
   ]
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
 
   // Chrome-driven: hairline/terminal uses collapsed-border with mono indices
@@ -3280,7 +3410,10 @@ export const Timeline = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <TimelineInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <TimelineInner {...props} />,
+    )
   },
 })
 
@@ -3295,7 +3428,10 @@ function TimelineInner(props: Record<string, unknown>) {
     { date: 'Q2', title: 'Scale', description: 'Growth phase' },
     { date: 'Q3', title: 'Expand', description: 'New markets' },
   ]
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
 
   // Chrome-driven: hairline/terminal uses collapsed-border with mono dates
@@ -3405,7 +3541,10 @@ export const CtaBand = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <CtaBandInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <CtaBandInner {...props} />,
+    )
   },
 })
 
@@ -3414,7 +3553,10 @@ function CtaBandInner(props: Record<string, unknown>) {
   const heading = (props.heading as string) ?? 'Ready to start?'
   const subheading = props.subheading as string | undefined
   const cta = (props.cta as string) ?? 'Get started'
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const watermark = props.watermark as string | undefined
 
   // Brutalist: inverted dark band with slanted seam + uppercase
@@ -3569,7 +3711,10 @@ export const NewsletterCta = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <NewsletterCtaInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <NewsletterCtaInner {...props} />,
+    )
   },
 })
 
@@ -3577,7 +3722,10 @@ function NewsletterCtaInner(props: Record<string, unknown>) {
   const variant =
     (props.variant as 'default' | 'primary-tint' | 'muted' | 'inverted') ??
     'default'
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const watermark = props.watermark as string | undefined
   const heading = (props.heading as string) ?? 'Subscribe'
   const subheading = props.subheading as string | undefined
@@ -3721,10 +3869,7 @@ function NewsletterCtaInner(props: Record<string, unknown>) {
         {subheading && (
           <NewsletterCtaDescription>{subheading}</NewsletterCtaDescription>
         )}
-        <InlineEmailCapture
-          placeholder="you@example.com"
-          submitLabel={cta}
-        />
+        <InlineEmailCapture placeholder="you@example.com" submitLabel={cta} />
       </Container>
     </KitNewsletterCta>
   )
@@ -3744,7 +3889,10 @@ export const ContactForm = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ContactFormInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ContactFormInner {...props} />,
+    )
   },
 })
 
@@ -3760,22 +3908,40 @@ function ContactFormInner(props: Record<string, unknown>) {
         />
         {status === 'success' ? (
           <div className="mt-10 rounded-lg border border-border bg-card p-8 text-center">
-            <p className="text-lg font-semibold text-foreground">Thank you! Your message has been sent.</p>
-            <p className="mt-2 text-sm text-muted-foreground">We'll get back to you within 24 hours.</p>
+            <p className="text-lg font-semibold text-foreground">
+              Thank you! Your message has been sent.
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We'll get back to you within 24 hours.
+            </p>
           </div>
         ) : (
           <KitContactForm className="mt-10" onSubmit={handleSubmit}>
             <ContactFormField>
               <ContactFormLabel>Name</ContactFormLabel>
-              <ContactFormInput type="text" name="name" placeholder="Your name" required />
+              <ContactFormInput
+                type="text"
+                name="name"
+                placeholder="Your name"
+                required
+              />
             </ContactFormField>
             <ContactFormField>
               <ContactFormLabel>Email</ContactFormLabel>
-              <ContactFormInput type="email" name="email" placeholder="you@example.com" required />
+              <ContactFormInput
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                required
+              />
             </ContactFormField>
             <ContactFormField>
               <ContactFormLabel>Message</ContactFormLabel>
-              <ContactFormTextarea name="message" placeholder="Your message" required />
+              <ContactFormTextarea
+                name="message"
+                placeholder="Your message"
+                required
+              />
             </ContactFormField>
             {status === 'error' && (
               <p className="mb-4 text-sm text-destructive">{errorMessage}</p>
@@ -3804,7 +3970,10 @@ export const BookingForm = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <BookingFormInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <BookingFormInner {...props} />,
+    )
   },
 })
 
@@ -3824,8 +3993,12 @@ function BookingFormInner(props: Record<string, unknown>) {
         </div>
         {status === 'success' ? (
           <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <p className="text-lg font-semibold text-foreground">Booking confirmed!</p>
-            <p className="mt-2 text-sm text-muted-foreground">We've sent a confirmation to your email.</p>
+            <p className="text-lg font-semibold text-foreground">
+              Booking confirmed!
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We've sent a confirmation to your email.
+            </p>
           </div>
         ) : (
           <>
@@ -3868,9 +4041,7 @@ export const Navbar = defineCapsule({
     brand: z.string().optional(),
     links: z.array(z.string()).optional(),
     cta: z.string().optional(),
-    variant: z
-      .enum(['default', 'centered', 'minimal', 'split'])
-      .optional(),
+    variant: z.enum(['default', 'centered', 'minimal', 'split']).optional(),
     className: z.string().optional(),
     design: z.string().optional(),
   }),
@@ -3934,9 +4105,9 @@ export const Footer = defineCapsule({
                 <FooterColumnTitle>{col.title}</FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link, ii) => (
-                    <FooterLink key={ii} href={link}>
-                      {link}
-                    </FooterLink>
+                    <li key={ii}>
+                      <FooterLink href={link}>{link}</FooterLink>
+                    </li>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
@@ -3979,7 +4150,10 @@ export const MediaSplit = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <MediaSplitInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <MediaSplitInner {...props} />,
+    )
   },
 })
 
@@ -3991,7 +4165,10 @@ function MediaSplitInner(props: Record<string, unknown>) {
   const imageAlt =
     (props.imageAlt as string) ??
     'Bright architecture studio workspace with large desks, physical building models, and floor-to-ceiling windows with natural light'
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
 
   // Chrome-driven: editorial/brutalist with image caption bar + figure index
@@ -4126,20 +4303,30 @@ function MediaSplitInner(props: Record<string, unknown>) {
 export const MapBlock = defineCapsule({
   name: 'MapBlock',
   description:
-    'Map block: heading + address/location info. Placeholder map area.',
+    'Map block: heading + address/location info with a location image.',
   props: z.object({
     heading: z.string().optional(),
     address: z.string().optional(),
     hours: z.string().optional(),
+    imageAlt: z.string().optional(),
+    imageSrc: z.string().optional(),
     className: z.string().optional(),
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <MapBlockInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <MapBlockInner {...props} />,
+    )
   },
 })
 
 function MapBlockInner(props: Record<string, unknown>) {
+  const heading = (props.heading as string) ?? 'Find us'
+  const address = props.address as string | undefined
+  const imageAlt =
+    (props.imageAlt as string | undefined) ??
+    `${heading} location storefront exterior photograph`
   return (
     <P.Section>
       <P.Container
@@ -4147,15 +4334,36 @@ function MapBlockInner(props: Record<string, unknown>) {
         className="grid gap-10 lg:grid-cols-2 lg:items-center"
       >
         <div className="flex flex-col gap-4">
-          <P.Heading level="h2" text={(props.heading as string) ?? 'Find us'} />
-          {(props.address as string | undefined) && (
-            <P.Text variant="body" text={props.address as string} />
-          )}
+          <P.Heading level="h2" text={heading} />
+          {address && <P.Text variant="body" text={address} />}
           {(props.hours as string | undefined) && (
             <P.Text variant="caption" text={props.hours as string} />
           )}
         </div>
-        <div className="aspect-video border border-border bg-muted" />
+        <div className="relative aspect-video overflow-hidden border border-border bg-muted">
+          <P.ImageBlock
+            alt={imageAlt}
+            src={props.imageSrc as string | undefined}
+            className="h-full w-full object-cover"
+            rounded={false}
+          />
+          {/* Decorative map-pin overlay */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 shadow-lg ring-4 ring-background/50">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                className="h-6 w-6 text-primary-foreground"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
       </P.Container>
     </P.Section>
   )
@@ -4190,7 +4398,10 @@ export const ArticlePreview = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ArticlePreviewInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ArticlePreviewInner {...props} />,
+    )
   },
 })
 
@@ -4270,7 +4481,10 @@ export const CategoryNav = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <CategoryNavInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <CategoryNavInner {...props} />,
+    )
   },
 })
 
@@ -4328,7 +4542,10 @@ export const ComparisonTable = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ComparisonTableInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ComparisonTableInner {...props} />,
+    )
   },
 })
 
@@ -4402,7 +4619,10 @@ export const StepProcess = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <StepProcessInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <StepProcessInner {...props} />,
+    )
   },
 })
 
@@ -4460,6 +4680,7 @@ export const ValueProps = defineCapsule({
     'Value props: grid of value propositions with title and description. Chrome: hairline (collapsed-border + mono indices + tick bars), terminal (mono $ labels), brutalist (border-2 + hard shadows).',
   props: z.object({
     heading: z.string().optional(),
+    eyebrow: z.string().optional(),
     values: z
       .array(
         z.object({
@@ -4477,12 +4698,16 @@ export const ValueProps = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ValuePropsInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ValuePropsInner {...props} />,
+    )
   },
 })
 
 function ValuePropsInner(props: Record<string, unknown>) {
   const heading = (props.heading as string) ?? 'Why choose us'
+  const eyebrow = props.eyebrow as string | undefined
   const values = (props.values as Array<{
     title: string
     description?: string
@@ -4492,7 +4717,10 @@ function ValuePropsInner(props: Record<string, unknown>) {
     { title: 'Affordable', description: 'Great value.' },
   ]
   const cols = (props.cols as number) ?? 3
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
   const columns = cols === 2 ? 2 : cols === 4 ? 4 : 3
 
@@ -4503,7 +4731,7 @@ function ValuePropsInner(props: Record<string, unknown>) {
         <Container>
           <EditorialSectionHeader
             index="01 /"
-            eyebrow="Principles"
+            eyebrow={eyebrow ?? 'Principles'}
             heading={heading}
             metaLabel="Catalog"
             meta={String(values.length).padStart(2, '0')}
@@ -4660,13 +4888,19 @@ export const QuoteBand = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <QuoteBandInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <QuoteBandInner {...props} />,
+    )
   },
 })
 
 function QuoteBandInner(props: Record<string, unknown>) {
   const variant = (props.variant as 'default' | 'gradient' | 'muted') ?? 'muted'
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const watermark = props.watermark as string | undefined
   const quote =
     (props.quote as string) ??
@@ -4761,7 +4995,10 @@ export const LogosMarquee = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <LogosMarqueeInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <LogosMarqueeInner {...props} />,
+    )
   },
 })
 
@@ -4801,7 +5038,10 @@ export const ContentTabs = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ContentTabsInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ContentTabsInner {...props} />,
+    )
   },
 })
 
@@ -4851,7 +5091,10 @@ export const SearchBar = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <SearchBarInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <SearchBarInner {...props} />,
+    )
   },
 })
 
@@ -4905,7 +5148,10 @@ export const EventSchedule = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <EventScheduleInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <EventScheduleInner {...props} />,
+    )
   },
 })
 
@@ -4975,7 +5221,10 @@ export const ProductGrid = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ProductGridInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ProductGridInner {...props} />,
+    )
   },
 })
 
@@ -5064,7 +5313,10 @@ export const TeamShowcase = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <TeamShowcaseInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <TeamShowcaseInner {...props} />,
+    )
   },
 })
 
@@ -5093,7 +5345,7 @@ function TeamShowcaseInner(props: Record<string, unknown>) {
     },
   ]
   const cols = (props.cols as number) ?? 2
-  const chrome = (props.chrome as ChromeVariant) ?? 'none'
+  const chrome = useChrome(props.chrome as ChromeVariant | undefined, 'none')
 
   // Editorial: asymmetric ledger — first person featured large with bio,
   // rest in smaller cells. Grayscale portraits with hover color reveal,
@@ -5240,6 +5492,8 @@ export const ProjectGallery = defineCapsule({
     'Project gallery: grid of project cards with image, title, and optional category. For portfolios, work showcases.',
   props: z.object({
     heading: z.string().optional(),
+    eyebrow: z.string().optional(),
+    description: z.string().optional(),
     projects: z
       .array(
         z.object({
@@ -5266,12 +5520,17 @@ export const ProjectGallery = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <ProjectGalleryInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <ProjectGalleryInner {...props} />,
+    )
   },
 })
 
 function ProjectGalleryInner(props: Record<string, unknown>) {
   const heading = (props.heading as string) ?? 'Our work'
+  const eyebrow = props.eyebrow as string | undefined
+  const description = props.description as string | undefined
   const projects = (props.projects as Array<{
     title: string
     category?: string
@@ -5298,7 +5557,10 @@ function ProjectGalleryInner(props: Record<string, unknown>) {
     },
   ]
   const cols = (props.cols as number) ?? 3
-  const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
+  const chrome = useChrome(
+    props.chrome as ChromeVariant | undefined,
+    'editorial',
+  )
   const index = props.index as string | undefined
 
   // ── Editorial: ArchitectureFirmWork-style staggered grid with grayscale photo plates ──
@@ -5308,9 +5570,9 @@ function ProjectGalleryInner(props: Record<string, unknown>) {
         <Container>
           <EditorialSectionHeader
             index="01 /"
-            eyebrow="Selected Work"
+            eyebrow={eyebrow ?? 'Selected Work'}
             heading={heading}
-            description="A selection of completed and ongoing work spanning residential, commercial, and cultural typologies."
+            description={description}
             metaLabel="Projects"
             meta={String(projects.length).padStart(2, '0')}
           />
@@ -5469,7 +5731,10 @@ export const DonationBand = defineCapsule({
     design: z.string().optional(),
   }),
   component: ({ props }) => {
-    return withOptionalDesign(props.design as string | undefined, <DonationBandInner {...props} />)
+    return withOptionalDesign(
+      props.design as string | undefined,
+      <DonationBandInner {...props} />,
+    )
   },
 })
 
@@ -5508,12 +5773,6 @@ function DonationBandInner(props: Record<string, unknown>) {
       </P.Container>
     </P.Section>
   )
-}
-
-// ─── Helper: parse design from string prop ───────────────────────────────
-
-function parseDesignFromString(s: string): DesignIntent {
-  return parseDesignLine(s.startsWith('@design') ? s : `@design ${s}`)
 }
 
 // ─── 41. productDetail ───────────────────────────────────────────────────
@@ -5561,11 +5820,7 @@ function ProductDetailInner(props: Record<string, unknown>) {
   const imageAlt =
     (props.imageAlt as string) ?? `${title} product photo on clean background`
   const imageSrc = props.imageSrc as string | undefined
-  const variants = (props.variants as string[]) ?? [
-    'Standard',
-    'Pro',
-    'Max',
-  ]
+  const variants = (props.variants as string[]) ?? ['Standard', 'Pro', 'Max']
   const primaryCta = (props.primaryCta as string) ?? 'Add to Cart'
   const specs = (props.specs as Array<{ label: string; value: string }>) ?? [
     { label: 'Material', value: 'Aerospace-grade aluminum' },
@@ -5613,7 +5868,9 @@ function ProductDetailInner(props: Record<string, unknown>) {
               </div>
             </div>
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-foreground">{price}</span>
+              <span className="text-3xl font-bold text-foreground">
+                {price}
+              </span>
               {comparePrice && (
                 <span className="text-lg text-muted-foreground line-through">
                   {comparePrice}
@@ -5706,14 +5963,12 @@ export const BlogPost = defineCapsule({
 })
 
 function BlogPostInner(props: Record<string, unknown>) {
-  const title =
-    (props.title as string) ?? 'The Future of Design Systems'
+  const title = (props.title as string) ?? 'The Future of Design Systems'
   const author = (props.author as string) ?? 'Jane Doe'
   const date = (props.date as string) ?? 'July 28, 2026'
   const readTime = (props.readTime as string) ?? '8 min read'
   const imageAlt =
-    (props.imageAlt as string) ??
-    'Editorial hero image for the article'
+    (props.imageAlt as string) ?? 'Editorial hero image for the article'
   const imageSrc = props.imageSrc as string | undefined
   const excerpt =
     (props.excerpt as string) ??
@@ -5735,9 +5990,11 @@ function BlogPostInner(props: Record<string, unknown>) {
       body: 'Adopting a token-driven approach requires upfront investment but pays dividends in consistency, velocity, and maintainability. Teams ship faster with fewer visual regressions.',
     },
   ]
-  const pullQuote = (props.pullQuote as string) ??
+  const pullQuote =
+    (props.pullQuote as string) ??
     'Design tokens are not just a technical pattern — they are a cultural shift in how teams think about design systems.'
-  const authorBio = (props.authorBio as string) ??
+  const authorBio =
+    (props.authorBio as string) ??
     'Jane Doe is a design systems lead with 10+ years building token-driven component libraries for enterprise teams.'
   const authorImageAlt =
     (props.authorImageAlt as string) ??
@@ -5860,18 +6117,14 @@ function SidebarNavInner(props: Record<string, unknown>) {
       items: ['Authentication', 'Deployment', 'Testing'],
     },
   ]
-  const contentTitle =
-    (props.contentTitle as string) ?? 'Introduction'
+  const contentTitle = (props.contentTitle as string) ?? 'Introduction'
   const contentBody =
     (props.contentBody as string) ??
     'Welcome to the documentation. This is the main content area where the selected page content is displayed. Use the sidebar to navigate between sections.'
   const [active, setActive] = useState('Introduction')
   return (
     <P.Section className="bg-background">
-      <P.Container
-        size="xl"
-        className="flex gap-8 py-12"
-      >
+      <P.Container size="xl" className="flex gap-8 py-12">
         <aside className="hidden w-64 shrink-0 lg:block">
           <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             {heading}

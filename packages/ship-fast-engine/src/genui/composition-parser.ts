@@ -744,12 +744,12 @@ export function sectionToProps(
 }
 
 function serializeDesignForProp(intent: DesignIntent): string {
+  // Data-driven: iterate all keys, serialize non-undefined ones
   const parts: string[] = []
-  if (intent.radius) parts.push(`radius:${intent.radius}`)
-  if (intent.shadow) parts.push(`shadow:${intent.shadow}`)
-  if (intent.gradient) parts.push(`gradient:${intent.gradient}`)
-  if (intent.density) parts.push(`density:${intent.density}`)
-  if (intent.typography) parts.push(`typography:${intent.typography}`)
-  if (intent.motion) parts.push(`motion:${intent.motion}`)
+  for (const [key, val] of Object.entries(intent)) {
+    if (val !== undefined && val !== null) {
+      parts.push(`${key}:${val}`)
+    }
+  }
   return parts.join(' ')
 }

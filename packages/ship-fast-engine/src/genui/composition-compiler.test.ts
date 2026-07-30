@@ -37,7 +37,8 @@ describe('compileComposition', async () => {
   })
 
   it('generates skeleton with PageSwitch', async () => {
-    const input = `@pages home about contact
+    const input = `@brand Acme
+@pages home about contact
 @section SplitHero
   heading Hello`
     const parsed = parseComposition(input)
@@ -71,7 +72,8 @@ describe('compileComposition', async () => {
   })
 
   it('serializes design intent into result', async () => {
-    const input = `@design radius:rounded shadow:soft
+    const input = `@brand Acme
+@design radius:rounded shadow:soft
 @section SplitHero
   heading Hello`
     const parsed = parseComposition(input)
@@ -80,16 +82,18 @@ describe('compileComposition', async () => {
     expect(result.design).toContain('shadow:soft')
   })
 
-  it('uses default brand when not specified', async () => {
+  it('throws when @brand is not specified', async () => {
     const input = `@section SplitHero
   heading Hello`
     const parsed = parseComposition(input)
-    const result = await compileComposition(parsed)
-    expect(result.brand).toBe('Brand')
+    await expect(compileComposition(parsed)).rejects.toThrow(
+      'Composition missing @brand',
+    )
   })
 
   it('generates nav labels from pages', async () => {
-    const input = `@pages home about pricing
+    const input = `@brand Acme
+@pages home about pricing
 @section SplitHero
   heading Hello`
     const parsed = parseComposition(input)
@@ -102,7 +106,8 @@ describe('compileComposition', async () => {
   })
 
   it('uses LLM-provided nav labels when present', async () => {
-    const input = `@pages home about pricing
+    const input = `@brand Acme
+@pages home about pricing
 @nav home:Home about:Our Story pricing:Plans
 @section SplitHero
   heading Hello`
@@ -113,7 +118,8 @@ describe('compileComposition', async () => {
   })
 
   it('produces SectionAnchor for each section', async () => {
-    const input = `@section SplitHero
+    const input = `@brand Acme
+@section SplitHero
   heading Hello
 @section CardGrid
   heading Features`
@@ -123,7 +129,8 @@ describe('compileComposition', async () => {
   })
 
   it('handles nested groups in compiled output', async () => {
-    const input = `@section SplitHero
+    const input = `@brand Acme
+@section SplitHero
   heading Hello
   stats>120+~Projects^45~Awards`
     const parsed = parseComposition(input)
@@ -195,5 +202,66 @@ describe('compileComposition', async () => {
     expect(result.source).toContain('"title":"Company"')
     expect(result.source).toContain('"links":["Features","Pricing","Docs"]')
     expect(result.source).toContain('"links":["About","Careers","Blog"]')
+  })
+})
+
+describe('compileComposition empty page fallback', () => {
+  it('injects fallback content for pages with only navbar/footer (@page tags)', async () => {
+    const input = `@brand Acme
+@pages home collections
+
+@section Navbar
+  brand Acme
+@page home
+@section SplitHero
+  heading Welcome
+@page collections
+@section Footer
+  brand Acme`
+    const parsed = parseComposition(input)
+    const result = await compileComposition(parsed, { brand: 'Acme' })
+    // collections page should have content (not skipped)
+    expect(result.pageSources.collections).toBeDefined()
+    // Should contain a fallback motif (ProductGrid for collections)
+    expect(result.pageSources.collections).toContain('ProductGrid')
+  })
+
+  it('injects fallback content for pages with no matching section (legacy mode)', async () => {
+    const input = `@brand Acme
+@pages home contact
+
+@section Navbar
+  brand Acme
+@section SplitHero
+  heading Welcome
+@section Footer
+  brand Acme`
+    const parsed = parseComposition(input)
+    const result = await compileComposition(parsed, { brand: 'Acme' })
+    // contact page should exist with fallback content
+    expect(result.pageSources.contact).toBeDefined()
+    expect(result.pageSources.contact).toContain('ContactForm')
+  })
+
+  it('includes all pages in skeleton even when fallback is used', async () => {
+    const input = `@brand Acme
+@pages home collections lookbook
+
+@section Navbar
+  brand Acme
+@page home
+@section SplitHero
+  heading Welcome
+@page collections
+@section Footer
+  brand Acme`
+    const parsed = parseComposition(input)
+    const result = await compileComposition(parsed, { brand: 'Acme' })
+    // All pages should be in the skeleton
+    expect(result.skeleton).toContain('home')
+    expect(result.skeleton).toContain('collections')
+    expect(result.skeleton).toContain('lookbook')
+    // lookbook should also have fallback content
+    expect(result.pageSources.lookbook).toBeDefined()
   })
 })

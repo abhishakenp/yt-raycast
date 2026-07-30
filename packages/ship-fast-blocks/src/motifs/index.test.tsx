@@ -52,7 +52,10 @@ import {
   SidebarNav,
 } from './index.tsx'
 import { DesignSystemProvider } from '#/primitives/design-context.tsx'
-import { DEFAULT_DESIGN, type DesignIntent } from '#/primitives/design-system.ts'
+import {
+  DEFAULT_DESIGN,
+  type DesignIntent,
+} from '#/primitives/design-system.ts'
 
 const SHARP_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'sharp' }
 const ROUNDED_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'rounded' }
@@ -161,6 +164,29 @@ describe('Footer', () => {
     })
     expect(screen.getByText('Acme')).toBeTruthy()
     expect(screen.getByText('Pages')).toBeTruthy()
+  })
+
+  it('wraps each column link in an <li> so they stack vertically', () => {
+    const { container } = renderCapsule(Footer, {
+      brand: 'Acme',
+      columns: [
+        { title: 'Pages', links: ['Home', 'About', 'Contact'] },
+        { title: 'Community', links: ['Forums', 'Reviews', 'Events'] },
+      ],
+    })
+    const lists = container.querySelectorAll(
+      'ul[data-slot="footer-column-list"]',
+    )
+    expect(lists.length).toBe(2)
+    for (const list of lists) {
+      const items = list.querySelectorAll(':scope > li')
+      expect(items.length).toBe(3)
+      // each <li> holds exactly one footer link
+      for (const li of items) {
+        const link = li.querySelector('a[data-slot="footer-link"]')
+        expect(link).toBeTruthy()
+      }
+    }
   })
 })
 
@@ -475,9 +501,7 @@ describe('PosterHero', () => {
     // DesignSystemProvider. The CTA should get the parent's radius class.
     render(
       <DesignSystemProvider intent={SHARP_DESIGN}>
-        <PosterHero.component
-          props={{ heading: 'Test', cta: 'Click me' }}
-        />
+        <PosterHero.component props={{ heading: 'Test', cta: 'Click me' }} />
       </DesignSystemProvider>,
     )
     const cta = screen.getByText('Click me')
@@ -492,7 +516,8 @@ describe('PosterHero', () => {
           props={{
             heading: 'Test',
             cta: 'Click me',
-            design: '@design radius:rounded shadow:soft gradient:none density:balanced typography:editorial motion:subtle',
+            design:
+              '@design radius:rounded shadow:soft gradient:none density:balanced typography:editorial motion:subtle',
           }}
         />
       </DesignSystemProvider>,
@@ -526,7 +551,9 @@ describe('ProductDetail', () => {
   it('renders star rating from numeric rating', () => {
     renderCapsule(ProductDetail, { rating: 5, reviewCount: 100 })
     // 5 filled stars
-    const stars = document.querySelectorAll('[aria-label="Rated 5 out of 5"] span')
+    const stars = document.querySelectorAll(
+      '[aria-label="Rated 5 out of 5"] span',
+    )
     expect(stars.length).toBe(5)
   })
 
@@ -676,5 +703,75 @@ describe('SidebarNav', () => {
     expect(screen.getByText('Documentation')).toBeTruthy()
     // "Introduction" appears as both a nav item and the content title
     expect(screen.getAllByText('Introduction').length).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('MapBlock image rendering', () => {
+  it('renders an image element (not an empty placeholder div)', () => {
+    const { container } = renderCapsule(MapBlock, {
+      heading: 'Visit Us',
+      address: '123 Vinyl Lane',
+    })
+    // Should contain an img element (via ImageBlock/Pexels)
+    const img = container.querySelector('img')
+    expect(img).not.toBeNull()
+  })
+
+  it('renders a decorative map-pin overlay', () => {
+    const { container } = renderCapsule(MapBlock, {
+      heading: 'Visit Us',
+      address: '123 Main St',
+    })
+    // Should contain an SVG map pin
+    const svg = container.querySelector('svg')
+    expect(svg).not.toBeNull()
+  })
+
+  it('uses imageAlt prop when provided', () => {
+    const { container } = renderCapsule(MapBlock, {
+      heading: 'Find us',
+      imageAlt: 'Custom store front photo',
+    })
+    const img = container.querySelector('img')
+    expect(img).not.toBeNull()
+    expect(img?.getAttribute('alt')).toBe('Custom store front photo')
+  })
+})
+
+describe('CardGrid eyebrow prop', () => {
+  it('uses eyebrow prop in editorial chrome instead of hardcoded Services', () => {
+    const { container } = renderCapsule(CardGrid, {
+      heading: 'Seasonal Lookbook',
+      eyebrow: 'Collection',
+      chrome: 'editorial',
+      cards: [
+        { title: 'Winter Elegance', imageAlt: 'Winter coat' },
+        { title: 'Spring Whisper', imageAlt: 'Spring dress' },
+      ],
+    })
+    // The eyebrow should appear as "Collection", not "Services"
+    expect(screen.getByText('Collection')).toBeTruthy()
+    expect(screen.queryByText('Services')).toBeNull()
+  })
+
+  it('uses eyebrow in card labels instead of hardcoded Service', () => {
+    const { container } = renderCapsule(CardGrid, {
+      heading: 'Lookbook',
+      eyebrow: 'Look',
+      chrome: 'editorial',
+      cards: [{ title: 'Winter', imageAlt: 'Winter look' }],
+    })
+    // Card label should be "01 / Look", not "01 / Service"
+    expect(screen.getByText(/01.*Look/)).toBeTruthy()
+    expect(screen.queryByText(/01.*Service/)).toBeNull()
+  })
+
+  it('falls back to Collection when no eyebrow provided', () => {
+    renderCapsule(CardGrid, {
+      heading: 'Features',
+      chrome: 'editorial',
+      cards: [{ title: 'Card 1' }],
+    })
+    expect(screen.getByText('Collection')).toBeTruthy()
   })
 })

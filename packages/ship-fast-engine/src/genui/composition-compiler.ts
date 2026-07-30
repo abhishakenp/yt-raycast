@@ -151,7 +151,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
-        opts.navbarVariant,
+          opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -166,7 +166,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
-        opts.navbarVariant,
+          opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -182,7 +182,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
-        opts.navbarVariant,
+          opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -190,15 +190,33 @@ export async function compileComposition(
         }
       }
 
-      // Skip this page if it has no content sections (only navbar/footer)
+      // If the page has no content sections (only navbar/footer), inject a
+      // fallback section so the page is never empty. PROVABLE INVARIANT:
+      // every page in PageSwitch routes must have ≥1 content section.
       const contentRefs = pageRefs.filter(
         (r) => !r.includes('navbar') && !r.includes('footer'),
       )
-      if (contentRefs.length === 0) continue
+      if (contentRefs.length === 0) {
+        const fallback = createFallbackSection(pageId, brand)
+        const { statements, ref } = await compileCompositionSection(
+          fallback,
+          pageId,
+          brand,
+          navLinkLabels,
+          opts.navbarVariant,
+        )
+        if (ref) {
+          pageStmts.push(...statements)
+          pageRefs.push(ref)
+        }
+      }
     } else {
       // Legacy behavior: find a focused section from the home page
-      const focused = findFocusedSection(parsed.sections, pageId)
-      if (!focused) continue
+      let focused = findFocusedSection(parsed.sections, pageId)
+      // If no focused section found, use a fallback so the page is never empty
+      if (!focused) {
+        focused = createFallbackSection(pageId, brand)
+      }
 
       // Navbar
       if (navbarSection) {
@@ -207,7 +225,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
-        opts.navbarVariant,
+          opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -222,7 +240,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
-        opts.navbarVariant,
+          opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -237,7 +255,7 @@ export async function compileComposition(
           pageId,
           brand,
           navLinkLabels,
-        opts.navbarVariant,
+          opts.navbarVariant,
         )
         if (ref) {
           pageStmts.push(...statements)
@@ -448,6 +466,109 @@ async function compileCompositionSection(
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
+
+// ─── Fallback content for empty pages ───────────────────────────────────
+// PROVABLE INVARIANT: Every page in the PageSwitch routes list MUST have at
+// least one content section. An empty page (only navbar/footer) is broken by
+// definition. When the LLM omits content for a page, this map selects a
+// page-type-appropriate motif, and createFallbackSection generates generic
+// but useful content so the page is never empty.
+
+const FALLBACK_MOTIF_FOR_PAGE: Record<string, string> = {
+  about: 'MediaSplit',
+  team: 'PersonGrid',
+  blog: 'ArticlePreview',
+  news: 'ArticlePreview',
+  contact: 'ContactForm',
+  pricing: 'PricingTable',
+  menu: 'GroupedList',
+  services: 'FeatureList',
+  events: 'EventSchedule',
+  portfolio: 'ProjectGallery',
+  gallery: 'ImageGallery',
+  collections: 'ProductGrid',
+  lookbook: 'ImageGallery',
+  product: 'ProductDetail',
+  products: 'ProductGrid',
+  shop: 'ProductGrid',
+  store: 'ProductGrid',
+  post: 'BlogPost',
+  article: 'BlogPost',
+  story: 'BlogPost',
+  docs: 'SidebarNav',
+  documentation: 'SidebarNav',
+  help: 'SidebarNav',
+  dashboard: 'SidebarNav',
+  admin: 'SidebarNav',
+  faq: 'FaqAccordion',
+  newsletter: 'NewsletterCta',
+}
+
+function pageTypeFromId(pageId: string): string | null {
+  const lower = pageId.toLowerCase()
+  for (const key of Object.keys(FALLBACK_MOTIF_FOR_PAGE)) {
+    if (
+      lower === key ||
+      lower.startsWith(key + '-') ||
+      lower.startsWith(key + '_') ||
+      lower.endsWith('-' + key) ||
+      lower.endsWith('_' + key)
+    ) {
+      return key
+    }
+  }
+  return null
+}
+
+function createFallbackSection(
+  pageId: string,
+  brand: string,
+): CompositionSection {
+  const pageType = pageTypeFromId(pageId)
+  const motif = (pageType && FALLBACK_MOTIF_FOR_PAGE[pageType]) || 'CardGrid'
+  const heading = capitalize(pageId)
+  const label = brand || 'Brand'
+
+  // Generate minimal but useful props per motif type
+  const props: Record<string, string> = { heading }
+
+  switch (motif) {
+    case 'ProductGrid':
+    case 'ImageGallery':
+      props.cards = JSON.stringify([
+        { title: `${heading} item 1`, imageAlt: `${label} ${heading} item 1` },
+        { title: `${heading} item 2`, imageAlt: `${label} ${heading} item 2` },
+        { title: `${heading} item 3`, imageAlt: `${label} ${heading} item 3` },
+      ])
+      break
+    case 'ContactForm':
+      props.heading = `Contact ${label}`
+      break
+    case 'PricingTable':
+      props.heading = `${label} pricing`
+      break
+    case 'ArticlePreview':
+      props.heading = `${label} articles`
+      break
+    case 'PersonGrid':
+      props.heading = `Meet the ${label} team`
+      break
+    case 'FaqAccordion':
+      props.heading = `Frequently asked questions`
+      break
+    default:
+      props.subheading = `Explore ${label}'s ${heading.toLowerCase()}`
+      break
+  }
+
+  return {
+    motif,
+    props,
+    nested: {},
+    line: 0,
+    page: pageId,
+  }
+}
 
 function findFocusedSection(
   sections: CompositionSection[],

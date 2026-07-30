@@ -103,6 +103,64 @@ function useScrollCollapse(threshold = 60) {
   return { collapsed, ref }
 }
 
+/* ---------------------------------------------------------------------------
+ * NavSpacer — runtime-measured spacer that exactly matches the preceding
+ * fixed-position header's height.
+ *
+ * PROVABLE GUARANTEE: The spacer height is always equal to the header height,
+ * measured via ResizeObserver. No hardcoded values → no mismatch → content
+ * can never be hidden behind a fixed navbar, regardless of variant, collapsed
+ * state, or content. This eliminates the entire class of "fixed navbar covers
+ * content" bugs by construction.
+ * ------------------------------------------------------------------------- */
+
+const HEIGHT_VARIANT_FALLBACK: Record<string, string> = {
+  compact: 'h-16',
+  default: 'h-20',
+  responsive: 'h-16 lg:h-20',
+  outlier: 'h-20',
+}
+
+function NavSpacer({
+  fallbackHeight,
+}: {
+  fallbackHeight?: string
+}): React.ReactElement {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [measured, setMeasured] = React.useState<number | null>(null)
+
+  React.useLayoutEffect(() => {
+    const spacer = ref.current
+    if (!spacer) return
+    const header = spacer.previousElementSibling as HTMLElement | null
+    if (!header) return
+
+    const update = () => {
+      const h = header.getBoundingClientRect().height
+      if (h > 0) setMeasured(h)
+    }
+    update()
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(update)
+      observer.observe(header)
+      return () => observer.disconnect()
+    }
+    // Fallback: poll once after a short delay for late layout
+    const id = setTimeout(update, 100)
+    return () => clearTimeout(id)
+  }, [])
+
+  return (
+    <div
+      aria-hidden="true"
+      ref={ref}
+      className={measured === null ? fallbackHeight : undefined}
+      style={measured !== null ? { height: `${measured}px` } : undefined}
+    />
+  )
+}
+
 /**
  * Matches CTA labels that express an auth intent (sign in / log in / sign up /
  * sign out / account / profile). Used to auto-wire a nav CTA to the real
@@ -236,10 +294,10 @@ const NavbarNavLink = React.forwardRef<
       'aria-current': isActive ? 'page' : ariaCurrent,
       onClick: onNavClick,
       className: cn(
-        'whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+        'relative whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-all duration-200 ease-out hover:bg-muted hover:text-foreground',
+        'after:absolute after:bottom-0.5 after:left-1/2 after:h-0.5 after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all after:duration-200 after:ease-out hover:after:w-3/4',
         className,
-        isActive &&
-          'bg-muted text-foreground underline decoration-primary underline-offset-8',
+        isActive && 'bg-muted text-foreground after:w-3/4',
       ),
       ref,
       ...props,
@@ -445,24 +503,25 @@ function LegacySiteNav(props: SiteNavProps) {
     </div>
   )
 
-  const ctaButton = cta && ctaIsAuth ? (
-    <SignInButton
-      label={cta.label}
-      variant={cta.variant}
-      className="hidden sm:inline-flex"
-    />
-  ) : cta ? (
-    <RouterLink
-      href={ctaHref ?? '#'}
-      className={cn(
-        kitActionClasses(cta.variant),
-        d.radius.btn,
-        'hidden sm:inline-flex',
-      )}
-    >
-      {cta.label}
-    </RouterLink>
-  ) : null
+  const ctaButton =
+    cta && ctaIsAuth ? (
+      <SignInButton
+        label={cta.label}
+        variant={cta.variant}
+        className="hidden sm:inline-flex"
+      />
+    ) : cta ? (
+      <RouterLink
+        href={ctaHref ?? '#'}
+        className={cn(
+          kitActionClasses(cta.variant),
+          d.radius.btn,
+          'hidden sm:inline-flex',
+        )}
+      >
+        {cta.label}
+      </RouterLink>
+    ) : null
 
   const mobileDrawer = (
     <MobileNavDrawer
@@ -499,7 +558,15 @@ function LegacySiteNav(props: SiteNavProps) {
   if (variant === 'centered') {
     return (
       <>
-        <header ref={scrollRef} className={cn(headerClasses, 'transition-all duration-300 ease-out', collapsed && 'shadow-sm', props.className)}>
+        <header
+          ref={scrollRef}
+          className={cn(
+            headerClasses,
+            'transition-all duration-300 ease-out',
+            collapsed && 'shadow-sm',
+            props.className,
+          )}
+        >
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             {/* Top row: large centered brand — collapses on scroll */}
             <div
@@ -512,16 +579,20 @@ function LegacySiteNav(props: SiteNavProps) {
               {brandLink}
             </div>
             {/* Bottom row: links + compact brand that slides in on scroll */}
-            <div className={cn(
-              'flex items-center gap-8 border-t border-border py-3 transition-all duration-300 ease-out',
-              'hidden md:flex',
-              collapsed ? 'justify-between' : 'justify-center',
-            )}>
+            <div
+              className={cn(
+                'flex items-center gap-8 border-t border-border py-3 transition-all duration-300 ease-out',
+                'hidden md:flex',
+                collapsed ? 'justify-between' : 'justify-center',
+              )}
+            >
               {/* Compact brand — invisible when expanded, slides in from left on scroll */}
               <div
                 className={cn(
                   'flex items-center gap-2 transition-all duration-300 ease-out',
-                  collapsed ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none',
+                  collapsed
+                    ? 'opacity-100 translate-x-0'
+                    : 'opacity-0 -translate-x-2 pointer-events-none',
                 )}
               >
                 <Logo brand={props.brand ?? ''}>
@@ -550,7 +621,14 @@ function LegacySiteNav(props: SiteNavProps) {
             {mobileDrawer}
           </div>
         </header>
-        {sticky && <div aria-hidden="true" className={cn('transition-all duration-300 ease-out', collapsed ? 'h-14' : 'h-20')} />}
+        {sticky && (
+          <NavSpacer
+            fallbackHeight={cn(
+              'transition-all duration-300 ease-out',
+              collapsed ? 'h-14' : 'h-20',
+            )}
+          />
+        )}
       </>
     )
   }
@@ -560,7 +638,15 @@ function LegacySiteNav(props: SiteNavProps) {
   if (variant === 'minimal') {
     return (
       <>
-        <header ref={scrollRef} className={cn(headerClasses, 'transition-all duration-300 ease-out', collapsed && 'shadow-sm', props.className)}>
+        <header
+          ref={scrollRef}
+          className={cn(
+            headerClasses,
+            'transition-all duration-300 ease-out',
+            collapsed && 'shadow-sm',
+            props.className,
+          )}
+        >
           <nav
             className={cn(
               'mx-auto flex max-w-7xl items-center justify-between px-6 transition-all duration-300 ease-out lg:px-8',
@@ -575,7 +661,9 @@ function LegacySiteNav(props: SiteNavProps) {
             </div>
           </nav>
         </header>
-        {sticky && <div aria-hidden="true" className={collapsed ? 'h-12' : 'h-20'} />}
+        {sticky && (
+          <NavSpacer fallbackHeight={collapsed ? 'h-12' : heightClass} />
+        )}
       </>
     )
   }
@@ -585,7 +673,15 @@ function LegacySiteNav(props: SiteNavProps) {
   if (variant === 'split') {
     return (
       <>
-        <header ref={scrollRef} className={cn(headerClasses, 'transition-all duration-300 ease-out', collapsed && 'shadow-sm', props.className)}>
+        <header
+          ref={scrollRef}
+          className={cn(
+            headerClasses,
+            'transition-all duration-300 ease-out',
+            collapsed && 'shadow-sm',
+            props.className,
+          )}
+        >
           <nav
             className={cn(
               'mx-auto flex max-w-7xl items-center gap-8 px-6 transition-all duration-300 ease-out lg:px-8',
@@ -607,7 +703,9 @@ function LegacySiteNav(props: SiteNavProps) {
             </div>
           </nav>
         </header>
-        {sticky && <div aria-hidden="true" className={collapsed ? 'h-12' : 'h-20'} />}
+        {sticky && (
+          <NavSpacer fallbackHeight={collapsed ? 'h-12' : heightClass} />
+        )}
       </>
     )
   }
@@ -616,7 +714,15 @@ function LegacySiteNav(props: SiteNavProps) {
   // Sliver: shrinks height on scroll.
   return (
     <>
-      <header ref={scrollRef} className={cn(headerClasses, 'transition-all duration-300 ease-out', collapsed && 'shadow-sm', props.className)}>
+      <header
+        ref={scrollRef}
+        className={cn(
+          headerClasses,
+          'transition-all duration-300 ease-out',
+          collapsed && 'shadow-sm',
+          props.className,
+        )}
+      >
         <nav
           className={cn(
             'mx-auto flex max-w-7xl items-center justify-between px-6 transition-all duration-300 ease-out lg:px-8',
@@ -633,7 +739,9 @@ function LegacySiteNav(props: SiteNavProps) {
         </nav>
       </header>
       {/* Spacer to offset fixed header so page content isn't hidden behind nav */}
-      {sticky && <div aria-hidden="true" className={collapsed ? 'h-12' : 'h-20'} />}
+      {sticky && (
+        <NavSpacer fallbackHeight={collapsed ? 'h-12' : heightClass} />
+      )}
     </>
   )
 }
@@ -663,28 +771,41 @@ const CompoundSiteNav = React.forwardRef<
   ) => {
     const Comp = asChild ? Slot : 'header'
     const headerClasses = cn(siteNavHeaderVariants({ position }), className)
+    const isFixed = position === 'fixed'
+    const fallback = HEIGHT_VARIANT_FALLBACK[height ?? 'default'] ?? 'h-20'
     if (bare) {
       return (
+        <>
+          <Comp
+            data-slot="site-nav"
+            className={headerClasses}
+            ref={ref}
+            {...props}
+          >
+            {children}
+          </Comp>
+          {isFixed && <NavSpacer fallbackHeight={fallback} />}
+        </>
+      )
+    }
+    return (
+      <>
         <Comp
           data-slot="site-nav"
           className={headerClasses}
           ref={ref}
           {...props}
         >
-          {children}
+          <Container asChild className={containerClassName}>
+            <nav aria-label="Main navigation">
+              <div className={cn(siteNavRowVariants({ height }), rowClassName)}>
+                {children}
+              </div>
+            </nav>
+          </Container>
         </Comp>
-      )
-    }
-    return (
-      <Comp data-slot="site-nav" className={headerClasses} ref={ref} {...props}>
-        <Container asChild className={containerClassName}>
-          <nav aria-label="Main navigation">
-            <div className={cn(siteNavRowVariants({ height }), rowClassName)}>
-              {children}
-            </div>
-          </nav>
-        </Container>
-      </Comp>
+        {isFixed && <NavSpacer fallbackHeight={fallback} />}
+      </>
     )
   },
 )

@@ -233,11 +233,13 @@ describe('NavbarNavLink', () => {
     expect(activeLink.className).toContain('bg-muted')
     expect(activeLink.className).toContain('rounded-md')
     expect(activeLink.className).toContain('text-foreground')
-    expect(activeLink.className).toContain('underline')
+    // Active link has the underline pseudo-element at full width
+    expect(activeLink.className.split(' ')).toContain('after:w-3/4')
     expect(idleLink.getAttribute('aria-current')).toBeNull()
     expect(idleLink.className).toContain('hover:bg-muted')
     expect(idleLink.className).toContain('text-muted-foreground')
-    expect(idleLink.className).not.toContain('underline')
+    // Idle link only has hover:after:w-3/4, not the standalone after:w-3/4
+    expect(idleLink.className.split(' ')).not.toContain('after:w-3/4')
   })
 
   it('resolves route-label hrefs from RoutesContext', () => {
@@ -390,9 +392,9 @@ describe('NavbarNavLink', () => {
     expect(
       screen.getByTestId('pricing-link').getAttribute('aria-current'),
     ).toBeNull()
-    expect(screen.getByTestId('pricing-link').className).not.toContain(
-      'bg-muted text-foreground underline',
-    )
+    expect(
+      screen.getByTestId('pricing-link').className.split(' '),
+    ).not.toContain('after:w-3/4')
   })
 
   it('does not append a page slug twice under an arbitrary nested base', () => {
@@ -462,7 +464,7 @@ describe('NavbarNavLink', () => {
     expect(pricingLink.getAttribute('aria-current')).toBe('page')
     expect(pricingLink.className).toContain('bg-muted')
     expect(pricingLink.className).toContain('text-foreground')
-    expect(pricingLink.className).toContain('underline')
+    expect(pricingLink.className.split(' ')).toContain('after:w-3/4')
   })
 
   it('switches preview pages when a generated absolute home href matches the base path', () => {
@@ -607,5 +609,78 @@ describe('SiteNav bare mode', () => {
     )
     const el = screen.getByTestId('bare')
     expect(el.querySelector('[data-slot="container"]')).toBeNull()
+  })
+})
+
+describe('SiteNav NavSpacer', () => {
+  it('renders a spacer div after fixed header', () => {
+    const { container } = render(
+      <SiteNav position="fixed" height="default">
+        <NavbarBrand>Brand</NavbarBrand>
+      </SiteNav>,
+    )
+    const header = container.querySelector('header')
+    expect(header).not.toBeNull()
+    // The spacer should be the next sibling of the header
+    const spacer = header?.nextElementSibling as HTMLElement
+    expect(spacer).not.toBeNull()
+    expect(spacer.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('does not render spacer when position is sticky', () => {
+    const { container } = render(
+      <SiteNav position="sticky" height="default">
+        <NavbarBrand>Brand</NavbarBrand>
+      </SiteNav>,
+    )
+    const header = container.querySelector('header')
+    const spacer = header?.nextElementSibling
+    // No spacer after a sticky header (sticky is in-flow, no overlap possible)
+    expect(spacer?.getAttribute('aria-hidden')).not.toBe('true')
+  })
+
+  it('renders spacer in bare mode with fixed position', () => {
+    const { container } = render(
+      <SiteNav bare position="fixed" data-testid="bare">
+        <div>content</div>
+      </SiteNav>,
+    )
+    const header = container.querySelector('header')
+    expect(header).not.toBeNull()
+    const spacer = header?.nextElementSibling as HTMLElement
+    expect(spacer).not.toBeNull()
+    expect(spacer.getAttribute('aria-hidden')).toBe('true')
+  })
+})
+
+describe('NavbarNavLink easing transitions', () => {
+  it('uses transition-all with duration and ease-out for smooth hover', () => {
+    render(
+      <SiteNav position="sticky">
+        <NavbarNav>
+          <NavbarNavLink href="about">About</NavbarNavLink>
+        </NavbarNav>
+      </SiteNav>,
+    )
+    const link = screen.getByText('About')
+    expect(link.className).toContain('transition-all')
+    expect(link.className).toContain('duration-200')
+    expect(link.className).toContain('ease-out')
+  })
+
+  it('includes animated underline pseudo-element classes', () => {
+    render(
+      <SiteNav position="sticky">
+        <NavbarNav>
+          <NavbarNavLink href="about">About</NavbarNavLink>
+        </NavbarNav>
+      </SiteNav>,
+    )
+    const link = screen.getByText('About')
+    // The after: pseudo-element creates an animated underline
+    expect(link.className).toContain('after:absolute')
+    expect(link.className).toContain('after:bg-primary')
+    expect(link.className).toContain('after:transition-all')
+    expect(link.className).toContain('hover:after:w-3/4')
   })
 })

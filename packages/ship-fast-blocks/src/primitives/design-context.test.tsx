@@ -52,7 +52,7 @@ describe('DesignSystemProvider CSS override layer', () => {
     expect(style?.textContent).not.toContain('border-radius: 0px')
   })
 
-  it('does not override rounded-full when intent is pill', () => {
+  it('does not blanket-override rounded-full when intent is pill', () => {
     const { container } = render(
       <DesignSystemProvider intent={PILL}>
         <div>test</div>
@@ -60,8 +60,15 @@ describe('DesignSystemProvider CSS override layer', () => {
     )
     const style = container.querySelector('style')
     expect(style).toBeTruthy()
-    // pill intent should NOT override rounded-full (it stays full)
-    expect(style?.textContent).not.toContain('.rounded-full')
+    // pill intent should NOT blanket-override rounded-full (it stays full)
+    // Per-role rules may reference rounded-full via var() — that's fine.
+    // The blanket fallback (no data-d-role) should skip rounded-full for pill.
+    const css = style?.textContent ?? ''
+    // Check that blanket fallback doesn't contain rounded-full override
+    // (blanket rules have :not([data-d-role]) qualifier)
+    expect(css).not.toMatch(
+      /\.rounded-full:not\(\.d-radius-lock\):not\(\[data-d-role\]\)/,
+    )
   })
 
   it('overrides rounded-full when intent is sharp', () => {

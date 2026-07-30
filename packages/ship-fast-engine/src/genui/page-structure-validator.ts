@@ -8,7 +8,10 @@
  * the parsed sections to comply.
  */
 
-import type { CompositionSection, ParsedComposition } from './composition-parser.ts'
+import type {
+  CompositionSection,
+  ParsedComposition,
+} from './composition-parser.ts'
 
 // ─── Page-type → required motifs ──────────────────────────────────────────
 // If a page ID contains these keywords, it should have at least one of
@@ -27,7 +30,12 @@ const PAGE_TYPE_REQUIREMENTS: Record<string, string[]> = {
   events: ['EventSchedule', 'Timeline'],
   portfolio: ['ProjectGallery', 'ImageGallery'],
   gallery: ['ImageGallery', 'ProjectGallery'],
+  collections: ['ProductGrid', 'ImageGallery', 'ProjectGallery'],
+  lookbook: ['ImageGallery', 'ProjectGallery', 'CardGrid'],
   product: ['ProductDetail', 'ProductGrid'],
+  products: ['ProductGrid', 'ProductDetail'],
+  shop: ['ProductGrid', 'ProductDetail'],
+  store: ['ProductGrid', 'ProductDetail'],
   post: ['BlogPost'],
   article: ['BlogPost'],
   story: ['BlogPost'],
@@ -36,6 +44,8 @@ const PAGE_TYPE_REQUIREMENTS: Record<string, string[]> = {
   help: ['SidebarNav'],
   dashboard: ['SidebarNav'],
   admin: ['SidebarNav'],
+  faq: ['FaqAccordion'],
+  newsletter: ['NewsletterCta'],
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -51,10 +61,7 @@ function contentSectionsForPage(
   return parsed.sections.filter((s) => s.page === page && !isChromeSection(s))
 }
 
-function motifsForPage(
-  parsed: ParsedComposition,
-  page: string,
-): Set<string> {
+function motifsForPage(parsed: ParsedComposition, page: string): Set<string> {
   return new Set(contentSectionsForPage(parsed, page).map((s) => s.motif))
 }
 
@@ -70,10 +77,8 @@ function pageTypeFromId(pageId: string): string | null {
   for (const key of Object.keys(PAGE_TYPE_REQUIREMENTS)) {
     // Word-boundary matching: exact, or hyphen/underscore delimited prefix/suffix.
     const isExact = lower === key
-    const isPrefix =
-      lower.startsWith(key + '-') || lower.startsWith(key + '_')
-    const isSuffix =
-      lower.endsWith('-' + key) || lower.endsWith('_' + key)
+    const isPrefix = lower.startsWith(key + '-') || lower.startsWith(key + '_')
+    const isSuffix = lower.endsWith('-' + key) || lower.endsWith('_' + key)
     if (!isExact && !isPrefix && !isSuffix) continue
     const thisIsPrefix = isExact || isPrefix
     if (!bestKey) {
@@ -95,7 +100,7 @@ function pageTypeFromId(pageId: string): string | null {
 
 export interface PageStructureViolation {
   page: string
-  type: 'missing_required_motif' | 'duplicate_motif_across_pages'
+  type: 'missing_required_motif' | 'duplicate_motif_across_pages' | 'empty_page'
   message: string
   /** Motifs that are duplicated or missing */
   motifs: string[]
@@ -110,6 +115,21 @@ export function validatePageStructure(
 
   const homePage = parsed.pages[0]
   const homeMotifs = motifsForPage(parsed, homePage)
+
+  // Check 0: Every sub-page must have at least one content section.
+  // PROVABLE INVARIANT: a page with zero content sections is empty/broken.
+  for (let i = 1; i < parsed.pages.length; i++) {
+    const page = parsed.pages[i]
+    const content = contentSectionsForPage(parsed, page)
+    if (content.length === 0) {
+      violations.push({
+        page,
+        type: 'empty_page',
+        message: `Page "${page}" has zero content sections (only navbar/footer). Every page must have at least one content section.`,
+        motifs: [],
+      })
+    }
+  }
 
   // Check 1: Each sub-page should not share more than 1 content motif with home
   for (let i = 1; i < parsed.pages.length; i++) {
@@ -163,7 +183,12 @@ const PAGE_TYPE_REPAIR_MOTIF: Record<string, string> = {
   events: 'EventSchedule',
   portfolio: 'ProjectGallery',
   gallery: 'ImageGallery',
+  collections: 'ProductGrid',
+  lookbook: 'ImageGallery',
   product: 'ProductDetail',
+  products: 'ProductGrid',
+  shop: 'ProductGrid',
+  store: 'ProductGrid',
   post: 'BlogPost',
   article: 'BlogPost',
   story: 'BlogPost',
@@ -172,6 +197,8 @@ const PAGE_TYPE_REPAIR_MOTIF: Record<string, string> = {
   help: 'SidebarNav',
   dashboard: 'SidebarNav',
   admin: 'SidebarNav',
+  faq: 'FaqAccordion',
+  newsletter: 'NewsletterCta',
 }
 
 export function repairPageStructure(parsed: ParsedComposition): {
@@ -185,16 +212,28 @@ export function repairPageStructure(parsed: ParsedComposition): {
 
   for (const v of violations) {
     const pageType = pageTypeFromId(v.page)
-    if (!pageType) continue
+    // For empty pages with no recognizable page type, use a generic CardGrid
+    const repairMotif = pageType
+      ? (PAGE_TYPE_REPAIR_MOTIF[pageType] ?? 'CardGrid')
+      : 'CardGrid'
 
-    const repairMotif = PAGE_TYPE_REPAIR_MOTIF[pageType]
-    if (!repairMotif) continue
-
-    // Find the first content section on this page that is NOT a required motif
-    // and is shared with home (for duplicate violations), or just the first
-    // content section (for missing motif violations)
     const contentSections = contentSectionsForPage(parsed, v.page)
-    if (contentSections.length === 0) continue
+
+    // Empty page: inject a new content section (don't skip!)
+    // PROVABLE INVARIANT: every page must have ≥1 content section.
+    if (contentSections.length === 0) {
+      parsed.sections.push({
+        motif: repairMotif,
+        props: {},
+        nested: {},
+        line: 0,
+        page: v.page,
+      })
+      repaired = true
+      continue
+    }
+
+    if (!pageType) continue
 
     // For duplicate violations, replace the first duplicated motif
     // For missing motif violations, replace the first content section

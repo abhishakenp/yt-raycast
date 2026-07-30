@@ -23,6 +23,7 @@ import { serializeDesignIntent } from '../../../ship-fast-blocks/src/primitives/
 import { pickThemeForDesignIntent } from './theme-affinity.ts'
 import type { PlanCacheClient } from './plan-cache-client.ts'
 import { validateCompositionQuality } from './composition-quality.ts'
+import { repairPageStructure } from './page-structure-validator.ts'
 
 // ─── Session context (matches RunShipFastEngine) ─────────────────────────
 
@@ -168,6 +169,17 @@ export async function runComposition(
     throw new Error(
       'Composition parser produced 0 sections — LLM output may be malformed',
     )
+  }
+
+  // ── Repair page structure (empty pages, missing motifs) ───────────
+  // PROVABLE INVARIANT: every page must have ≥1 content section.
+  const { repaired: repairedPages, violations: pageViolations } =
+    repairPageStructure(parsed)
+  if (repairedPages) {
+    opts.sessionCtx?.broadcast?.({
+      type: 'log',
+      message: `Page structure repair: ${pageViolations.map((v) => v.message).join('; ')}`,
+    })
   }
 
   // ── Compile ───────────────────────────────────────────────────────
@@ -439,6 +451,16 @@ export async function streamComposition(
     throw new Error(
       'Composition parser produced 0 sections — LLM output may be malformed',
     )
+  }
+
+  // ── Repair page structure (empty pages, missing motifs) ───────────
+  const { repaired: repairedPages, violations: pageViolations } =
+    repairPageStructure(parsed)
+  if (repairedPages) {
+    opts.sessionCtx?.broadcast?.({
+      type: 'log',
+      message: `Page structure repair: ${pageViolations.map((v) => v.message).join('; ')}`,
+    })
   }
 
   const compiled = await compileComposition(parsed, {
