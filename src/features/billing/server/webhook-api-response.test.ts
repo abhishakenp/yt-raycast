@@ -137,7 +137,7 @@ describe('createWebhookApiResponse', () => {
         },
       },
     })
-    const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`
+    const signature = await stripeSignature('whsec_test', body)
     const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
 
     const response = await createWebhookApiResponse(
