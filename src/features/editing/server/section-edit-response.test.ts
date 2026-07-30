@@ -1,5 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock(
+  '@/features/moderation/server/enforce-user-input-moderation',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@/features/moderation/server/enforce-user-input-moderation')
+      >()
+    return {
+      ...actual,
+      enforceUserInputModeration: vi.fn(async () => undefined),
+    }
+  },
+)
+
+vi.mock('@ship-fast/blocks/generated', () => ({
+  findSimilarCapsules: vi.fn(() => []),
+  reactExportSourcesBase64: '',
+  reactExportSourcesEncoding: 'test-fallback',
+}))
+
 import {
   createSectionEditResponse,
   patchOpenUiSourceWithAiCapsule,

@@ -155,6 +155,22 @@ export function formatUser(args: {
   return parts.length > 0 ? parts.join(' ') : '_Unknown_'
 }
 
+const normalizeSlackSingleLine = (value: string): string =>
+  value.replace(/[\r\n\u2028\u2029]+/g, ' ↵ ').replaceAll('\t', ' ')
+
+const escapeSlackInlineCode = (value: string): string =>
+  normalizeSlackSingleLine(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('`', '｀')
+
+const escapeSlackMrkdwn = (value: string): string =>
+  escapeSlackInlineCode(value)
+    .replaceAll('*', '＊')
+    .replaceAll('_', '＿')
+    .replaceAll('~', '～')
+
 // ─── Event builders ─────────────────────────────────────────────────────────
 
 export function paywallTriggeredEvent(args: {
@@ -386,6 +402,111 @@ export function generationFailedEvent(args: {
       ...(promptStr ? [{ label: 'Prompt', value: promptStr }] : []),
     ],
     footer: 'Ship Fast • Generation',
+  }
+}
+
+export const contentModerationBlockedEvent = (args: {
+  flagId: string
+  category: string
+  surface: string
+  matchedField: string
+  ruleId?: string
+  decisionSource: 'deterministic' | 'semantic'
+  classifierModel?: string
+  userId?: string
+  userName?: string
+  userEmail?: string
+  anonymousClientIdHash?: string
+  clientIpHash?: string
+  sessionId?: string
+  prompt: string
+}): SharedNotificationEvent => {
+  const owner = args.userId
+    ? {
+        label: 'User',
+        value: formatUser({
+          userId: escapeSlackInlineCode(args.userId),
+          userName: args.userName
+            ? escapeSlackMrkdwn(args.userName)
+            : undefined,
+          userEmail: args.userEmail
+            ? escapeSlackMrkdwn(args.userEmail)
+            : undefined,
+        }),
+      }
+    : {
+        label: 'Anonymous',
+        value: args.anonymousClientIdHash
+          ? `\`${escapeSlackInlineCode(args.anonymousClientIdHash)}\``
+          : '_Anonymous_',
+      }
+  const promptExcerpt =
+    args.prompt.length > 500 ? `${args.prompt.slice(0, 500)}…` : args.prompt
+
+  return {
+    emoji: '🛑',
+    title: 'Harmful Prompt Blocked',
+    color: SLACK_COLORS.BLOCKER_RED,
+    fields: [
+      {
+        label: 'Flag ID',
+        value: `\`${escapeSlackInlineCode(args.flagId)}\``,
+      },
+      {
+        label: 'Category',
+        value: `\`${escapeSlackInlineCode(args.category)}\``,
+      },
+      {
+        label: 'Surface',
+        value: `\`${escapeSlackInlineCode(args.surface)}\``,
+      },
+      {
+        label: 'Matched Field',
+        value: `\`${escapeSlackInlineCode(args.matchedField)}\``,
+      },
+      ...(args.ruleId
+        ? [
+            {
+              label: 'Rule',
+              value: `\`${escapeSlackInlineCode(args.ruleId)}\``,
+            },
+          ]
+        : []),
+      {
+        label: 'Source',
+        value: `\`${args.decisionSource}\``,
+      },
+      ...(args.classifierModel
+        ? [
+            {
+              label: 'Model',
+              value: `\`${escapeSlackInlineCode(args.classifierModel)}\``,
+            },
+          ]
+        : []),
+      owner,
+      ...(args.clientIpHash
+        ? [
+            {
+              label: 'IP Hash',
+              value: `\`${escapeSlackInlineCode(args.clientIpHash)}\``,
+            },
+          ]
+        : []),
+      ...(args.sessionId
+        ? [
+            {
+              label: 'Session',
+              value: `\`${escapeSlackInlineCode(args.sessionId)}\``,
+            },
+          ]
+        : []),
+      {
+        label: 'Prompt',
+        value: escapeSlackMrkdwn(promptExcerpt),
+      },
+    ],
+    footer: 'Ship Fast • Content Moderation',
   }
 }
 

@@ -1,5 +1,10 @@
 import { ConvexError } from 'convex/values'
 
+import {
+  classifyDeterministicModeration,
+  type ModerationFields,
+} from './content_moderation_policy'
+
 export const MAX_PROMPT_LENGTH = 5000
 
 const genericPromptWords = new Set([
@@ -55,14 +60,6 @@ const keyboardMashSequences = [
   'ghjkl',
 ]
 
-const blockedPolicyPatterns = [
-  /\b(phishing|spoof|fake)\b[\s\S]{0,40}\b(login|checkout|bank|paypal|stripe|coinbase|wallet|oauth|2fa|password)\b/i,
-  /\b(child|kid|minor|underage)\w*\b[\s\S]{0,48}\b(porn|xxx|nude|naked|sexual|erotic)\b/i,
-  /\b(porn|xxx|escort|brothel|explicit|onlyfans)\b[\s\S]{0,64}\b(site|website|app|landing|marketplace|directory|booking|clone|gallery|store)\b/i,
-  /\b(steal|harvest|collect)\b[\s\S]{0,40}\b(passwords?|credentials?|credit\s*cards?|private\s*keys?|seed\s*phrases?)\b/i,
-  /\b(malware|ransomware|keylogger|trojan|botnet)\b[\s\S]{0,40}\b(site|website|landing|download|builder|dashboard|panel)\b/i,
-]
-
 export function normalizeSpaces(value: string): string {
   return value.replace(/\s+/g, ' ').trim()
 }
@@ -115,13 +112,15 @@ export function isLikelyGibberishPrompt(prompt: string): boolean {
 }
 
 export function assertContentPolicy(prompt: string) {
-  blockedPolicyPatterns.some((pattern) => pattern.test(prompt)) &&
-    (() => {
-      throw new ConvexError({
-        code: 'CONTENT_POLICY',
-        message: 'This prompt is blocked by the content policy.',
-      })
-    })()
+  assertContentPolicyFields({ prompt })
+}
+
+export function assertContentPolicyFields(fields: ModerationFields) {
+  if (classifyDeterministicModeration(fields).decision !== 'blocked') return
+  throw new ConvexError({
+    code: 'CONTENT_POLICY',
+    message: 'This prompt is blocked by the content policy.',
+  })
 }
 
 export function normalizeOptionalHttpsUrl(

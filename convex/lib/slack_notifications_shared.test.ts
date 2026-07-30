@@ -13,6 +13,7 @@ import {
   paymentDoneEvent,
   generationDoneEvent,
   generationFailedEvent,
+  contentModerationBlockedEvent,
   subscriptionCancelledEvent,
   referralRewardUnlockedEvent,
   exportCompletedEvent,
@@ -21,7 +22,7 @@ import {
 } from './slack_notifications_shared'
 
 // Mock fetch for testing
-const mockFetch = vi.fn()
+const mockFetch = vi.fn<typeof fetch>()
 
 describe('formatUser', () => {
   it('should format user with all fields', () => {
@@ -387,6 +388,109 @@ describe('generationFailedEvent', () => {
   })
 })
 
+describe('contentModerationBlockedEvent', () => {
+  it('builds a red blocker alert with authenticated moderation context', () => {
+    const prompt = `Build <!channel> <https://attacker.test|click> & ${'A'.repeat(600)}`
+    const result = contentModerationBlockedEvent({
+      flagId: 'flag123',
+      category: 'hate_extremism',
+      surface: 'session_create',
+      matchedField: 'prompt',
+      ruleId: 'semantic-hate',
+      decisionSource: 'semantic',
+      classifierModel: 'openai/gpt-oss-safeguard-20b',
+      userId: 'user<123>',
+      userName: 'A <!channel> User',
+      userEmail: 'a&b@example.com',
+      anonymousClientIdHash: 'unused-anonymous-hash',
+      clientIpHash: 'client-ip-hash',
+      sessionId: 'session123',
+      prompt,
+    })
+
+    expect(result).toEqual({
+      emoji: '🛑',
+      title: 'Harmful Prompt Blocked',
+      color: SLACK_COLORS.BLOCKER_RED,
+      fields: [
+        { label: 'Flag ID', value: '`flag123`' },
+        { label: 'Category', value: '`hate_extremism`' },
+        { label: 'Surface', value: '`session_create`' },
+        { label: 'Matched Field', value: '`prompt`' },
+        { label: 'Rule', value: '`semantic-hate`' },
+        { label: 'Source', value: '`semantic`' },
+        {
+          label: 'Model',
+          value: '`openai/gpt-oss-safeguard-20b`',
+        },
+        {
+          label: 'User',
+          value:
+            '*A &lt;!channel&gt; User* a&amp;b@example.com (`user&lt;123&gt;`)',
+        },
+        { label: 'IP Hash', value: '`client-ip-hash`' },
+        { label: 'Session', value: '`session123`' },
+        {
+          label: 'Prompt',
+          value: `${prompt
+            .slice(0, 500)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')}…`,
+        },
+      ],
+      footer: 'Ship Fast • Content Moderation',
+    })
+  })
+
+  it('uses the anonymous hash and omits absent optional context', () => {
+    const result = contentModerationBlockedEvent({
+      flagId: 'flag456',
+      category: 'explicit_sexual_content',
+      surface: 'rewrite_text',
+      matchedField: 'text',
+      decisionSource: 'deterministic',
+      anonymousClientIdHash: 'anonymous-hash',
+      prompt: 'Unsafe <script> request',
+    })
+
+    expect(result.fields).toEqual([
+      { label: 'Flag ID', value: '`flag456`' },
+      { label: 'Category', value: '`explicit_sexual_content`' },
+      { label: 'Surface', value: '`rewrite_text`' },
+      { label: 'Matched Field', value: '`text`' },
+      { label: 'Source', value: '`deterministic`' },
+      { label: 'Anonymous', value: '`anonymous-hash`' },
+      { label: 'Prompt', value: 'Unsafe &lt;script&gt; request' },
+    ])
+  })
+
+  it('neutralizes user-controlled Slack formatting and forged field lines', () => {
+    const result = contentModerationBlockedEvent({
+      flagId: 'flag`123',
+      category: 'fraud_malware',
+      surface: 'session_create',
+      matchedField: 'prompt',
+      decisionSource: 'semantic',
+      userId: 'user_123',
+      userName: 'Attacker\n*Category:* safe',
+      userEmail: '`admin`~@example.com',
+      prompt:
+        'First line\n*Category:* safe\n`code` _italic_ ~strike~ <!channel>',
+    })
+    const renderedValues = result.fields.map(({ value }) => value).join('\n')
+
+    expect(renderedValues).not.toContain('\n*Category:* safe')
+    expect(renderedValues).not.toContain('`code`')
+    expect(renderedValues).not.toContain('_italic_')
+    expect(renderedValues).not.toContain('~strike~')
+    expect(renderedValues).not.toContain('<!channel>')
+    expect(renderedValues).toContain('↵')
+    expect(renderedValues).toContain('＊Category:＊ safe')
+    expect(renderedValues).toContain('｀code｀')
+  })
+})
+
 describe('subscriptionCancelledEvent', () => {
   it('should build subscription cancelled event', () => {
     const result = subscriptionCancelledEvent({
@@ -512,9 +616,7 @@ describe('sendSharedNotification', () => {
   })
 
   it('should send notification successfully', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-    })
+    mockFetch.mockResolvedValueOnce(new Response(null, { status: 200 }))
 
     const event: SharedNotificationEvent = {
       emoji: '🎉',
@@ -529,7 +631,7 @@ describe('sendSharedNotification', () => {
         SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
         NODE_ENV: 'production',
       },
-      mockFetch as any,
+      mockFetch,
     )
 
     expect(result).toEqual({ sent: true })
@@ -556,10 +658,7 @@ describe('sendSharedNotification', () => {
   })
 
   it('should return http_status on fetch failure', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    })
+    mockFetch.mockResolvedValueOnce(new Response(null, { status: 500 }))
 
     const event: SharedNotificationEvent = {
       emoji: '🎉',
@@ -571,7 +670,7 @@ describe('sendSharedNotification', () => {
     const result = await sendSharedNotification(
       event,
       { SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test' },
-      mockFetch as any,
+      mockFetch,
     )
 
     expect(result).toEqual({ sent: false, reason: 'http_500' })
@@ -590,16 +689,14 @@ describe('sendSharedNotification', () => {
     const result = await sendSharedNotification(
       event,
       { SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test' },
-      mockFetch as any,
+      mockFetch,
     )
 
     expect(result).toEqual({ sent: false, reason: 'Network error' })
   })
 
   it('should add [DEV] prefix in development', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-    })
+    mockFetch.mockResolvedValueOnce(new Response(null, { status: 200 }))
 
     const event: SharedNotificationEvent = {
       emoji: '🎉',
@@ -614,7 +711,7 @@ describe('sendSharedNotification', () => {
         SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
         NODE_ENV: 'development',
       },
-      mockFetch as any,
+      mockFetch,
     )
 
     const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
@@ -622,9 +719,7 @@ describe('sendSharedNotification', () => {
   })
 
   it('should not add [DEV] prefix in production', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-    })
+    mockFetch.mockResolvedValueOnce(new Response(null, { status: 200 }))
 
     const event: SharedNotificationEvent = {
       emoji: '🎉',
@@ -639,7 +734,7 @@ describe('sendSharedNotification', () => {
         SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
         NODE_ENV: 'production',
       },
-      mockFetch as any,
+      mockFetch,
     )
 
     const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)

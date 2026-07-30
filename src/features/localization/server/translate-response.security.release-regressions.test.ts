@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
+vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
+  enforceUserInputModeration: vi.fn(async () => undefined),
+  moderationErrorResponse: vi.fn(() => null),
+}))
+
 import { createTranslateResponse } from './translate-response'
 
 describe('translate response cache-write authorization release gate', () => {

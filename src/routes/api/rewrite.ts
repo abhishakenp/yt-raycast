@@ -1,5 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import {
+  enforceUserInputModeration,
+  moderationErrorResponse,
+} from '@/features/moderation/server/enforce-user-input-moderation'
+import { CONTENT_MODERATION_UNAVAILABLE_MESSAGE } from '@/features/moderation/server/moderation-classifier'
+
 const MAX_REWRITE_BODY_BYTES = 1_000_000
 const REWRITE_TIMEOUT_MS = 30_000
 
@@ -104,6 +110,30 @@ export const Route = createFileRoute('/api/rewrite')({
           return json(
             { error: 'Text and instruction are required' },
             { status: 422 },
+          )
+        }
+
+        try {
+          const auth = request.headers.get('authorization') ?? ''
+          const bearerToken =
+            auth.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || null
+          await enforceUserInputModeration({
+            bearerToken,
+            fields: {
+              rewriteInstruction: instruction,
+              rewriteText: text,
+            },
+            surface: 'rewrite_instruction',
+          })
+        } catch (error) {
+          const response = moderationErrorResponse(error)
+          if (response) return response
+          return json(
+            {
+              code: 'CONTENT_MODERATION_UNAVAILABLE',
+              error: CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
+            },
+            { status: 503 },
           )
         }
 

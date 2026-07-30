@@ -1,4 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
+  enforceUserInputModeration: vi.fn(async () => undefined),
+  moderationErrorResponse: vi.fn(() => null),
+}))
 
 import { createTranslateResponse } from './translate-response'
 

@@ -24,6 +24,7 @@ describe('app env', () => {
       VITE_MEDUSA_BACKEND_URL: 'https://vite-commerce.ship-fast.ai',
       VITE_MEDUSA_PUBLISHABLE_KEY: 'pk_vite_medusa',
       BILLING_WEBHOOK_MUTATION_SECRET: 'billing-secret',
+      CONTENT_MODERATION_MUTATION_SECRET: 'moderation-secret',
       DUB_API_KEY: 'dub-secret',
       DUB_PARTNER_GROUP_ID: 'grp_ship_fast',
       DUB_PARTNERS_ENABLED: 'true',
@@ -50,6 +51,7 @@ describe('app env', () => {
     )
     expect(env.VITE_MEDUSA_PUBLISHABLE_KEY).toBe('pk_vite_medusa')
     expect(env.BILLING_WEBHOOK_MUTATION_SECRET).toBe('billing-secret')
+    expect(env.CONTENT_MODERATION_MUTATION_SECRET).toBe('moderation-secret')
     expect(env.DUB_API_KEY).toBe('dub-secret')
     expect(env.DUB_PARTNER_GROUP_ID).toBe('grp_ship_fast')
     expect(env.DUB_PARTNERS_ENABLED).toBe('true')

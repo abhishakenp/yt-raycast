@@ -12,6 +12,10 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import type { InspectorSelection } from '@/features/editing/element-path'
 import {
+  enforceUserInputModeration,
+  moderationErrorResponse,
+} from '@/features/moderation/server/enforce-user-input-moderation'
+import {
   buildElementDeleteCommand,
   buildImageRemoveCommand,
   buildImageReplaceCommand,
@@ -1084,6 +1088,7 @@ export async function createSectionEditResponse(
     model?: string
     resolveStockImage?: ResolveInlineStockImage
     entitlementClient?: InlineEditEntitlementClient
+    moderate?: typeof enforceUserInputModeration
   } = {},
 ): Promise<Response> {
   let body: JsonBody
@@ -1093,7 +1098,8 @@ export async function createSectionEditResponse(
     return json({ error: 'Invalid JSON.' }, { status: 400 })
   }
 
-  const instruction = getString(body, ['instruction', 'prompt'])?.trim()
+  const rawInstruction = getString(body, ['instruction', 'prompt'])
+  const instruction = rawInstruction?.trim()
   if (!instruction) {
     return json({ error: 'Instruction is required.' }, { status: 400 })
   }
@@ -1110,6 +1116,7 @@ export async function createSectionEditResponse(
 
   const client = options.client ?? createRuntimeConvexHttpClient(60000)
   const anonymousOwnerSecret = getOwnerSecret(request, body)
+  const bearerToken = getBearerToken(request)
 
   // Load current artifacts
   let generationView: GenerationViewSnapshot | null
@@ -1129,7 +1136,6 @@ export async function createSectionEditResponse(
   // before the LLM call so non-owners / non-Pro callers can't spend LLM money.
   // Bypassed when Clerk is disabled (dev/test).
   if (!isClerkAuthDisabled()) {
-    const bearerToken = getBearerToken(request)
     if (!bearerToken) {
       return json(
         { error: 'Authentication required', code: 'auth_required' },
@@ -1168,6 +1174,21 @@ export async function createSectionEditResponse(
         { status: statusByCode[entitlement.code] ?? 403 },
       )
     }
+  }
+
+  const moderate = options.moderate ?? enforceUserInputModeration
+  try {
+    await moderate({
+      anonymousClientId: anonymousOwnerSecret,
+      bearerToken,
+      fields: { sectionEdit: rawInstruction ?? instruction },
+      sessionId: asSessionId(sessionId),
+      surface: 'section_edit',
+    })
+  } catch (error) {
+    const response = moderationErrorResponse(error)
+    if (response) return response
+    throw error
   }
 
   const htmlSession = isHtmlSession(generationView)

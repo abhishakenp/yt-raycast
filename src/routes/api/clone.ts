@@ -5,6 +5,10 @@ import type { Id } from '../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { toPublicErrorMessage } from '@/shared/errors/public-error-message'
 import { runCloneJob } from '@/features/clone/server/clone-orchestrator-response'
+import {
+  enforceUserInputModeration,
+  moderationErrorResponse,
+} from '@/features/moderation/server/enforce-user-input-moderation'
 
 // POST /api/clone — kick off a server-side verbatim clone job for a session.
 // Body: { sessionId, anonymousOwnerSecret?, seedUrl, brief }. Bearer in the
@@ -151,6 +155,20 @@ async function handlePost(request: Request): Promise<Response> {
       { error: 'seedUrl must resolve to a public http(s) address.' },
       { status: 400 },
     )
+  }
+
+  try {
+    await enforceUserInputModeration({
+      anonymousClientId: anonymousOwnerSecret,
+      bearerToken: bearer,
+      fields: { cloneBrief: brief },
+      sessionId: sessionId as Id<'sessions'>,
+      surface: 'clone_brief',
+    })
+  } catch (error) {
+    const response = moderationErrorResponse(error)
+    if (response) return response
+    throw error
   }
 
   // Fire-and-forget — like queueGalleryThumbCapture. Do NOT await; the client

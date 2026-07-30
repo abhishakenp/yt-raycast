@@ -82,6 +82,47 @@ const commerceTenantSyncStatus = v.union(
   v.literal('failed'),
 )
 
+const moderationDecisionSource = v.union(
+  v.literal('deterministic'),
+  v.literal('semantic'),
+)
+
+const moderationCategory = v.union(
+  v.literal('sexual_minors'),
+  v.literal('explicit_sexual_content'),
+  v.literal('non_consensual_exploitative'),
+  v.literal('hate_extremism'),
+  v.literal('graphic_violence'),
+  v.literal('self_harm'),
+  v.literal('fraud_malware'),
+  v.literal('illegal_dangerous_activity'),
+  v.literal('other_policy_violation'),
+)
+
+const moderationSurface = v.union(
+  v.literal('session_create'),
+  v.literal('design_reference_notes'),
+  v.literal('clone_brief'),
+  v.literal('clone_regeneration'),
+  v.literal('section_edit'),
+  v.literal('rewrite_instruction'),
+  v.literal('rewrite_text'),
+  v.literal('translation_source'),
+  v.literal('custom_language'),
+)
+
+const moderationField = v.union(
+  v.literal('prompt'),
+  v.literal('designReferenceNotes'),
+  v.literal('cloneBrief'),
+  v.literal('cloneRegeneration'),
+  v.literal('sectionEdit'),
+  v.literal('rewriteInstruction'),
+  v.literal('rewriteText'),
+  v.literal('translationSource'),
+  v.literal('customLanguage'),
+)
+
 export default defineSchema({
   sessions: defineTable({
     userId: v.optional(v.string()),
@@ -157,6 +198,32 @@ export default defineSchema({
     .index('by_public_createdAt', ['isPrivate', 'createdAt'])
     .index('by_isDraft_createdAt', ['isDraft', 'createdAt'])
     .index('by_deploymentSlug', ['deploymentSlug']),
+
+  contentModerationFlags: defineTable({
+    prompt: v.string(),
+    surface: moderationSurface,
+    matchedField: moderationField,
+    category: moderationCategory,
+    ruleId: v.string(),
+    decisionSource: moderationDecisionSource,
+    classifierModel: v.optional(v.string()),
+    userId: v.optional(v.string()),
+    userName: v.optional(v.string()),
+    userEmail: v.optional(v.string()),
+    anonymousClientIdHash: v.optional(v.string()),
+    clientIpHash: v.optional(v.string()),
+    sessionId: v.optional(v.id('sessions')),
+    createdAt: v.number(),
+  })
+    .index('by_userId_and_createdAt', ['userId', 'createdAt'])
+    .index('by_anonymousClientIdHash_and_createdAt', [
+      'anonymousClientIdHash',
+      'createdAt',
+    ])
+    .index('by_clientIpHash_and_createdAt', ['clientIpHash', 'createdAt'])
+    .index('by_sessionId_and_createdAt', ['sessionId', 'createdAt'])
+    .index('by_category_and_createdAt', ['category', 'createdAt'])
+    .index('by_createdAt', ['createdAt']),
 
   tasks: defineTable({
     sessionId: v.id('sessions'),
