@@ -1,7 +1,14 @@
-import { v } from 'convex/values'
+import { makeFunctionReference } from 'convex/server'
+import { ConvexError, v } from 'convex/values'
 import { action, mutation, query } from './_generated/server'
 import { api } from './_generated/api'
-import type { Doc } from './_generated/dataModel'
+import type { Doc, Id } from './_generated/dataModel'
+import type { RecordBlockedAttemptArgs } from './moderation'
+import { CONTENT_POLICY_CLIENT_MESSAGE } from '../src/lib/content-policy'
+import {
+  classifyUserInput,
+  CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
+} from '../src/features/moderation/server/moderation-classifier'
 
 export type CustomLanguageEntry = {
   code: string
@@ -10,6 +17,18 @@ export type CustomLanguageEntry = {
   fontFamily: string
   keywords: string[]
 }
+
+const recordBlockedAttempt = makeFunctionReference<
+  'mutation',
+  RecordBlockedAttemptArgs,
+  { flagId: Id<'contentModerationFlags'> }
+>('moderation:recordBlockedAttempt')
+
+const moderationUnavailableError = () =>
+  new ConvexError({
+    code: 'CONTENT_MODERATION_UNAVAILABLE',
+    message: CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
+  })
 
 function toEntry(doc: Doc<'customLanguages'>): CustomLanguageEntry {
   return {
@@ -403,7 +422,8 @@ Rules:
 export const resolveOrCreate = action({
   args: { languageInput: v.string() },
   handler: async (ctx, args): Promise<CustomLanguageEntry | null> => {
-    const input = args.languageInput.trim()
+    const rawInput = args.languageInput
+    const input = rawInput.trim()
     if (!input) {
       throw new Error('Language input is empty.')
     }
@@ -413,6 +433,39 @@ export const resolveOrCreate = action({
       text: input,
     })
     if (existing && !needsCanonicalRepair(existing, input)) return existing
+
+    const moderation = await classifyUserInput({
+      fields: { customLanguage: rawInput },
+      surface: 'custom_language',
+    })
+    if (moderation.decision === 'unavailable') {
+      throw moderationUnavailableError()
+    }
+    if (moderation.decision === 'blocked') {
+      const secret = process.env.CONTENT_MODERATION_MUTATION_SECRET
+      if (!secret) throw moderationUnavailableError()
+      try {
+        await ctx.runMutation(recordBlockedAttempt, {
+          category: moderation.category,
+          classifierModel:
+            moderation.source === 'semantic'
+              ? moderation.classifierModel
+              : undefined,
+          decisionSource: moderation.source,
+          matchedField: moderation.matchedField,
+          prompt: moderation.prompt,
+          ruleId: moderation.ruleId,
+          secret,
+          surface: 'custom_language',
+        })
+      } catch {
+        throw moderationUnavailableError()
+      }
+      throw new ConvexError({
+        code: 'CONTENT_POLICY',
+        message: CONTENT_POLICY_CLIENT_MESSAGE,
+      })
+    }
 
     const resolved = withCanonicalLanguageMetadata(
       input,

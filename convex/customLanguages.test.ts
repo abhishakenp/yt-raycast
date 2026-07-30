@@ -15,15 +15,35 @@ function makeGroqResponse(content: unknown) {
   } as Response
 }
 
+function makeModeratedGroqFetch(auxiliaryResponse: Response) {
+  return vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body)) as { model?: unknown }
+    return body.model === 'openai/gpt-oss-safeguard-20b'
+      ? makeGroqResponse({
+          category: null,
+          decision: 'safe',
+          matchedField: null,
+        })
+      : auxiliaryResponse
+  })
+}
+
 describe('customLanguages', () => {
   const previousGroqKey = process.env.GROQ_API_KEY
   const previousGroqHost = process.env.GROQ_HOST
+  const previousModerationSecret =
+    process.env.CONTENT_MODERATION_MUTATION_SECRET
 
   afterEach(() => {
     if (previousGroqKey === undefined) delete process.env.GROQ_API_KEY
     else process.env.GROQ_API_KEY = previousGroqKey
     if (previousGroqHost === undefined) delete process.env.GROQ_HOST
     else process.env.GROQ_HOST = previousGroqHost
+    if (previousModerationSecret === undefined) {
+      delete process.env.CONTENT_MODERATION_MUTATION_SECRET
+    } else {
+      process.env.CONTENT_MODERATION_MUTATION_SECRET = previousModerationSecret
+    }
     vi.unstubAllGlobals()
   })
 
@@ -101,7 +121,7 @@ describe('customLanguages', () => {
   it('resolveOrCreate uses the AI-provided BCP-47 code and normalized key variants', async () => {
     process.env.GROQ_API_KEY = 'test-key'
     process.env.GROQ_HOST = 'https://groq.test'
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = makeModeratedGroqFetch(
       makeGroqResponse({
         locale: 'lt',
         english_name: 'Lithuanian',
@@ -123,7 +143,7 @@ describe('customLanguages', () => {
       fontFamily: 'Inter, system-ui, sans-serif',
       keywords: ['lithuanian', 'lithuanian', 'lt'],
     })
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
     const stored = await t.query(api.customLanguages.findExact, {
       text: 'lt',
     })
@@ -133,7 +153,7 @@ describe('customLanguages', () => {
   it('resolveOrCreate does not reuse the live stale Mexican-to-Nahuatl custom row', async () => {
     process.env.GROQ_API_KEY = 'test-key'
     process.env.GROQ_HOST = 'https://groq.test'
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = makeModeratedGroqFetch(
       makeGroqResponse({
         code: 'es-MX',
         name: 'Mexican Spanish',
@@ -164,13 +184,13 @@ describe('customLanguages', () => {
       nativeName: 'Español (México)',
     })
     expect(resolved?.code).not.toBe('nahuatl')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('resolveOrCreate strips leaked reasoning before parsing observed native-script AI output', async () => {
     process.env.GROQ_API_KEY = 'test-key'
     process.env.GROQ_HOST = 'https://groq.test'
-    const fetchMock = vi.fn(async () => ({
+    const fetchMock = makeModeratedGroqFetch({
       ok: true,
       json: async () => ({
         choices: [
@@ -182,7 +202,7 @@ describe('customLanguages', () => {
           },
         ],
       }),
-    }))
+    } as Response)
     vi.stubGlobal('fetch', fetchMock)
     const t = convexTest(schema, modules)
 
@@ -207,7 +227,7 @@ describe('customLanguages', () => {
 
   it('resolveOrCreate falls back to a stable slug when AI omits a valid locale code', async () => {
     process.env.GROQ_API_KEY = 'test-key'
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = makeModeratedGroqFetch(
       makeGroqResponse({
         name: 'Dothraki',
         nativeName: 'Dothraki',
@@ -255,5 +275,76 @@ describe('customLanguages', () => {
       }),
     ).resolves.toMatchObject({ code: 'qya', name: 'Quenya' })
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('flags a deterministic harmful language input before calling Groq', async () => {
+    process.env.GROQ_API_KEY = 'test-key'
+    process.env.CONTENT_MODERATION_MUTATION_SECRET = 'moderation-secret'
+    const fetchMock = vi.fn(async () => {
+      throw new Error('Groq must not be called for a deterministic block')
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const t = convexTest(schema, modules)
+    const user = t.withIdentity({
+      issuer: 'https://clerk.test',
+      subject: 'user_123',
+      tokenIdentifier: 'https://clerk.test|user_123',
+    })
+    const harmfulInput = 'Child porn language pack'
+
+    await expect(
+      user.action(api.customLanguages.resolveOrCreate, {
+        languageInput: harmfulInput,
+      }),
+    ).rejects.toMatchObject({
+      data: expect.objectContaining({
+        code: 'CONTENT_POLICY',
+        message:
+          '🚫 Not shipping that. Ship Fast blocks harmful, hateful, explicit, or exploitative content. This request was flagged—try a safe idea instead.',
+      }),
+    })
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    await expect(
+      t.run(async (ctx) => ({
+        flags: await ctx.db.query('contentModerationFlags').collect(),
+        languages: await ctx.db.query('customLanguages').collect(),
+      })),
+    ).resolves.toMatchObject({
+      flags: [
+        expect.objectContaining({
+          matchedField: 'customLanguage',
+          prompt: harmfulInput,
+          surface: 'custom_language',
+          userId: 'https://clerk.test|user_123',
+        }),
+      ],
+      languages: [],
+    })
+  })
+
+  it('fails closed with the stable safety message when moderation is unavailable', async () => {
+    delete process.env.GROQ_API_KEY
+    process.env.CONTENT_MODERATION_MUTATION_SECRET = 'moderation-secret'
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const t = convexTest(schema, modules)
+
+    await expect(
+      t.action(api.customLanguages.resolveOrCreate, {
+        languageInput: 'Dothraki',
+      }),
+    ).rejects.toMatchObject({
+      data: expect.objectContaining({
+        code: 'CONTENT_MODERATION_UNAVAILABLE',
+        message:
+          'Ship Fast’s safety check is temporarily unavailable. Try again shortly.',
+      }),
+    })
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    await expect(
+      t.run((ctx) => ctx.db.query('customLanguages').collect()),
+    ).resolves.toEqual([])
   })
 })
