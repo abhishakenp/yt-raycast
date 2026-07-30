@@ -26,6 +26,7 @@ import { reserveDefaultDeploymentSlug } from './session_deployment_helpers'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
 import {
   assertPrompt,
+  assertContentPolicyFields,
   createFingerprint,
   normalizeOptionalHttpsUrl,
   normalizePromptCacheKey,
@@ -332,6 +333,10 @@ export async function createGenerationSession(
 ): Promise<CreateGenerationSessionResult> {
   const disableLimits = areGenerationLimitsDisabled()
   const prompt = args.prompt.trim()
+  assertContentPolicyFields({
+    prompt,
+    designReferenceNotes: args.designReferenceNotes,
+  })
   const isDraft = args.isDraft === true
   const userId = await getUserId(ctx)
   const ownerEmail = userId === undefined ? undefined : await getUserEmail(ctx)

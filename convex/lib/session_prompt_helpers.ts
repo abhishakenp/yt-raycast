@@ -1,6 +1,9 @@
 import { ConvexError } from 'convex/values'
 
-import { classifyDeterministicModeration } from './content_moderation_policy'
+import {
+  classifyDeterministicModeration,
+  type ModerationFields,
+} from './content_moderation_policy'
 
 export const MAX_PROMPT_LENGTH = 5000
 
@@ -109,7 +112,11 @@ export function isLikelyGibberishPrompt(prompt: string): boolean {
 }
 
 export function assertContentPolicy(prompt: string) {
-  if (classifyDeterministicModeration({ prompt }).decision !== 'blocked') return
+  assertContentPolicyFields({ prompt })
+}
+
+export function assertContentPolicyFields(fields: ModerationFields) {
+  if (classifyDeterministicModeration(fields).decision !== 'blocked') return
   throw new ConvexError({
     code: 'CONTENT_POLICY',
     message: 'This prompt is blocked by the content policy.',

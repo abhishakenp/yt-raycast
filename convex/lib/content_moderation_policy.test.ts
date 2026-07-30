@@ -69,6 +69,19 @@ describe('deterministic content moderation policy', () => {
   })
 
   it.each([
+    ['sexual_minors', 'sch0olgirl-p0rn images'],
+    ['non_consensual_exploitative', 'revenge-p0rn images'],
+  ] as const)(
+    'blocks punctuation and leetspeak evasion for %s',
+    (category, prompt) => {
+      expect(classifyDeterministicModeration({ prompt })).toMatchObject({
+        decision: 'blocked',
+        category,
+      })
+    },
+  )
+
+  it.each([
     'Educational news site about preventing youth exploitation online',
     'Counterspeech resource opposing extremist recruitment and hate',
     'Non-graphic mental-health prevention page with crisis support contacts',

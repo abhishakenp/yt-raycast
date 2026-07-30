@@ -31,7 +31,7 @@ export type ModerationField =
   | 'translationSource'
   | 'customLanguage'
 
-type ModerationFields = Partial<Record<ModerationField, unknown>>
+export type ModerationFields = Partial<Record<ModerationField, unknown>>
 
 type BlockedDecision = {
   decision: 'blocked'
@@ -357,9 +357,14 @@ const createPhraseRule = (
   id: `det-${id}`,
   category,
   matches: ({ spaced, leetSpaced, collapsed }) =>
-    phrases.some((phrase) =>
-      [spaced, leetSpaced, collapsed].some((value) => value.includes(phrase)),
-    ),
+    phrases.some((phrase) => {
+      const normalizedPhrase = normalizePolicyText(phrase)
+      return (
+        spaced.includes(normalizedPhrase.spaced) ||
+        leetSpaced.includes(normalizedPhrase.leetSpaced) ||
+        collapsed.includes(normalizedPhrase.collapsed)
+      )
+    }),
 })
 
 const createCollapsedRule = (

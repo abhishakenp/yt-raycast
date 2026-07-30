@@ -8,6 +8,7 @@ import {
   canReadPrivateSession,
 } from './session_access_helpers'
 import { scheduleOperationalNotification } from './session_operational_notifications'
+import { assertContentPolicyFields } from './session_prompt_helpers'
 
 type OperationalNotificationReference = Parameters<
   MutationCtx['scheduler']['runAfter']
@@ -112,6 +113,7 @@ export async function applyCloneBriefAndGenerate(
 ) {
   const session = await assertSessionExists(ctx, args.sessionId)
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+  assertContentPolicyFields({ cloneBrief: args.cloneBrief })
 
   await ctx.db.patch(args.sessionId, {
     cloneBrief: args.cloneBrief,

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   assertContentPolicy,
+  assertContentPolicyFields,
   assertPrompt,
   createFingerprint,
   isLikelyGibberishPrompt,
@@ -68,6 +69,19 @@ describe('session prompt helpers', () => {
   it('uses canonical deterministic policy classifications in Convex errors', () => {
     expect(() =>
       assertContentPolicy('Build a sch0olgirl p\u200Born gallery'),
+    ).toThrowError(
+      expect.objectContaining({
+        data: expect.objectContaining({ code: 'CONTENT_POLICY' }),
+      }),
+    )
+  })
+
+  it('blocks unsafe alternate Convex fields with the same stable error code', () => {
+    expect(() =>
+      assertContentPolicyFields({
+        prompt: 'Build a safe floral shop',
+        designReferenceNotes: 'reference sch0olgirl-p0rn images',
+      }),
     ).toThrowError(
       expect.objectContaining({
         data: expect.objectContaining({ code: 'CONTENT_POLICY' }),
