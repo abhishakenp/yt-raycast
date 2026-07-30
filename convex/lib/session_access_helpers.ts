@@ -102,8 +102,13 @@ export async function getUserId(ctx: AuthCtx) {
  * The super-admin account `hello@ship-fast.ai` has `system_role: admin` set
  * in Clerk publicMetadata, so it is recognized as admin via the standard
  * JWT role claim — no hardcoded email check needed.
+ *
+ * When `VITE_DISABLE_CLERK=true` (auth disabled), every caller is treated as
+ * admin so all admin-gated paths (regenerate, export, deployment, etc.) are
+ * reachable without signing in.
  */
 export async function isUserAdmin(ctx: AuthCtx): Promise<boolean> {
+  if (isAuthDisabled()) return true
   const identity = await ctx.auth.getUserIdentity()
   const role = identity?.system_role ?? identity?.systemRole
   return role === 'admin'

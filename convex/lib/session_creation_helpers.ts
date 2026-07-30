@@ -21,6 +21,7 @@ import {
   hashOwnerSecret,
   isUserAdmin,
 } from './session_access_helpers'
+import { isAuthDisabled } from './session_export_helpers'
 import { cloneCachedGeneratedArtifacts } from './session_artifact_helpers'
 import { reserveDefaultDeploymentSlug } from './session_deployment_helpers'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
@@ -415,8 +416,12 @@ export async function createGenerationSession(
   // ready public preview for the same prompt+language. The per-prompt content
   // cache still makes fresh generations cheap; the per-session seed re-randomizes
   // layout so unseen prompts still vary.
+  // Auth-disabled (VITE_DISABLE_CLERK) deployments skip cache *reuse* so every
+  // generation runs fresh — but the promptCacheKey is still stored and the
+  // content cache is still written, so re-enabling auth restores cache hits.
   const canUsePromptCache =
     !args.forceFresh &&
+    !isAuthDisabled() &&
     designReferenceFingerprint === undefined &&
     args.isPrivate === false &&
     userId === undefined

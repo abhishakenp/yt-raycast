@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
@@ -611,6 +611,10 @@ describe('session access helpers', () => {
 })
 
 describe('isUserAdmin', () => {
+  beforeEach(() => {
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(false)
+  })
+
   it('returns true when system_role is admin', async () => {
     const ctx = authCtx(
       identityFor({ tokenIdentifier: 'token:admin', system_role: 'admin' }),
@@ -640,6 +644,12 @@ describe('isUserAdmin', () => {
   it('returns false when not authenticated', async () => {
     const ctx = authCtx(null)
     await expect(isUserAdmin(ctx)).resolves.toBe(false)
+  })
+
+  it('returns true when VITE_DISABLE_CLERK is true, even without identity', async () => {
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(true)
+    const ctx = authCtx(null)
+    await expect(isUserAdmin(ctx)).resolves.toBe(true)
   })
 })
 

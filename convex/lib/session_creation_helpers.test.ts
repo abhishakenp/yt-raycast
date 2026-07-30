@@ -1047,6 +1047,50 @@ describe('session creation helpers', () => {
     })
   })
 
+  it('VITE_DISABLE_CLERK=true skips prompt-cache reuse but still stores the promptCacheKey', async () => {
+    vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
+    vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
+    vi.stubEnv('DISABLE_LIMIT', 'true')
+    vi.stubEnv('VITE_DISABLE_CLERK', 'true')
+    const references = createReferences()
+    const cachedSession = sessionDoc({
+      _id: 'cached_session_clerk_off' as Doc<'sessions'>['_id'],
+      prompt: 'Build a luxury ski chalet site',
+      promptCacheKey: 'en:build a luxury ski chalet site',
+      previewVersion: 1,
+      isPrivate: false,
+    })
+    const { ctx, inserted } = createMutationCtxFor({
+      sessions: [cachedSession],
+    })
+
+    const result = await createGenerationSession(
+      ctx,
+      {
+        prompt: 'Build a luxury ski chalet site',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace-clerk-off',
+      },
+      references,
+    )
+
+    // Auth-disabled deployments must NOT reuse the cached session — every
+    // generation runs fresh. The promptCacheKey is still written so cache
+    // hits resume when auth is re-enabled.
+    expect(result.cached).toBe(false)
+    expect(result.reused).not.toBe(true)
+    expect(result.cloned).not.toBe(true)
+    expect(result.sessionId).not.toBe('cached_session_clerk_off')
+    const session = inserted.find((row) => row.table === 'sessions')
+    expect(session?.value).toMatchObject({
+      prompt: 'Build a luxury ski chalet site',
+      status: 'queued',
+      promptCacheKey: 'en:build a luxury ski chalet site',
+    })
+  })
+
   it('create handler delegates to createGenerationSession helper with references', async () => {
     vi.resetModules()
     vi.doMock('./session_creation_helpers', () => ({
@@ -1107,8 +1151,9 @@ describe('session creation helpers', () => {
       const ctx = {
         db: { get: async () => null },
       } as unknown as MutationCtx
-      const handler =
-        regenerateSession as unknown as MutationHandler<{ sessionId: string }>
+      const handler = regenerateSession as unknown as MutationHandler<{
+        sessionId: string
+      }>
       await expect(
         handler(ctx, { sessionId: 'session_x' as never }),
       ).rejects.toMatchObject({
@@ -1142,8 +1187,9 @@ describe('session creation helpers', () => {
       const ctx = {
         db: { get: async () => null },
       } as unknown as MutationCtx
-      const handler =
-        regenerateSession as unknown as MutationHandler<{ sessionId: string }>
+      const handler = regenerateSession as unknown as MutationHandler<{
+        sessionId: string
+      }>
       await expect(
         handler(ctx, { sessionId: 'missing_session' as never }),
       ).rejects.toMatchObject({
@@ -1192,8 +1238,9 @@ describe('session creation helpers', () => {
       const ctx = {
         db: { get: async () => sourceSession },
       } as unknown as MutationCtx
-      const handler =
-        regenerateSession as unknown as MutationHandler<{ sessionId: string }>
+      const handler = regenerateSession as unknown as MutationHandler<{
+        sessionId: string
+      }>
       const result = await handler(ctx, {
         sessionId: 'source_session' as never,
       })
