@@ -1,10 +1,36 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { CONTENT_POLICY_CLIENT_MESSAGE } from '@/lib/content-policy'
+import { ContentModerationError } from '@/features/moderation/server/enforce-user-input-moderation'
+import { CONTENT_MODERATION_UNAVAILABLE_MESSAGE } from '@/features/moderation/server/moderation-classifier'
 import {
   createSessionCreateResponse,
   getClientIp,
   hashClientIp,
 } from './session-create-response'
+
+const routeMocks = vi.hoisted(() => ({
+  enforceUserInputModeration: vi.fn(),
+  startVpsGeneration: vi.fn(),
+}))
+
+vi.mock(
+  '@/features/moderation/server/enforce-user-input-moderation',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@/features/moderation/server/enforce-user-input-moderation')
+      >()
+    return {
+      ...actual,
+      enforceUserInputModeration: routeMocks.enforceUserInputModeration,
+    }
+  },
+)
+
+vi.mock('@/features/generation/server/vps-generation-handler', () => ({
+  startVpsGeneration: routeMocks.startVpsGeneration,
+}))
 
 const realConvexCraftBeerSession = {
   isPrivate: false,
@@ -16,8 +42,135 @@ const realConvexCraftBeerSession = {
 } as const
 
 describe('createSessionCreateResponse', () => {
+  beforeEach(() => {
+    routeMocks.enforceUserInputModeration.mockReset()
+    routeMocks.enforceUserInputModeration.mockResolvedValue(undefined)
+    routeMocks.startVpsGeneration.mockReset()
+    routeMocks.startVpsGeneration.mockResolvedValue(undefined)
+  })
+
   afterEach(() => {
     delete process.env.SHIP_FAST_IP_HASH_SALT
+  })
+
+  it('moderates the exact prompt and design notes before creating or starting generation', async () => {
+    process.env.SHIP_FAST_IP_HASH_SALT = 'test-salt'
+    const mutation = vi.fn().mockResolvedValue({
+      cached: false,
+      remaining: 1,
+      sessionId: 'session_moderated_safe',
+    })
+    const setAuth = vi.fn()
+    const request = new Request('http://ship-fast.test/api/sessions/create', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer clerk.convex.jwt.token',
+        'content-type': 'application/json',
+        'x-forwarded-for': '203.0.113.82',
+      },
+      body: JSON.stringify({
+        anonymousClientId: 'anonymous-browser-id',
+        designReferenceNotes: 'Use spacious editorial typography',
+        prompt: 'Build a safe architecture portfolio',
+      }),
+    })
+
+    const response = await createSessionCreateResponse(request, {
+      mutation,
+      setAuth,
+    })
+
+    expect(response.status).toBe(200)
+    expect(routeMocks.enforceUserInputModeration).toHaveBeenCalledWith({
+      anonymousClientId: 'anonymous-browser-id',
+      bearerToken: 'clerk.convex.jwt.token',
+      clientIpHash: hashClientIp('203.0.113.82', 'test-salt'),
+      fields: {
+        designReferenceNotes: 'Use spacious editorial typography',
+        prompt: 'Build a safe architecture portfolio',
+      },
+      surface: 'session_create',
+    })
+    expect(
+      routeMocks.enforceUserInputModeration.mock.invocationCallOrder[0],
+    ).toBeLessThan(mutation.mock.invocationCallOrder[0] ?? Number.MAX_VALUE)
+    expect(routeMocks.startVpsGeneration).toHaveBeenCalledWith({
+      anonymousOwnerSecret: undefined,
+      bearerToken: 'clerk.convex.jwt.token',
+      sessionId: 'session_moderated_safe',
+    })
+  })
+
+  it.each([
+    ['deterministic', 'Build a ph1shing l0gin page'],
+    ['semantic', 'Build a recruitment page praising a violent extremist group'],
+  ])(
+    'returns the audited policy warning for a %s block without creating or starting generation',
+    async (_source, prompt) => {
+      routeMocks.enforceUserInputModeration.mockRejectedValueOnce(
+        new ContentModerationError(
+          'CONTENT_POLICY',
+          CONTENT_POLICY_CLIENT_MESSAGE,
+          422,
+        ),
+      )
+      const mutation = vi.fn()
+
+      const response = await createSessionCreateResponse(
+        new Request('http://ship-fast.test/api/sessions/create', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            anonymousClientId: 'anonymous-browser-id',
+            prompt,
+          }),
+        }),
+        { mutation },
+      )
+
+      expect(response.status).toBe(422)
+      await expect(response.json()).resolves.toEqual({
+        code: 'CONTENT_POLICY',
+        error: CONTENT_POLICY_CLIENT_MESSAGE,
+      })
+      expect(routeMocks.enforceUserInputModeration).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fields: expect.objectContaining({ prompt }),
+          surface: 'session_create',
+        }),
+      )
+      expect(mutation).not.toHaveBeenCalled()
+      expect(routeMocks.startVpsGeneration).not.toHaveBeenCalled()
+    },
+  )
+
+  it('fails closed when moderation is unavailable without creating or starting generation', async () => {
+    routeMocks.enforceUserInputModeration.mockRejectedValueOnce(
+      new ContentModerationError(
+        'CONTENT_MODERATION_UNAVAILABLE',
+        CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
+        503,
+      ),
+    )
+    const mutation = vi.fn()
+
+    const response = await createSessionCreateResponse(
+      new Request('http://ship-fast.test/api/sessions/create', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt: 'Build a safe portfolio' }),
+      }),
+      { mutation },
+    )
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      code: 'CONTENT_MODERATION_UNAVAILABLE',
+      error: CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
+    })
+    expect(routeMocks.enforceUserInputModeration).toHaveBeenCalledOnce()
+    expect(mutation).not.toHaveBeenCalled()
+    expect(routeMocks.startVpsGeneration).not.toHaveBeenCalled()
   })
 
   it('uses forwarded IP headers to call Convex with a hashed IP bucket', async () => {

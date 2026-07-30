@@ -7,6 +7,10 @@ import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { startVpsGeneration } from '@/features/generation/server/vps-generation-handler'
+import {
+  enforceUserInputModeration,
+  moderationErrorResponse,
+} from '@/features/moderation/server/enforce-user-input-moderation'
 
 type CreateSessionArgs = FunctionArgs<typeof api.sessions.create>
 
@@ -247,6 +251,16 @@ export async function createSessionCreateResponse(
     const token = getBearerToken(request)
     if (token !== null) client.setAuth?.(token)
     const args = parseCreateSessionArgs(body, clientIpHash)
+    await enforceUserInputModeration({
+      anonymousClientId: args.anonymousClientId,
+      bearerToken: token,
+      clientIpHash,
+      fields: {
+        designReferenceNotes: args.designReferenceNotes,
+        prompt: args.prompt,
+      },
+      surface: 'session_create',
+    })
     const result = await client.mutation(api.sessions.create, args)
 
     if (!isSessionCreateResult(result)) {
@@ -277,6 +291,8 @@ export async function createSessionCreateResponse(
 
     return json(result)
   } catch (error) {
+    const moderationResponse = moderationErrorResponse(error)
+    if (moderationResponse !== null) return moderationResponse
     if (error instanceof SyntaxError) {
       return json(
         { error: 'Request body must be valid JSON.' },
