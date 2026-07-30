@@ -155,8 +155,21 @@ export function formatUser(args: {
   return parts.length > 0 ? parts.join(' ') : '_Unknown_'
 }
 
+const normalizeSlackSingleLine = (value: string): string =>
+  value.replace(/[\r\n\u2028\u2029]+/g, ' ↵ ').replaceAll('\t', ' ')
+
+const escapeSlackInlineCode = (value: string): string =>
+  normalizeSlackSingleLine(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('`', '｀')
+
 const escapeSlackMrkdwn = (value: string): string =>
-  value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+  escapeSlackInlineCode(value)
+    .replaceAll('*', '＊')
+    .replaceAll('_', '＿')
+    .replaceAll('~', '～')
 
 // ─── Event builders ─────────────────────────────────────────────────────────
 
@@ -412,7 +425,7 @@ export const contentModerationBlockedEvent = (args: {
     ? {
         label: 'User',
         value: formatUser({
-          userId: escapeSlackMrkdwn(args.userId),
+          userId: escapeSlackInlineCode(args.userId),
           userName: args.userName
             ? escapeSlackMrkdwn(args.userName)
             : undefined,
@@ -424,7 +437,7 @@ export const contentModerationBlockedEvent = (args: {
     : {
         label: 'Anonymous',
         value: args.anonymousClientIdHash
-          ? `\`${escapeSlackMrkdwn(args.anonymousClientIdHash)}\``
+          ? `\`${escapeSlackInlineCode(args.anonymousClientIdHash)}\``
           : '_Anonymous_',
       }
   const promptExcerpt =
@@ -437,25 +450,25 @@ export const contentModerationBlockedEvent = (args: {
     fields: [
       {
         label: 'Flag ID',
-        value: `\`${escapeSlackMrkdwn(args.flagId)}\``,
+        value: `\`${escapeSlackInlineCode(args.flagId)}\``,
       },
       {
         label: 'Category',
-        value: `\`${escapeSlackMrkdwn(args.category)}\``,
+        value: `\`${escapeSlackInlineCode(args.category)}\``,
       },
       {
         label: 'Surface',
-        value: `\`${escapeSlackMrkdwn(args.surface)}\``,
+        value: `\`${escapeSlackInlineCode(args.surface)}\``,
       },
       {
         label: 'Matched Field',
-        value: `\`${escapeSlackMrkdwn(args.matchedField)}\``,
+        value: `\`${escapeSlackInlineCode(args.matchedField)}\``,
       },
       ...(args.ruleId
         ? [
             {
               label: 'Rule',
-              value: `\`${escapeSlackMrkdwn(args.ruleId)}\``,
+              value: `\`${escapeSlackInlineCode(args.ruleId)}\``,
             },
           ]
         : []),
@@ -467,7 +480,7 @@ export const contentModerationBlockedEvent = (args: {
         ? [
             {
               label: 'Model',
-              value: `\`${escapeSlackMrkdwn(args.classifierModel)}\``,
+              value: `\`${escapeSlackInlineCode(args.classifierModel)}\``,
             },
           ]
         : []),
@@ -476,7 +489,7 @@ export const contentModerationBlockedEvent = (args: {
         ? [
             {
               label: 'IP Hash',
-              value: `\`${escapeSlackMrkdwn(args.clientIpHash)}\``,
+              value: `\`${escapeSlackInlineCode(args.clientIpHash)}\``,
             },
           ]
         : []),
@@ -484,7 +497,7 @@ export const contentModerationBlockedEvent = (args: {
         ? [
             {
               label: 'Session',
-              value: `\`${escapeSlackMrkdwn(args.sessionId)}\``,
+              value: `\`${escapeSlackInlineCode(args.sessionId)}\``,
             },
           ]
         : []),

@@ -22,7 +22,7 @@ import {
 } from './slack_notifications_shared'
 
 // Mock fetch for testing
-const mockFetch = vi.fn()
+const mockFetch = vi.fn<typeof fetch>()
 
 describe('formatUser', () => {
   it('should format user with all fields', () => {
@@ -464,6 +464,31 @@ describe('contentModerationBlockedEvent', () => {
       { label: 'Prompt', value: 'Unsafe &lt;script&gt; request' },
     ])
   })
+
+  it('neutralizes user-controlled Slack formatting and forged field lines', () => {
+    const result = contentModerationBlockedEvent({
+      flagId: 'flag`123',
+      category: 'fraud_malware',
+      surface: 'session_create',
+      matchedField: 'prompt',
+      decisionSource: 'semantic',
+      userId: 'user_123',
+      userName: 'Attacker\n*Category:* safe',
+      userEmail: '`admin`~@example.com',
+      prompt:
+        'First line\n*Category:* safe\n`code` _italic_ ~strike~ <!channel>',
+    })
+    const renderedValues = result.fields.map(({ value }) => value).join('\n')
+
+    expect(renderedValues).not.toContain('\n*Category:* safe')
+    expect(renderedValues).not.toContain('`code`')
+    expect(renderedValues).not.toContain('_italic_')
+    expect(renderedValues).not.toContain('~strike~')
+    expect(renderedValues).not.toContain('<!channel>')
+    expect(renderedValues).toContain('↵')
+    expect(renderedValues).toContain('＊Category:＊ safe')
+    expect(renderedValues).toContain('｀code｀')
+  })
 })
 
 describe('subscriptionCancelledEvent', () => {
@@ -591,9 +616,7 @@ describe('sendSharedNotification', () => {
   })
 
   it('should send notification successfully', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-    })
+    mockFetch.mockResolvedValueOnce(new Response(null, { status: 200 }))
 
     const event: SharedNotificationEvent = {
       emoji: '🎉',
@@ -608,7 +631,7 @@ describe('sendSharedNotification', () => {
         SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
         NODE_ENV: 'production',
       },
-      mockFetch as any,
+      mockFetch,
     )
 
     expect(result).toEqual({ sent: true })
@@ -635,10 +658,7 @@ describe('sendSharedNotification', () => {
   })
 
   it('should return http_status on fetch failure', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    })
+    mockFetch.mockResolvedValueOnce(new Response(null, { status: 500 }))
 
     const event: SharedNotificationEvent = {
       emoji: '🎉',
@@ -650,7 +670,7 @@ describe('sendSharedNotification', () => {
     const result = await sendSharedNotification(
       event,
       { SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test' },
-      mockFetch as any,
+      mockFetch,
     )
 
     expect(result).toEqual({ sent: false, reason: 'http_500' })
@@ -669,16 +689,14 @@ describe('sendSharedNotification', () => {
     const result = await sendSharedNotification(
       event,
       { SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test' },
-      mockFetch as any,
+      mockFetch,
     )
 
     expect(result).toEqual({ sent: false, reason: 'Network error' })
   })
 
   it('should add [DEV] prefix in development', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-    })
+    mockFetch.mockResolvedValueOnce(new Response(null, { status: 200 }))
 
     const event: SharedNotificationEvent = {
       emoji: '🎉',
@@ -693,7 +711,7 @@ describe('sendSharedNotification', () => {
         SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
         NODE_ENV: 'development',
       },
-      mockFetch as any,
+      mockFetch,
     )
 
     const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
@@ -701,9 +719,7 @@ describe('sendSharedNotification', () => {
   })
 
   it('should not add [DEV] prefix in production', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-    })
+    mockFetch.mockResolvedValueOnce(new Response(null, { status: 200 }))
 
     const event: SharedNotificationEvent = {
       emoji: '🎉',
@@ -718,7 +734,7 @@ describe('sendSharedNotification', () => {
         SLACK_WEBHOOK_URL: 'https://hooks.slack.com/test',
         NODE_ENV: 'production',
       },
-      mockFetch as any,
+      mockFetch,
     )
 
     const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
