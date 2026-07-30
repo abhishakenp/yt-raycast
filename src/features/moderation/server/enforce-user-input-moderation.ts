@@ -3,6 +3,10 @@ import { makeFunctionReference } from 'convex/server'
 
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { RecordBlockedAttemptArgs } from '../../../../convex/moderation'
+import type {
+  ModerationField,
+  ModerationSurface,
+} from '../../../../convex/lib/content_moderation_policy'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { CONTENT_POLICY_CLIENT_MESSAGE } from '@/lib/content-policy'
 import {
@@ -63,6 +67,18 @@ const unavailableError = () =>
     503,
   )
 
+const surfaceByField: Record<ModerationField, ModerationSurface> = {
+  cloneBrief: 'clone_brief',
+  cloneRegeneration: 'clone_regeneration',
+  customLanguage: 'custom_language',
+  designReferenceNotes: 'design_reference_notes',
+  prompt: 'session_create',
+  rewriteInstruction: 'rewrite_instruction',
+  rewriteText: 'rewrite_text',
+  sectionEdit: 'section_edit',
+  translationSource: 'translation_source',
+}
+
 export const enforceUserInputModeration = async (
   {
     anonymousClientId,
@@ -98,7 +114,7 @@ export const enforceUserInputModeration = async (
       ruleId: decision.ruleId,
       secret: mutationSecret,
       sessionId,
-      surface,
+      surface: surfaceByField[decision.matchedField],
     })
   } catch {
     throw unavailableError()

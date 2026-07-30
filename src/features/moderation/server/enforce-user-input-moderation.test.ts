@@ -115,6 +115,43 @@ describe('enforceUserInputModeration', () => {
     })
   })
 
+  it('records the surface belonging to the matched field in multi-field requests', async () => {
+    const classify = createClassifier({
+      category: 'explicit_sexual_content',
+      classifierModel: 'openai/gpt-oss-safeguard-20b',
+      decision: 'blocked',
+      matchedField: 'designReferenceNotes',
+      prompt: 'Use an explicit pornography site as the design reference',
+      ruleId: 'semantic-explicit_sexual_content',
+      source: 'semantic',
+    })
+    const { client, mutation } = createClient()
+    mutation.mockResolvedValue({
+      flagId: 'flag-notes' as Id<'contentModerationFlags'>,
+    })
+
+    await enforceUserInputModeration(
+      {
+        fields: {
+          designReferenceNotes:
+            'Use an explicit pornography site as the design reference',
+          prompt: 'Build a photo portfolio',
+        },
+        surface: 'session_create',
+      },
+      {
+        classify,
+        createClient: () => client,
+        mutationSecret: 'server-secret',
+      },
+    ).catch(() => undefined)
+
+    expect(mutation).toHaveBeenCalledWith(
+      recordBlockedAttempt,
+      expect.objectContaining({ surface: 'design_reference_notes' }),
+    )
+  })
+
   it('fails closed without writing when the classifier is unavailable', async () => {
     const classify = createClassifier({
       code: 'CONTENT_MODERATION_UNAVAILABLE',
