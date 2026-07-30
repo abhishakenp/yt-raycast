@@ -14,6 +14,12 @@ const semanticResponse = (decision: unknown) =>
     { status: 200 },
   )
 
+const safeDecision = {
+  decision: 'safe',
+  category: null,
+  matchedField: null,
+} as const
+
 const createFetch = (response: Response | Error) => {
   const requests: RequestInit[] = []
   const fetchImpl: typeof fetch = async (_input, init) => {
@@ -26,9 +32,7 @@ const createFetch = (response: Response | Error) => {
 
 describe('classifyUserInput', () => {
   it('short-circuits deterministic blocks without calling the provider', async () => {
-    const { fetchImpl, requests } = createFetch(
-      semanticResponse({ decision: 'safe' }),
-    )
+    const { fetchImpl, requests } = createFetch(semanticResponse(safeDecision))
 
     await expect(
       classifyUserInput({
@@ -46,7 +50,7 @@ describe('classifyUserInput', () => {
   })
 
   it('returns a semantic safe decision for an ordinary website brief', async () => {
-    const { fetchImpl } = createFetch(semanticResponse({ decision: 'safe' }))
+    const { fetchImpl } = createFetch(semanticResponse(safeDecision))
 
     await expect(
       classifyUserInput({
@@ -88,7 +92,7 @@ describe('classifyUserInput', () => {
   })
 
   it('allows contextual education that mentions a harmful topic non-graphically', async () => {
-    const { fetchImpl } = createFetch(semanticResponse({ decision: 'safe' }))
+    const { fetchImpl } = createFetch(semanticResponse(safeDecision))
 
     await expect(
       classifyUserInput({
@@ -104,9 +108,7 @@ describe('classifyUserInput', () => {
   })
 
   it('sends the safeguard model, policy, labeled inputs, and JSON response format', async () => {
-    const { fetchImpl, requests } = createFetch(
-      semanticResponse({ decision: 'safe' }),
-    )
+    const { fetchImpl, requests } = createFetch(semanticResponse(safeDecision))
 
     await classifyUserInput({
       surface: 'section_edit',
@@ -237,6 +239,18 @@ describe('classifyUserInput', () => {
       }),
     ],
     ['invalid decision', semanticResponse({ decision: 'allow' })],
+    [
+      'safe decision without null category and field',
+      semanticResponse({ decision: 'safe' }),
+    ],
+    [
+      'safe decision with contradictory category',
+      semanticResponse({
+        decision: 'safe',
+        category: 'hate_extremism',
+        matchedField: null,
+      }),
+    ],
   ])('fails closed for %s', async (_name, response) => {
     const { fetchImpl } = createFetch(response)
 
@@ -251,9 +265,7 @@ describe('classifyUserInput', () => {
   })
 
   it('allows empty or non-string fields without calling the provider', async () => {
-    const { fetchImpl, requests } = createFetch(
-      semanticResponse({ decision: 'safe' }),
-    )
+    const { fetchImpl, requests } = createFetch(semanticResponse(safeDecision))
 
     await expect(
       classifyUserInput({

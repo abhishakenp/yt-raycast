@@ -13,6 +13,11 @@ export const CONTENT_MODERATION_UNAVAILABLE_MESSAGE =
 
 type SafeDecision = { decision: 'safe' }
 
+type DeterministicBlockedDecision = Exclude<
+  ReturnType<typeof classifyDeterministicModeration>,
+  SafeDecision
+>
+
 type SemanticBlockedDecision = {
   decision: 'blocked'
   category: ModerationCategory
@@ -36,6 +41,7 @@ type UnavailableDecision = {
 
 export type UserInputModerationResult =
   | SafeDecision
+  | DeterministicBlockedDecision
   | SemanticBlockedDecision
   | UnavailableDecision
 
@@ -129,7 +135,11 @@ const parseDecision = (
   }
   if (!parsed || typeof parsed !== 'object') return undefined
   const decision = parsed as Record<string, unknown>
-  if (decision.decision === 'safe') return { decision: 'safe' }
+  if (decision.decision === 'safe') {
+    return decision.category === null && decision.matchedField === null
+      ? { decision: 'safe' }
+      : undefined
+  }
   if (decision.decision !== 'blocked') return undefined
 
   const category = decision.category
