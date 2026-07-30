@@ -160,7 +160,7 @@ async function evaluateSsrModule(ssrJsCode: string): Promise<string> {
   const tmpFilePath = join(process.cwd(), tmpFileName)
   writeFileSync(tmpFilePath, ssrJsCode)
   try {
-    const mod = await import(tmpFilePath)
+    const mod = await import(/* @vite-ignore */ tmpFilePath)
     const Component = mod.default
     if (!Component || typeof Component.render !== 'function') {
       throw new Error('SSR module does not export a component with render()')

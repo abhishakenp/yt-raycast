@@ -328,6 +328,17 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
   isClerkClientEnabled: () => false,
 }))
 
+let __mockIsAdmin = true
+vi.mock('@/shared/auth/use-optional-auth', async () => {
+  const actual = await vi.importActual<typeof import('@/shared/auth/use-optional-auth')>(
+    '@/shared/auth/use-optional-auth',
+  )
+  return {
+    ...actual,
+    useIsAdmin: () => __mockIsAdmin,
+  }
+})
+
 vi.mock('convex/react', () => ({
   useAction: () => vi.fn(),
   useMutation: () => {
@@ -3741,6 +3752,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
   })
 
   it('discards one pending draft before reloading the preview', async () => {
+    __mockIsAdmin = false
     setupReady()
     const { reloadSpy } = installLocationMock()
     render(<Dashboard sessionId="ready-session" />)
@@ -3753,6 +3765,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     expect(
       getConvexState().pendingTextEdit.cancel.mock.invocationCallOrder[0],
     ).toBeLessThan(reloadSpy.mock.invocationCallOrder[0])
+    __mockIsAdmin = true
   })
 
   it('discards one pending draft before navigating back home', async () => {
