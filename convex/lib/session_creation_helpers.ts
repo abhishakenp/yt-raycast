@@ -13,7 +13,7 @@ import {
   MAX_PAID_PER_MONTH,
   MONTHLY_WINDOW_MS,
   RATE_WINDOW_MS,
-} from '../../src/billing/constants'
+} from './billing_constants'
 import { getActiveSubscriptionsForUser } from './billing_generation_quota'
 import {
   getUserEmail,

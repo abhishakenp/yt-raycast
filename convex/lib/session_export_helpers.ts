@@ -1,6 +1,6 @@
 import { ConvexError } from 'convex/values'
 
-import { exportGeneratorRevision } from '../../src/features/exports/services/export-generator-revision'
+import { exportGeneratorRevision } from './export_generator_revision'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import {

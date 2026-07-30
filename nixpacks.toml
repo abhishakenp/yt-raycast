@@ -22,13 +22,16 @@ cmds = [
 ]
 
 [phases.build]
-# 1. Build the frontend. 2. Deploy Convex functions to the self-hosted backend
-# so the deployed app and its backend functions can never drift out of sync.
+# 1. Deploy Convex functions FIRST — runs when server load is lowest (after
+#    install, before the heavy Vite build) so the Convex backend's V8 isolates
+#    can analyze modules within the 2s timeout. Also regenerates
+#    convex/_generated/ so the frontend build bundles against fresh API code.
+# 2. Build the frontend with the freshly generated Convex API client.
 # deploy:convex skips cleanly when CONVEX_SELF_HOSTED_ADMIN_KEY is absent and
 # fails the build if the Convex deploy fails (fail loud, never skew).
 cmds = [
-  "NODE_ENV=production bun run build",
   "bun run deploy:convex",
+  "NODE_ENV=production bun run build",
 ]
 
 # Run under node, not bun: the nitro preset is `nodeServer` (see vite.config.ts)

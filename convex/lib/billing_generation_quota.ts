@@ -4,7 +4,7 @@ import {
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   MONTHLY_WINDOW_MS,
-} from '../../src/billing/constants'
+} from './billing_constants'
 
 export const activeSubscriptionStatuses = new Set([
   'active',

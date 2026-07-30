@@ -4,11 +4,11 @@ import { action, mutation, query } from './_generated/server'
 import { api } from './_generated/api'
 import type { Doc, Id } from './_generated/dataModel'
 import type { RecordBlockedAttemptArgs } from './moderation'
-import { CONTENT_POLICY_CLIENT_MESSAGE } from '../src/lib/content-policy'
+import { CONTENT_POLICY_CLIENT_MESSAGE } from './lib/content_moderation_policy'
 import {
   classifyUserInput,
   CONTENT_MODERATION_UNAVAILABLE_MESSAGE,
-} from '../src/features/moderation/server/moderation-classifier'
+} from './lib/content_moderation_classifier'
 
 export type CustomLanguageEntry = {
   code: string

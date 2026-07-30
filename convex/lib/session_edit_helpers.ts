@@ -6,4 +6,4 @@ export {
   applyOpenUiVarReplace,
   applySectionHtmlReplace,
   applyStyleEdit,
-} from '../../src/lib/edit-helpers'
+} from './edit_helpers'
