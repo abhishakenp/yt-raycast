@@ -173,8 +173,20 @@ export const recordBlockedAttempt = mutation({
 
     const flagId = await ctx.db.insert('contentModerationFlags', flag)
     await ctx.scheduler.runAfter(0, notifySlackOfBlockedAttemptReference, {
-      ...flag,
+      anonymousClientIdHash,
+      category: args.category,
+      classifierModel: args.classifierModel,
+      clientIpHash: args.clientIpHash,
+      decisionSource: args.decisionSource,
       flagId,
+      matchedField: args.matchedField,
+      prompt: args.prompt,
+      ruleId: args.ruleId,
+      sessionId: args.sessionId,
+      surface: args.surface,
+      userEmail: identity?.email,
+      userId,
+      userName: identity?.name,
     })
 
     return { flagId }

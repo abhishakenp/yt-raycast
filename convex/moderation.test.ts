@@ -270,4 +270,29 @@ describe('content moderation flag persistence', () => {
       expect.objectContaining({ method: 'POST' }),
     )
   })
+
+  it('executes the exact scheduled payload without validator failures', async () => {
+    vi.useFakeTimers()
+    vi.stubEnv('SLACK_WEBHOOK_URL', 'https://hooks.slack.test/moderation')
+    const fetchMock = vi.fn(async () => new Response(null, { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const t = convexTest(schema, modules)
+
+    try {
+      await t.mutation(recordBlockedAttempt, blockedAttempt)
+      await t.finishAllScheduledFunctions(vi.runAllTimers)
+
+      expect(fetchMock).toHaveBeenCalled()
+      expect(
+        fetchMock.mock.calls.some(([, init]) =>
+          String(init?.body).includes(blockedAttempt.prompt),
+        ),
+      ).toBe(true)
+      await expect(moderationState(t)).resolves.toMatchObject({
+        scheduled: [expect.objectContaining({ state: { kind: 'success' } })],
+      })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
