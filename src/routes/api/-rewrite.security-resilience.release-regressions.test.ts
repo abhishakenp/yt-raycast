@@ -96,6 +96,36 @@ describe('/api/rewrite security and resilience', () => {
     expect(generateTextMock).not.toHaveBeenCalled()
   })
 
+  it('moderates the maximum accepted payload exactly once before rewriting', async () => {
+    generateTextMock.mockResolvedValue('Rewritten copy')
+    const emptyPayload = JSON.stringify({ instruction: 'shorten', text: '' })
+    const text = 'x'.repeat(
+      1_000_000 - new TextEncoder().encode(emptyPayload).byteLength,
+    )
+    const payload = JSON.stringify({ instruction: 'shorten', text })
+
+    expect(new TextEncoder().encode(payload).byteLength).toBe(1_000_000)
+
+    const response = await postRewrite(payload, {
+      Authorization: 'Bearer user-token',
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      rewritten: 'Rewritten copy',
+    })
+    expect(enforceUserInputModerationMock).toHaveBeenCalledTimes(1)
+    expect(enforceUserInputModerationMock).toHaveBeenCalledWith({
+      bearerToken: 'user-token',
+      fields: {
+        rewriteInstruction: 'shorten',
+        rewriteText: text,
+      },
+      surface: 'rewrite_instruction',
+    })
+    expect(generateTextMock).toHaveBeenCalledTimes(1)
+  })
+
   it('treats blank model output as an upstream failure', async () => {
     generateTextMock.mockResolvedValue('   ')
 

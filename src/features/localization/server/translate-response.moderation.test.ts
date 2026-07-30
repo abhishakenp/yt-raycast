@@ -139,6 +139,49 @@ describe('createTranslateResponse moderation boundary', () => {
     expect(model).toHaveBeenCalledTimes(1)
   })
 
+  it('moderates the maximum accepted text batch exactly once before translating', async () => {
+    const texts = Array.from({ length: 120 }, (_, index) => {
+      const prefix = `Source ${index}: `
+      return `${prefix}${'x'.repeat(1200 - prefix.length)}`
+    })
+    const model = vi.fn(async () =>
+      JSON.stringify(Array.from({ length: 30 }, () => 'Traduction')),
+    )
+    const enforceModeration = vi.fn(async () => undefined)
+
+    expect(texts).toHaveLength(120)
+    expect(texts.every((text) => text.length === 1200)).toBe(true)
+
+    const response = await createTranslateResponse(
+      createRequest({
+        anonymousOwnerSecret: 'anonymous-owner',
+        locale: 'fr',
+        sessionId: 'session-1',
+        texts,
+      }),
+      model,
+      null,
+      async () => ({ allowed: true, code: 'ok' }),
+      enforceModeration,
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      locale: 'fr',
+      translated: true,
+      translations: Array.from({ length: 120 }, () => 'Traduction'),
+    })
+    expect(enforceModeration).toHaveBeenCalledTimes(1)
+    expect(enforceModeration).toHaveBeenCalledWith({
+      anonymousClientId: 'anonymous-owner',
+      bearerToken: 'user-token',
+      fields: { translationSource: JSON.stringify(texts) },
+      sessionId: 'session-1',
+      surface: 'translation_source',
+    })
+    expect(model).toHaveBeenCalledTimes(4)
+  })
+
   it('does not moderate browser cache-write entries', async () => {
     const cache = createCacheClient()
     const enforceModeration = vi.fn(async () => {
