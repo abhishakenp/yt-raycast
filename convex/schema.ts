@@ -714,11 +714,15 @@ export default defineSchema({
     .index('by_userId', ['userId']),
 
   // Each user owns one stable referral code. Sharing /?ref=CODE attributes new
-  // signups to the owner.
+  // signups to the owner. When LinkForty is enabled, the code also exists as a
+  // short link on links.ship-fast.ai/CODE → ship-fast.ai/?ref=CODE, and
+  // linkfortyLinkId / linkfortyShortUrl are populated by a scheduled action.
   referralCodes: defineTable({
     userId: v.string(),
     code: v.string(),
     createdAt: v.number(),
+    linkfortyLinkId: v.optional(v.string()),
+    linkfortyShortUrl: v.optional(v.string()),
   })
     .index('by_userId', ['userId'])
     .index('by_code', ['code']),
@@ -763,6 +767,33 @@ export default defineSchema({
     discountSubscriptionId: v.optional(v.string()),
     updatedAt: v.number(),
   }).index('by_userId', ['userId']),
+
+  // LinkForty click events — delivered via webhook from the self-hosted
+  // LinkForty instance when a referral short link (links.ship-fast.ai/CODE)
+  // is clicked. One row per click, keyed by the LinkForty click event ID for
+  // idempotency. Bot clicks are stored with isBot=true so analytics can
+  // filter them. The shortCode joins to referralCodes.code for dashboard
+  // analytics.
+  linkfortyClickEvents: defineTable({
+    clickId: v.string(),
+    shortCode: v.string(),
+    linkId: v.string(),
+    clickedAt: v.number(),
+    deviceType: v.optional(v.string()),
+    platform: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+    countryName: v.optional(v.string()),
+    city: v.optional(v.string()),
+    isBot: v.boolean(),
+    botReason: v.optional(v.string()),
+    utmSource: v.optional(v.string()),
+    utmMedium: v.optional(v.string()),
+    utmCampaign: v.optional(v.string()),
+    referrer: v.optional(v.string()),
+  })
+    .index('by_clickId', ['clickId'])
+    .index('by_shortCode', ['shortCode'])
+    .index('by_shortCode_clickedAt', ['shortCode', 'clickedAt']),
 
   aiCapsules: defineTable({
     sessionId: v.id('sessions'),

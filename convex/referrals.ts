@@ -1,5 +1,6 @@
 import { ConvexError, v } from 'convex/values'
 
+import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import { classifyReferralEmail } from './lib/disposable_email'
@@ -95,6 +96,22 @@ async function ensureReferralCode(
     createdAt: Date.now(),
   })
 
+  // Best-effort: provision a LinkForty short link (links.ship-fast.ai/CODE)
+  // for this referral code. Fire-and-forget — the referral code itself is
+  // usable via ?ref=CODE even if LinkForty is down or not configured.
+  if (
+    process.env.LINKFORTY_ENABLED?.trim().toLowerCase() === 'true' &&
+    process.env.LINKFORTY_API_URL &&
+    process.env.LINKFORTY_SERVICE_USER_ID
+  ) {
+    void ctx.scheduler
+      .runAfter(0, internal.linkforty.provisionShortLink, {
+        code,
+        userId,
+      })
+      .catch(() => {})
+  }
+
   // Best-effort Slack notification — new referral code created.
   const identity = await ctx.auth.getUserIdentity()
   void sendConvexBusinessNotification(
@@ -152,6 +169,7 @@ export const getMyReferralStatus = query({
 
     return {
       code: codeRow?.code ?? null,
+      shortUrl: codeRow?.linkfortyShortUrl ?? null,
       threshold: REFERRAL_THRESHOLD,
       discountPercent: REFERRAL_DISCOUNT_PERCENT,
       qualifiedCount,

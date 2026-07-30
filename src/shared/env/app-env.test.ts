@@ -32,6 +32,12 @@ describe('app env', () => {
       VITE_DUB_PUBLISHABLE_KEY: 'dub-publishable',
       VITE_DUB_REFERRAL_DOMAIN: 'refer.ship-fast.ai',
       VITE_DUB_SITE_DOMAIN: 'ship-fast.ai',
+      LINKFORTY_ENABLED: 'true',
+      LINKFORTY_API_URL: 'https://links.ship-fast.ai',
+      LINKFORTY_SERVICE_USER_ID: '00000000-0000-0000-0000-000000000001',
+      LINKFORTY_WEBHOOK_SECRET: 'lf-webhook-secret',
+      VITE_LINKFORTY_ENABLED: 'true',
+      VITE_LINKFORTY_BASE_URL: 'https://links.ship-fast.ai',
     })
 
     expect(env.CONVEX_URL).toBe('https://convex.ship-fast.io')
@@ -59,6 +65,14 @@ describe('app env', () => {
     expect(env.VITE_DUB_PUBLISHABLE_KEY).toBe('dub-publishable')
     expect(env.VITE_DUB_REFERRAL_DOMAIN).toBe('refer.ship-fast.ai')
     expect(env.VITE_DUB_SITE_DOMAIN).toBe('ship-fast.ai')
+    expect(env.LINKFORTY_ENABLED).toBe('true')
+    expect(env.LINKFORTY_API_URL).toBe('https://links.ship-fast.ai')
+    expect(env.LINKFORTY_SERVICE_USER_ID).toBe(
+      '00000000-0000-0000-0000-000000000001',
+    )
+    expect(env.LINKFORTY_WEBHOOK_SECRET).toBe('lf-webhook-secret')
+    expect(env.VITE_LINKFORTY_ENABLED).toBe('true')
+    expect(env.VITE_LINKFORTY_BASE_URL).toBe('https://links.ship-fast.ai')
   })
 
   it('rejects invalid URLs', () => {
