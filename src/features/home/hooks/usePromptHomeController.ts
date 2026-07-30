@@ -445,7 +445,13 @@ export const usePromptHomeController = () => {
               }
             }
           })
-          .catch(() => {
+          .catch((error) => {
+            if (
+              error instanceof AppError &&
+              error.code === 'VALIDATION_ERROR'
+            ) {
+              return
+            }
             if (speculativeGenerationRef.current === speculativeGeneration) {
               speculativeGenerationRef.current = null
             }
@@ -478,9 +484,7 @@ export const usePromptHomeController = () => {
         speculativeGenerationRef.current?.fingerprint === launch.fingerprint
           ? speculativeGenerationRef.current
           : null
-      if (speculativeGeneration === null) {
-        speculativeGenerationRef.current = null
-      }
+      speculativeGenerationRef.current = null
       const result = await (speculativeGeneration?.request ??
         createSessionWithRetry(createSessionFromHttp, launch.payload))
       const sessionId = result.sessionId

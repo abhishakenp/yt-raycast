@@ -1050,6 +1050,48 @@ describe('usePromptHomeController speculative substance gate', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
+  it('reuses a semantic policy rejection so one explicit submit creates one flag', async () => {
+    vi.useFakeTimers()
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          code: 'CONTENT_POLICY',
+          error: CONTENT_POLICY_CLIENT_MESSAGE,
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+          status: 422,
+        },
+      ),
+    )
+    const { result } = renderHook(() => usePromptHomeController())
+    const prompt =
+      'Create a gallery that encourages violent extremist recruitment'
+
+    act(() => {
+      result.current.setPrompt(prompt)
+      result.current.scheduleSpeculativeGeneration({ prompt })
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+      await Promise.resolve()
+    })
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    let submitPromise: Promise<void> | undefined
+    act(() => {
+      submitPromise = result.current.submitPrompt()
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_201)
+      await submitPromise
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(result.current.errorMessage).toBe(CONTENT_POLICY_CLIENT_MESSAGE)
+  })
+
   it('fires speculative for substantive prompts', async () => {
     vi.useFakeTimers()
     const { result } = renderHook(() => usePromptHomeController())
