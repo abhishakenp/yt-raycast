@@ -92,6 +92,7 @@ This rule exists because features keep getting broken by refactors and reimpleme
 
 - **Initial engine reference:** The original ship-faster engine is at `/Users/livio/Documents/ship-faster` (git: https://github.com/AbhiShake1/ship-faster.git). Use this for checking original implementations, patterns, and architectural decisions before reimplementing features.
 - Environment/secrets are managed with Doppler. For commands that need real env vars, prefer `doppler run -- <cmd>` rather than assuming `.env.local` has current keys; do not commit generated env files.
+- **Staging Convex**: `https://convex-backend-staging.ship-fast.ai` (container `shipfast-convex-stg1-m4rw4m-backend-1` on Exodus). Admin key works remotely. Full setup in `specs/architecture/dev-staging-setup.md`. Production Convex is `convex-backend.ship-fast.ai` — its admin key has a TTL bug, deploy from inside the container only.
 - `.cursor/settings.json` may set `cursorProject.defaultUrl` to `http://localhost:7420/` but `autoOpenOnStart` should stay `false`.
 - Workspace has a GitHub MCP configuration in `.cursor/mcp.json` using `bunx` and `@modelcontextprotocol/server-github` with token env var.
 - Local MCP plugin metadata indicates a configured tldraw integration under `.cursor/projects/Users-livio-Documents-ship-fast/mcps/plugin-tldraw-tldraw`.
