@@ -31,6 +31,8 @@ const MIN_LAUNCH_FEEDBACK_MS = 1_200
 const SPECULATIVE_GENERATION_DELAY_MS = 500
 const SPECULATIVE_MIN_PROMPT_WORDS = 3
 const SPECULATIVE_COMPLETED_FINGERPRINT_LIMIT = 8
+/** Max prompt length — enforced server-side in submit, not just UI maxLength. */
+const MAX_PROMPT_LENGTH = 5000
 
 type CreateSessionPayload = ReturnType<typeof buildCreateSessionPayload>
 type RunSubmitOptions = Partial<
@@ -267,6 +269,10 @@ export const usePromptHomeController = () => {
   const speculativeGenerationTimerRef = useRef<number | null>(null)
   const speculativeGenerationTimerFingerprintRef = useRef<string | null>(null)
   const completedSpeculativeFingerprintsRef = useRef<string[]>([])
+  // Tracks whether a session was launched — used to clear the prompt from
+  // localStorage on unmount so returning to the home page doesn't show
+  // the old prompt (which would appear "concatenated" with new typing).
+  const sessionStartedRef = useRef(false)
 
   const preloadGenerationRoute = useCallback(
     (sessionId: string) => {
@@ -298,6 +304,22 @@ export const usePromptHomeController = () => {
       invalidateSpeculativeGeneration()
     },
     [invalidateSpeculativeGeneration],
+  )
+
+  // On unmount: if a session was started, ensure the prompt is cleared from
+  // localStorage so returning to the home page doesn't show stale text that
+  // would appear "concatenated" with new typing.
+  useEffect(
+    () => () => {
+      if (sessionStartedRef.current) {
+        try {
+          window.localStorage.removeItem(LAST_PROMPT_STORAGE_KEY)
+        } catch {
+          // Storage may be blocked
+        }
+      }
+    },
+    [],
   )
 
   // Clean up stale ready-session cache entries on mount.
@@ -454,15 +476,29 @@ export const usePromptHomeController = () => {
 
   const runSubmit = async (opts?: RunSubmitOptions) => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
-    const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
-    const isPrivate = opts?.isPrivate ?? false
     const hasPrompt = runtimePrompt.length > 0
 
     if (!hasPrompt || isSubmitting || submitInFlightRef.current) {
       return
     }
-    if (!checkPromptContentPolicy(runtimePrompt).ok) {
-      setErrorMessage(CONTENT_POLICY_CLIENT_MESSAGE)
+    // Max-length enforcement (UI maxLength is not enough — paste/programmatic
+    // submit can bypass it). Truncate rather than reject to avoid losing work.
+    if (runtimePrompt.length > MAX_PROMPT_LENGTH) {
+      setErrorMessage(
+        `Prompt is too long (${runtimePrompt.length} chars). Please keep it under ${MAX_PROMPT_LENGTH} characters.`,
+      )
+      return
+    }
+    // Coherence gate: reject gibberish at submit time, not just speculative.
+    if (isGibberishPromptClient(runtimePrompt)) {
+      setErrorMessage(
+        'Your prompt looks like random text. Please describe a website you want to build.',
+      )
+      return
+    }
+    const policyResult = checkPromptContentPolicy(runtimePrompt)
+    if (!policyResult.ok) {
+      setErrorMessage(policyResult.message ?? CONTENT_POLICY_CLIENT_MESSAGE)
       return
     }
 
@@ -512,6 +548,7 @@ export const usePromptHomeController = () => {
       }
 
       setPrompt('')
+      sessionStartedRef.current = true
       try {
         window.localStorage.removeItem(LAST_PROMPT_STORAGE_KEY)
       } catch {

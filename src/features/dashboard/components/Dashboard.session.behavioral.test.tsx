@@ -3717,19 +3717,31 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     ).toBeLessThan(state.publishMutation.mock.invocationCallOrder[0])
   })
 
-  it('discards one pending draft before reloading the preview', async () => {
+  it('discards one pending draft before regenerating the session', async () => {
     setupReady()
-    const { reloadSpy } = installLocationMock()
+    getConvexState().publishMutation = vi
+      .fn()
+      .mockResolvedValue({ sessionId: 'new-regenerated-session' })
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }))
     render(<Dashboard sessionId="ready-session" />)
     await startStubDashboardTextDraft()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reload page' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Regenerate session' }),
+    )
 
-    expect(reloadSpy).toHaveBeenCalledTimes(1)
+    await waitFor(() => {
+      expect(getConvexState().publishMutation).toHaveBeenCalledTimes(1)
+    })
     expectStubDashboardDraftDiscarded()
     expect(
       getConvexState().pendingTextEdit.cancel.mock.invocationCallOrder[0],
-    ).toBeLessThan(reloadSpy.mock.invocationCallOrder[0])
+    ).toBeLessThan(
+      getConvexState().publishMutation.mock.invocationCallOrder[0],
+    )
+    fetchSpy.mockRestore()
   })
 
   it('discards one pending draft before navigating back home', async () => {

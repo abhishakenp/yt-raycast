@@ -49,7 +49,7 @@ console.log(`\n🚀 Running V3 generation benchmark`)
 console.log(`   Prompt: "${prompt}"`)
 console.log(`   Workspace: ${workspace}`)
 console.log(
-  `   Model: ${process.env.HOMEPAGE_MODEL ?? process.env.GROQ_MODEL ?? 'openai/gpt-oss-120b'} (default)`,
+  `   Model: ${process.env.HOMEPAGE_MODEL ?? process.env.GROQ_MODEL ?? 'openai/gpt-oss-20b'} (default)`,
 )
 console.log(`   (plan cache disabled for benchmark — forces full LLM call)\n`)
 
@@ -61,6 +61,7 @@ try {
     prompt,
     workspace,
     sessionCtx,
+    model: process.env.HOMEPAGE_MODEL ?? process.env.GROQ_MODEL ?? undefined,
     // No planCacheClient / promptCacheKey → forces full LLM call (worst case)
   })
 } catch (err) {

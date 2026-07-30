@@ -515,3 +515,54 @@ describe('parseTypeTree', () => {
     }
   })
 })
+
+describe('stripHlTags — [hl] tags stripped from all nested values', () => {
+  it('strips [hl] from footer column titles (stringArray in nested group)', () => {
+    const result = parseComposition(
+      [
+        '@section Footer',
+        '  brand Acme',
+        '  columns>[hl]Studio[/hl]~Home, About^[hl]Company[/hl]~Our Story, Careers',
+      ].join('\n'),
+    )
+    const footer = result.sections[0]
+    const props = sectionToProps(footer)
+    const columns = props.columns as Array<{
+      title: string
+      links: string[]
+    }>
+    expect(columns).toBeDefined()
+    expect(columns[0].title).toBe('Studio')
+    expect(columns[0].title).not.toContain('[hl]')
+    expect(columns[1].title).toBe('Company')
+    expect(columns[1].title).not.toContain('[hl]')
+    expect(columns[0].links).toEqual(['Home', 'About'])
+    expect(columns[1].links).toEqual(['Our Story', 'Careers'])
+  })
+
+  it('strips [hl] from string[] fields (links)', () => {
+    const result = parseComposition(
+      [
+        '@section Navbar',
+        '  brand Acme',
+        '  links>[hl]Home[/hl], [hl]About[/hl], Contact',
+      ].join('\n'),
+    )
+    const navbar = result.sections[0]
+    const props = sectionToProps(navbar)
+    const links = props.links as string[]
+    expect(links).toEqual(['Home', 'About', 'Contact'])
+    expect(links.every((l) => !l.includes('[hl]'))).toBe(true)
+  })
+
+  it('strips [hl] from top-level heading props', () => {
+    const result = parseComposition(
+      ['@section SplitHero', '  heading Build [hl]faster[/hl] with us'].join(
+        '\n',
+      ),
+    )
+    const props = sectionToProps(result.sections[0])
+    expect(props.heading).toBe('Build faster with us')
+    expect(props.heading).not.toContain('[hl]')
+  })
+})

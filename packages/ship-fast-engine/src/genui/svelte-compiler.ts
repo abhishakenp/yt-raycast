@@ -36,15 +36,61 @@ function pascalCase(name: string): string {
     .join('')
 }
 
+/**
+ * Security patterns that must be blocked in LLM-emitted Svelte source.
+ * The Svelte compiler catches syntax errors but not XSS — {@html} with
+ * untrusted input, inline event handlers, and javascript: URIs can all
+ * execute arbitrary code in the browser.
+ */
+const XSS_PATTERNS: Array<{ re: RegExp; message: string }> = [
+  {
+    re: /\{@html\s+/,
+    message:
+      '{@html} is blocked — it renders raw HTML and bypasses Svelte escaping, allowing XSS.',
+  },
+  {
+    // Inline HTML event handlers (onclick=, onerror=) — NOT Svelte's on:click
+    re: /\bon(click|error|load|mouseover|submit|change|input|focus|blur|mouseout|keyup|keydown|keypress)\s*=/i,
+    message: 'Inline event handlers (on*) are blocked — use Svelte on: directives instead.',
+  },
+  {
+    re: /javascript:/i,
+    message: 'javascript: URIs are blocked — they can execute arbitrary code.',
+  },
+  {
+    // External script imports are blocked; inline <script> is allowed for
+    // Svelte component logic (it's compiled, not rendered as-is).
+    re: /<script\s+src\s*=/i,
+    message: 'External <script src=> imports are blocked in Svelte components.',
+  },
+  {
+    re: /<iframe\b/i,
+    message: '<iframe> tags are blocked in Svelte components.',
+  },
+  {
+    re: /document\.(cookie|domain|write)|window\.(location|open)|eval\(|Function\(/,
+    message: 'DOM access to sensitive APIs (document.cookie, eval, etc.) is blocked.',
+  },
+]
+
 /** Validate Svelte source by attempting to compile it.
- *  Returns structured errors/warnings without evaluating the output. */
+ *  Returns structured errors/warnings without evaluating the output.
+ *  Also blocks XSS patterns that the Svelte compiler doesn't catch. */
 export function validateSvelteSource(source: string): SvelteValidationResult {
+  // Pre-compilation XSS check — the Svelte compiler only catches syntax errors,
+  // not security issues like {@html}, inline event handlers, or javascript: URIs.
+  const errors: string[] = []
+  const warnings: string[] = []
+  for (const { re, message } of XSS_PATTERNS) {
+    if (re.test(source)) {
+      errors.push(`Security: ${message}`)
+    }
+  }
+
   // Dynamic import — svelte/compiler is an ESM module
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { compile } = require('svelte/compiler')
-    const errors: string[] = []
-    const warnings: string[] = []
     try {
       const result = compile(source, {
         name: pascalCase('Validation'),
@@ -60,9 +106,9 @@ export function validateSvelteSource(source: string): SvelteValidationResult {
     return { valid: errors.length === 0, errors, warnings }
   } catch {
     return {
-      valid: false,
-      errors: ['svelte/compiler not available'],
-      warnings: [],
+      valid: errors.length === 0,
+      errors: errors.length > 0 ? errors : ['svelte/compiler not available'],
+      warnings,
     }
   }
 }

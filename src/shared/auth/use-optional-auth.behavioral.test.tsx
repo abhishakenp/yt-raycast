@@ -207,6 +207,15 @@ describe('useIsAdmin', () => {
     const { result } = renderHook(() => useIsAdmin())
     expect(result.current).toBe(false)
   })
+
+  it('returns true when Clerk is disabled, treating everyone as a super admin', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', 'true')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_ignored')
+    setClerk({ addListener: vi.fn(), session: null, user: null })
+    const { useIsAdmin } = await importOptionalAuth()
+    const { result } = renderHook(() => useIsAdmin())
+    expect(result.current).toBe(true)
+  })
 })
 
 describe('isCurrentUserAdmin', () => {
@@ -241,7 +250,7 @@ describe('isCurrentUserAdmin', () => {
     expect(isCurrentUserAdmin()).toBe(false)
   })
 
-  it('returns false when Clerk is not configured', async () => {
+  it('returns true when Clerk is disabled, treating everyone as a super admin', async () => {
     vi.stubEnv('VITE_DISABLE_CLERK', 'true')
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_ignored')
     setClerk({
@@ -250,6 +259,6 @@ describe('isCurrentUserAdmin', () => {
       user: { id: 'user_admin', publicMetadata: { system_role: 'admin' } },
     })
     const { isCurrentUserAdmin } = await importOptionalAuth()
-    expect(isCurrentUserAdmin()).toBe(false)
+    expect(isCurrentUserAdmin()).toBe(true)
   })
 })

@@ -221,7 +221,7 @@ export function buildCloneBrief(capture: CapturedPage): string {
   }
   // Titles often read "Brand — Tagline"; keep the leading brand token but cap length.
   if (brand) brand = truncate(brand.split(/[|–—·:•]/)[0].trim() || brand, 80)
-  if (!brand) brand = hostBrand || 'this website'
+  if (!brand) brand = hostBrand || ''
 
   // --- Nav labels: <a>/<button> inside <header>/<nav> ---
   const navLabels: string[] = []

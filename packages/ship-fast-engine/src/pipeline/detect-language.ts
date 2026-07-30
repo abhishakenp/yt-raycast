@@ -311,8 +311,20 @@ Examples:
     const nativeName = String(parsed.nativeName || name)
     const script = String(parsed.script || 'Latin')
 
-    const known = KNOWN_LANGUAGES.find((l) => l.code === code)
-    return buildLanguageMode(code, name, nativeName, script, known)
+    // Try to match by code first, then by name (case-insensitive).
+    // The LLM sometimes returns the language name as the code (e.g.
+    // "malayalam" instead of "ml"), which would cause the isIndian flag
+    // to be wrong. Matching by name resolves the correct code.
+    let known = KNOWN_LANGUAGES.find((l) => l.code === code)
+    if (!known) {
+      const lowerName = name.toLowerCase()
+      known = KNOWN_LANGUAGES.find(
+        (l) => l.name.toLowerCase() === lowerName,
+      )
+    }
+    // If we found a known language by name, use its canonical code
+    const finalCode = known ? known.code : code
+    return buildLanguageMode(finalCode, name, nativeName, script, known)
   } catch {
     return ENGLISH_MODE
   }

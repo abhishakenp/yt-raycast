@@ -662,11 +662,12 @@ export function Divider({
       <div
         className={cn('overflow-hidden border-y border-border py-3', className)}
       >
-        <div className="flex animate-[marquee_20s_linear_infinite] gap-8 whitespace-nowrap">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="flex w-max animate-[marquee_20s_linear_infinite] gap-8 whitespace-nowrap pr-8">
+          {Array.from({ length: 2 }).map((_, i) => (
             <span
               key={i}
               className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              aria-hidden={i === 1}
             >
               {text}
             </span>

@@ -221,13 +221,14 @@ export function useOptionalClerk(): OptionalClerk {
  * Synchronous, non-hook variant of {@link useIsAdmin}. Reads the current
  * Clerk snapshot from `window.Clerk` and returns `true` when the signed-in
  * user has an admin role in their `publicMetadata` (checked as both
- * `system_role` and `systemRole`). Safe to call from `beforeLoad` route
- * guards, server-side renders (returns `false` when `window` is undefined),
- * and any non-React code path. Returns `false` when Clerk is not configured,
- * no user is signed in, or the role is not `admin`.
+ * `system_role` and `systemRole`). When Clerk is disabled via
+ * `VITE_DISABLE_CLERK`, every visitor is treated as a super admin so the
+ * app stays fully usable without auth. Safe to call from `beforeLoad` route
+ * guards, server-side renders (returns the Clerk-disabled value when
+ * `window` is undefined), and any non-React code path.
  */
 export function isCurrentUserAdmin(): boolean {
-  if (!isClerkConfigured) return false
+  if (!isClerkConfigured) return true
   const metadata = readClerkSnapshot().user?.publicMetadata
   if (metadata === undefined) return false
   return metadata.system_role === 'admin' || metadata.systemRole === 'admin'
@@ -235,16 +236,17 @@ export function isCurrentUserAdmin(): boolean {
 
 /**
  * Returns `true` when the signed-in Clerk user has an admin role in their
- * `publicMetadata` (checked as both `system_role` and `systemRole`). Admins
- * bypass sign-in gates (e.g. SignInGate) so internal tools keep working
- * without the Clerk sign-in flow. Returns `false` when Clerk is not
- * configured, no user is signed in, or the role is not `admin`.
+ * `publicMetadata` (checked as both `system_role` and `systemRole`). When
+ * Clerk is disabled via `VITE_DISABLE_CLERK`, every visitor is treated as a
+ * super admin so the app stays fully usable without auth. Admins bypass
+ * sign-in gates (e.g. SignInGate) so internal tools keep working without the
+ * Clerk sign-in flow.
  */
 export function useIsAdmin(): boolean {
   const snapshot = useClerkSnapshot()
 
   return useMemo(() => {
-    if (!isClerkConfigured) return false
+    if (!isClerkConfigured) return true
     const metadata = snapshot.user?.publicMetadata
     if (metadata === undefined) return false
     return metadata.system_role === 'admin' || metadata.systemRole === 'admin'

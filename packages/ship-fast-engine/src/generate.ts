@@ -11,6 +11,62 @@ import { talaasChat } from './talaas.ts'
 const RETRYABLE =
   /\b(503|429|500|502|504)\b|unavailable|overload|high demand|try again|rate.?limit|temporar|timeout/i
 
+/**
+ * Build provider-appropriate model options. Not all providers support the same
+ * parameters — e.g. Cerebras rejects `citation_options` with a 400. This helper
+ * only includes options the provider accepts.
+ */
+export function buildModelOptions(modelId: string): Record<string, unknown> {
+  const provider = getProvider(modelId)
+  const isReasoning = supportsReasoningEffort(modelId)
+  const opts: Record<string, unknown> = {
+    top_p: 1,
+  }
+  // reasoning_effort is only for gpt-oss reasoning models
+  if (isReasoning) {
+    opts.reasoning_effort = 'low'
+  }
+  // include_reasoning and citation_options are Groq-specific.
+  // include_reasoning is only valid for reasoning models on Groq.
+  // Cerebras rejects both with 400.
+  if (provider === 'groq') {
+    if (isReasoning) opts.include_reasoning = false
+    opts.citation_options = 'disabled'
+  }
+  return opts
+}
+
+
+/**
+ * Harmony prefill that forces the model to skip the analysis (reasoning)
+ * channel and output directly into the final channel. gpt-oss models use
+ * OpenAI's harmony response format where reasoning goes to an `analysis`
+ * channel and the answer goes to a `final` channel. By prefilling the
+ * assistant message with a completed (empty) analysis channel and the
+ * start of the final channel, the model is forced to continue in the
+ * final channel — producing ZERO reasoning tokens.
+ *
+ * This works on Groq because Groq passes the assistant prefill through to
+ * the model's harmony renderer. Measured: 0 reasoning tokens vs 17 without.
+ *
+ * Only applies to gpt-oss models (the only ones using harmony format).
+ */
+const HARMONY_NO_THINK_PREFILL =
+  '<|start|>assistant<|channel|>analysis<|message|><|end|><|start|>assistant<|channel|>final<|message|>'
+
+export function buildMessages(
+  modelId: string,
+  user: string,
+): Array<{ role: 'user' | 'assistant'; content: string }> {
+  const msgs: Array<{ role: 'user' | 'assistant'; content: string }> = [
+    { role: 'user', content: user },
+  ]
+  if (supportsReasoningEffort(modelId) && process.env.DISABLE_HARMONY_PREFILL !== '1') {
+    msgs.push({ role: 'assistant', content: HARMONY_NO_THINK_PREFILL })
+  }
+  return msgs
+}
+
 export type GeneratedToolCall = {
   id: string
   tool: string
@@ -84,14 +140,8 @@ async function once(
         : chat({
             adapter: getAdapter(modelId),
             systemPrompts: [system],
-            messages: [{ role: 'user', content: user }],
-            modelOptions: {
-              ...(supportsReasoningEffort(modelId)
-                ? { reasoning_effort: 'low', include_reasoning: false }
-                : {}),
-              citation_options: 'disabled',
-              top_p: 1,
-            },
+            messages: buildMessages(modelId, user),
+            modelOptions: buildModelOptions(modelId),
             abortController: ac,
           })
     let text = ''
@@ -135,16 +185,10 @@ async function onceWithTools(
     const stream = chat({
       adapter: getAdapter(modelId),
       systemPrompts: [system],
-      messages: [{ role: 'user', content: user }],
+      messages: buildMessages(modelId, user),
       tools,
       agentLoopStrategy: maxIterations(4),
-      modelOptions: {
-        ...(supportsReasoningEffort(modelId)
-          ? { reasoning_effort: 'low', include_reasoning: false }
-          : {}),
-        citation_options: 'disabled',
-        top_p: 1,
-      },
+      modelOptions: buildModelOptions(modelId),
       abortController: ac,
     })
     let text = ''
@@ -223,17 +267,11 @@ async function onceStructuredWithTools<TSchema extends SchemaInput>(
     return (await chat({
       adapter: getAdapter(modelId),
       systemPrompts: [system],
-      messages: [{ role: 'user', content: user }],
+      messages: buildMessages(modelId, user),
       tools,
       outputSchema,
       agentLoopStrategy: maxIterations(4),
-      modelOptions: {
-        ...(supportsReasoningEffort(modelId)
-          ? { reasoning_effort: 'low', include_reasoning: false }
-          : {}),
-        citation_options: 'disabled',
-        top_p: 1,
-      },
+      modelOptions: buildModelOptions(modelId),
       abortController: ac,
     })) as InferSchemaType<TSchema>
   } catch (e) {
@@ -344,14 +382,8 @@ async function onceStream(
         : chat({
             adapter: getAdapter(modelId),
             systemPrompts: [system],
-            messages: [{ role: 'user', content: user }],
-            modelOptions: {
-              ...(supportsReasoningEffort(modelId)
-                ? { reasoning_effort: 'low', include_reasoning: false }
-                : {}),
-              citation_options: 'disabled',
-              top_p: 1,
-            },
+            messages: buildMessages(modelId, user),
+            modelOptions: buildModelOptions(modelId),
             abortController: ac,
           })
     let text = ''

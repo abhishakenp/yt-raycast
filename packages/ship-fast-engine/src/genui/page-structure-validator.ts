@@ -60,10 +60,35 @@ function motifsForPage(
 
 function pageTypeFromId(pageId: string): string | null {
   const lower = pageId.toLowerCase()
+  // Collect all matching page types, then return the longest key (most specific).
+  // This prevents "documentation-menu" from matching "menu" when "documentation"
+  // is a more specific page type that also matches (as a prefix).
+  // When two keys have the same length (e.g. "blog" and "post" for "blog-post"),
+  // prefer the prefix match (the first segment) as it's the primary page type.
+  let bestKey: string | null = null
+  let bestIsPrefix = false
   for (const key of Object.keys(PAGE_TYPE_REQUIREMENTS)) {
-    if (lower.includes(key)) return key
+    // Word-boundary matching: exact, or hyphen/underscore delimited prefix/suffix.
+    const isExact = lower === key
+    const isPrefix =
+      lower.startsWith(key + '-') || lower.startsWith(key + '_')
+    const isSuffix =
+      lower.endsWith('-' + key) || lower.endsWith('_' + key)
+    if (!isExact && !isPrefix && !isSuffix) continue
+    const thisIsPrefix = isExact || isPrefix
+    if (!bestKey) {
+      bestKey = key
+      bestIsPrefix = thisIsPrefix
+    } else if (key.length > bestKey.length) {
+      bestKey = key
+      bestIsPrefix = thisIsPrefix
+    } else if (key.length === bestKey.length && thisIsPrefix && !bestIsPrefix) {
+      // Tiebreaker: equal length, prefer prefix over suffix
+      bestKey = key
+      bestIsPrefix = thisIsPrefix
+    }
   }
-  return null
+  return bestKey
 }
 
 // ─── Validation result ────────────────────────────────────────────────────
@@ -149,39 +174,6 @@ const PAGE_TYPE_REPAIR_MOTIF: Record<string, string> = {
   admin: 'SidebarNav',
 }
 
-const PAGE_TYPE_REPAIR_PROPS: Record<string, Record<string, string>> = {
-  about: {
-    heading: 'Our Team',
-  },
-  blog: {
-    heading: 'Latest Articles',
-  },
-  news: {
-    heading: 'Latest News',
-  },
-  contact: {
-    heading: 'Get in Touch',
-  },
-  pricing: {
-    heading: 'Pricing Plans',
-  },
-  menu: {
-    heading: 'Our Menu',
-  },
-  services: {
-    heading: 'Our Services',
-  },
-  events: {
-    heading: 'Upcoming Events',
-  },
-  portfolio: {
-    heading: 'Our Work',
-  },
-  gallery: {
-    heading: 'Gallery',
-  },
-}
-
 export function repairPageStructure(parsed: ParsedComposition): {
   repaired: boolean
   violations: PageStructureViolation[]
@@ -215,12 +207,11 @@ export function repairPageStructure(parsed: ParsedComposition): {
     }
 
     // Replace the motif and props
-    const repairProps = PAGE_TYPE_REPAIR_PROPS[pageType] ?? {}
     targetSection.motif = repairMotif
-    // Preserve the heading if the original had one, otherwise use repair default
-    if (!targetSection.props.heading) {
-      targetSection.props.heading = repairProps.heading ?? ''
-    }
+    // Preserve the heading if the original had one. If the original had no
+    // heading, leave it empty — the motif renders its own default. Do NOT
+    // inject English repair headings (PAGE_TYPE_REPAIR_PROPS) because they
+    // break localization for non-English sites.
     // Clear nested groups that don't apply to the new motif
     targetSection.nested = {}
     repaired = true

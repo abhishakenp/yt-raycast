@@ -75,7 +75,14 @@ export async function compileComposition(
   parsed: ParsedComposition,
   opts: CompositionCompileOptions = {},
 ): Promise<CompositionCompileResult> {
-  const brand = opts.brand ?? parsed.brand ?? 'Brand'
+  // Brand is LLM-decided. The prompt requires @brand; if the LLM omits it,
+  // throw so the runner can retry instead of silently using a generic name.
+  const brand = opts.brand ?? parsed.brand
+  if (!brand) {
+    throw new Error(
+      'Composition missing @brand — the LLM must always emit a brand name.',
+    )
+  }
   const title = opts.title ?? parsed.title ?? brand
   const designStr = serializeDesignIntent(parsed.design)
   const pages = parsed.pages.length > 0 ? parsed.pages : ['home']

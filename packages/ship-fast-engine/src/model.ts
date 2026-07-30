@@ -1,14 +1,18 @@
 import { geminiText } from '@tanstack/ai-gemini'
 import { groqText } from '@tanstack/ai-groq'
+import { cerebrasText } from './llm/cerebras.ts'
 import { DEFAULT_MODEL } from './model-list.ts'
 
 // Map each model id to a factory that builds its typed adapter. Using literal ids
 // keeps geminiText/groqText's model-union types satisfied without any casts.
-// API keys are read from env by the adapters (GEMINI_API_KEY / GROQ_API_KEY).
+// API keys are read from env by the adapters (GEMINI_API_KEY / GROQ_API_KEY /
+// CEREBRAS_API_KEY).
 const ADAPTERS: Record<
   string,
-  () => ReturnType<typeof geminiText> | ReturnType<typeof groqText>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  () => any
 > = {
+  'cerebras/gpt-oss-120b': () => cerebrasText('gpt-oss-120b'),
   'llama-3.3-70b-versatile': () => groqText('llama-3.3-70b-versatile'),
   'openai/gpt-oss-120b': () => groqText('openai/gpt-oss-120b'),
   'openai/gpt-oss-20b': () => groqText('openai/gpt-oss-20b'),
@@ -22,11 +26,11 @@ const ADAPTERS: Record<
 }
 
 // Adapter fallback used when the requested id (or the configured DEFAULT_MODEL)
-// is not backed by a groq/gemini SDK adapter — e.g. talaas ids that are
+// is not backed by a groq/gemini/cerebras SDK adapter — e.g. talaas ids that are
 // selectable in the picker but routed through a different backend. Falling back to
 // a known-good groq adapter keeps getAdapter total and always returns a valid
-// groq|gemini provider.
-const FALLBACK_ADAPTER = ADAPTERS['openai/gpt-oss-120b']
+// provider.
+const FALLBACK_ADAPTER = ADAPTERS['openai/gpt-oss-20b']
 
 export function getAdapter(modelId: string) {
   const make = ADAPTERS[modelId] ?? ADAPTERS[DEFAULT_MODEL] ?? FALLBACK_ADAPTER

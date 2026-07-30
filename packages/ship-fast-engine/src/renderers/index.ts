@@ -519,12 +519,10 @@ function readSiteSpecJson(workspace: string): Record<string, unknown> | null {
 
 function normalizeSessionAeoSpec(siteSpec: any, brand: string, tagline = '') {
   const base = siteSpec && typeof siteSpec === 'object' ? siteSpec : {}
+  // Brand is LLM-decided — no hardcoded fallback. If all sources are empty,
+  // use the passed-in brand param (which itself comes from the LLM).
   const projectName =
-    base.projectName ||
-    base.seo?.siteName ||
-    base.brand ||
-    brand ||
-    'Generated Site'
+    base.projectName || base.seo?.siteName || base.brand || brand
   const description =
     base.seo?.description || base.tagline || tagline || `${projectName} preview`
   const pages =
@@ -691,7 +689,9 @@ export function renderProject(
 ) {
   const files: Record<string, string> = {}
   const spec: any = siteSpec
-  const brand = spec.brand || spec.projectName || 'Generated Site'
+  // Brand is LLM-decided — no hardcoded fallback string.
+  // If the spec has no brand, use the userPrompt (LLM-derived content, not a heuristic).
+  const brand = spec.brand || spec.projectName || spec.userPrompt || 'Untitled'
   const tagline =
     spec.tagline ||
     spec.pages?.[0]?.description ||

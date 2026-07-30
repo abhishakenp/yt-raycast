@@ -62,6 +62,7 @@ import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.star
 import { Route as ApiStorefrontMedusaConfigRouteImport } from './routes/api/storefront.medusa.config'
 import { Route as ApiStorefrontMedusaCartRouteImport } from './routes/api/storefront.medusa.cart'
 import { Route as ApiSessionsSessionIdStreamRouteImport } from './routes/api/sessions.$sessionId.stream'
+import { Route as ApiSessionsSessionIdStartGenerationRouteImport } from './routes/api/sessions.$sessionId.start-generation'
 import { Route as ApiSessionsSessionIdSectionEditRouteImport } from './routes/api/sessions.$sessionId.section-edit'
 import { Route as ApiSessionsSessionIdPreviewRawRouteImport } from './routes/api/sessions.$sessionId.preview-raw'
 import { Route as ApiSessionsSessionIdPreviewInlineTextRouteImport } from './routes/api/sessions.$sessionId.preview-inline-text'
@@ -369,6 +370,12 @@ const ApiSessionsSessionIdStreamRoute =
     path: '/stream',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
+const ApiSessionsSessionIdStartGenerationRoute =
+  ApiSessionsSessionIdStartGenerationRouteImport.update({
+    id: '/start-generation',
+    path: '/start-generation',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
 const ApiSessionsSessionIdSectionEditRoute =
   ApiSessionsSessionIdSectionEditRouteImport.update({
     id: '/section-edit',
@@ -667,6 +674,7 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
+  '/api/sessions/$sessionId/start-generation': typeof ApiSessionsSessionIdStartGenerationRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
   '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
@@ -759,6 +767,7 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
+  '/api/sessions/$sessionId/start-generation': typeof ApiSessionsSessionIdStartGenerationRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
   '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
@@ -853,6 +862,7 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
+  '/api/sessions/$sessionId/start-generation': typeof ApiSessionsSessionIdStartGenerationRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
   '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
@@ -948,6 +958,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
+    | '/api/sessions/$sessionId/start-generation'
     | '/api/sessions/$sessionId/stream'
     | '/api/storefront/medusa/cart'
     | '/api/storefront/medusa/config'
@@ -1040,6 +1051,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
+    | '/api/sessions/$sessionId/start-generation'
     | '/api/sessions/$sessionId/stream'
     | '/api/storefront/medusa/cart'
     | '/api/storefront/medusa/config'
@@ -1133,6 +1145,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
+    | '/api/sessions/$sessionId/start-generation'
     | '/api/sessions/$sessionId/stream'
     | '/api/storefront/medusa/cart'
     | '/api/storefront/medusa/config'
@@ -1588,6 +1601,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdStreamRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
+    '/api/sessions/$sessionId/start-generation': {
+      id: '/api/sessions/$sessionId/start-generation'
+      path: '/start-generation'
+      fullPath: '/api/sessions/$sessionId/start-generation'
+      preLoaderRoute: typeof ApiSessionsSessionIdStartGenerationRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
     '/api/sessions/$sessionId/section-edit': {
       id: '/api/sessions/$sessionId/section-edit'
       path: '/section-edit'
@@ -1950,6 +1970,7 @@ interface ApiSessionsSessionIdRouteChildren {
   ApiSessionsSessionIdPreviewInlineTextRoute: typeof ApiSessionsSessionIdPreviewInlineTextRoute
   ApiSessionsSessionIdPreviewRawRoute: typeof ApiSessionsSessionIdPreviewRawRoute
   ApiSessionsSessionIdSectionEditRoute: typeof ApiSessionsSessionIdSectionEditRoute
+  ApiSessionsSessionIdStartGenerationRoute: typeof ApiSessionsSessionIdStartGenerationRoute
   ApiSessionsSessionIdStreamRoute: typeof ApiSessionsSessionIdStreamRoute
   ApiSessionsSessionIdDeployLakebedRoute: typeof ApiSessionsSessionIdDeployLakebedRoute
   ApiSessionsSessionIdDownloadTargetRoute: typeof ApiSessionsSessionIdDownloadTargetRoute
@@ -1972,6 +1993,8 @@ const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
     ApiSessionsSessionIdPreviewInlineTextRoute,
   ApiSessionsSessionIdPreviewRawRoute: ApiSessionsSessionIdPreviewRawRoute,
   ApiSessionsSessionIdSectionEditRoute: ApiSessionsSessionIdSectionEditRoute,
+  ApiSessionsSessionIdStartGenerationRoute:
+    ApiSessionsSessionIdStartGenerationRoute,
   ApiSessionsSessionIdStreamRoute: ApiSessionsSessionIdStreamRoute,
   ApiSessionsSessionIdDeployLakebedRoute:
     ApiSessionsSessionIdDeployLakebedRoute,

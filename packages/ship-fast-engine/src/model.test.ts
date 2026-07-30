@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 const adapterMocks = vi.hoisted(() => ({
   geminiText: vi.fn((model) => ({ model, provider: 'gemini' })),
   groqText: vi.fn((model) => ({ model, provider: 'groq' })),
+  cerebrasText: vi.fn((model) => ({ model, provider: 'cerebras' })),
 }))
 
 vi.mock('@tanstack/ai-gemini', () => ({
@@ -11,6 +12,10 @@ vi.mock('@tanstack/ai-gemini', () => ({
 
 vi.mock('@tanstack/ai-groq', () => ({
   groqText: adapterMocks.groqText,
+}))
+
+vi.mock('./llm/cerebras.ts', () => ({
+  cerebrasText: adapterMocks.cerebrasText,
 }))
 
 describe('model adapter selection', () => {
@@ -34,12 +39,44 @@ describe('model adapter selection', () => {
     })
   })
 
+  it('creates a Cerebras adapter for cerebras/gpt-oss-120b', async () => {
+    const { getAdapter } = await import('./model.ts')
+
+    expect(getAdapter('cerebras/gpt-oss-120b')).toEqual({
+      model: 'gpt-oss-120b',
+      provider: 'cerebras',
+    })
+  })
+
   it('falls back to a valid adapter when callers pass an unknown model id', async () => {
     const { getAdapter } = await import('./model.ts')
 
     expect(() => getAdapter('unknown-model-from-ui')).not.toThrow()
     expect(getAdapter('unknown-model-from-ui')).toMatchObject({
-      provider: expect.stringMatching(/^(groq|gemini)$/),
+      provider: expect.stringMatching(/^(groq|gemini|cerebras)$/),
     })
+  })
+})
+
+describe('model-list catalog', () => {
+  it('includes cerebras/gpt-oss-120b in the model list', async () => {
+    const { SHIP_FAST_MODELS } = await import('./model-list.ts')
+    const cerebras = SHIP_FAST_MODELS.find(
+      (m) => m.id === 'cerebras/gpt-oss-120b',
+    )
+    expect(cerebras).toBeDefined()
+    expect(cerebras?.provider).toBe('cerebras')
+  })
+
+  it('reports cerebras as the provider for cerebras/gpt-oss-120b', async () => {
+    const { getProvider } = await import('./model-list.ts')
+    expect(getProvider('cerebras/gpt-oss-120b')).toBe('cerebras')
+  })
+
+  it('supportsReasoningEffort matches cerebras/gpt-oss-120b', async () => {
+    const { supportsReasoningEffort } = await import('./model-list.ts')
+    expect(supportsReasoningEffort('cerebras/gpt-oss-120b')).toBe(true)
+    expect(supportsReasoningEffort('openai/gpt-oss-20b')).toBe(true)
+    expect(supportsReasoningEffort('llama-3.3-70b-versatile')).toBe(false)
   })
 })

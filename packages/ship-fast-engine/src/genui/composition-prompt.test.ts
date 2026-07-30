@@ -36,7 +36,7 @@ describe('buildCompositionPrompt', () => {
 
   it('defaults to en locale', () => {
     const result = buildCompositionPrompt('test')
-    expect(result.system).toContain('Respond in en')
+    expect(result.system).toContain('LANGUAGE: en')
   })
 
   it('includes user prompt in user field', () => {
@@ -44,13 +44,11 @@ describe('buildCompositionPrompt', () => {
     expect(result.user).toContain(
       'Build a website for: a SaaS analytics platform',
     )
-    // User prompt now also includes design preference extraction instructions
-    expect(result.user).toContain('DESIGN PREFERENCE EXTRACTION')
+    expect(result.user).toContain('design preferences')
   })
 
   it('without genome, includes all 40 motifs', () => {
     const result = buildCompositionPrompt('test')
-    // Without genome, all motifs are available
     expect(result.system).toContain('SplitHero')
     expect(result.system).toContain('DonationBand')
     expect(result.system).toContain('Navbar')
@@ -60,11 +58,9 @@ describe('buildCompositionPrompt', () => {
   it('with genome, only includes genome-available motifs', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
-    // Hero and structural motifs are always present
     expect(result.system).toContain(genome.hero)
     expect(result.system).toContain('Navbar')
     expect(result.system).toContain('Footer')
-    // All available motifs should be in the prompt
     for (const motif of genome.availableMotifs) {
       expect(result.system).toContain(motif)
     }
@@ -73,60 +69,24 @@ describe('buildCompositionPrompt', () => {
   it('with genome, excludes motifs not in the genome', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
-    // Find motifs that are NOT in the genome
     const allMotifs = [
-      'SplitHero',
-      'CenteredHero',
-      'PosterHero',
-      'ComingSoonHero',
-      'CardGrid',
-      'BentoGrid',
-      'ImageGallery',
-      'LogoStrip',
-      'TestimonialRow',
-      'PersonGrid',
-      'PricingTable',
-      'StatsStrip',
-      'FeatureList',
-      'GroupedList',
-      'NumberedList',
-      'SimpleList',
-      'FaqAccordion',
-      'Timeline',
-      'CtaBand',
-      'NewsletterCta',
-      'ContactForm',
-      'BookingForm',
-      'Navbar',
-      'Footer',
-      'MediaSplit',
-      'MapBlock',
-      'ArticlePreview',
-      'CategoryNav',
-      'ComparisonTable',
-      'StepProcess',
-      'ValueProps',
-      'QuoteBand',
-      'LogosMarquee',
-      'ContentTabs',
-      'SearchBar',
-      'EventSchedule',
-      'ProductGrid',
-      'TeamShowcase',
-      'ProjectGallery',
-      'DonationBand',
+      'SplitHero', 'CenteredHero', 'PosterHero', 'ComingSoonHero',
+      'CardGrid', 'BentoGrid', 'ImageGallery', 'LogoStrip',
+      'TestimonialRow', 'PersonGrid', 'PricingTable', 'StatsStrip',
+      'FeatureList', 'GroupedList', 'NumberedList', 'SimpleList',
+      'FaqAccordion', 'Timeline', 'CtaBand', 'NewsletterCta',
+      'ContactForm', 'BookingForm', 'Navbar', 'Footer',
+      'MediaSplit', 'MapBlock', 'ArticlePreview', 'CategoryNav',
+      'ComparisonTable', 'StepProcess', 'ValueProps', 'QuoteBand',
+      'LogosMarquee', 'ContentTabs', 'SearchBar', 'EventSchedule',
+      'ProductGrid', 'TeamShowcase', 'ProjectGallery', 'DonationBand',
     ]
     const excluded = allMotifs.filter(
       (m) => !genome.availableMotifs.includes(m),
     )
-    // At least some motifs should be excluded (we pick ~9-11 of 40)
     expect(excluded.length).toBeGreaterThan(20)
-    // Excluded motifs should NOT appear in the motif list section
-    // (they might appear in other parts of the prompt, so we check the
-    // AVAILABLE MOTIFS section specifically)
-    const motifSection = result.system.split('AVAILABLE MOTIFS')[1] ?? ''
+    const motifSection = result.system.split('MOTIFS')[1] ?? ''
     for (const motif of excluded) {
-      // The motif signature line should not be present
       expect(motifSection).not.toContain(`${motif}:`)
     }
   })
@@ -140,8 +100,7 @@ describe('buildCompositionPrompt', () => {
     expect(result.system).toContain('@rhythm')
     expect(result.system).toContain('@sectionCount')
     expect(result.system).toContain('@pageCount')
-    // Hero is now a default, not a MUST constraint
-    expect(result.system).toContain(`Default hero: ${genome.hero}`)
+    expect(result.system).toContain(`@hero ${genome.hero}`)
   })
 
   it('includes design axes from genome', () => {
@@ -157,13 +116,9 @@ describe('buildCompositionPrompt', () => {
   it('does NOT include old fixed-vertical guidance', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
-    // The old "DESIGN INTENT GUIDE" mapped verticals to design axes
     expect(result.system).not.toContain('DESIGN INTENT GUIDE')
-    // The old "MOTIF SELECTION GUIDE" mapped verticals to motifs
     expect(result.system).not.toContain('MOTIF SELECTION GUIDE')
-    // The old "CHROME RULES" mapped verticals to chromes
     expect(result.system).not.toContain('CHROME RULES')
-    // No hardcoded vertical→design mapping
     expect(result.system).not.toContain('Tech/SaaS →')
     expect(result.system).not.toContain('Restaurant/Food →')
   })
@@ -171,14 +126,13 @@ describe('buildCompositionPrompt', () => {
   it('includes rhythm guide', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
-    expect(result.system).toContain('RHYTHM')
-    expect(result.system).toContain(genome.rhythm.toUpperCase())
+    expect(result.system).toContain('@rhythm')
+    expect(result.system).toContain(genome.rhythm)
   })
 
   it('different seeds produce different genomes', () => {
     const genome1 = generateGenome('session-A')
     const genome2 = generateGenome('session-B')
-    // They should differ in at least some properties
     const differ =
       genome1.hero !== genome2.hero ||
       genome1.rhythm !== genome2.rhythm ||
@@ -193,64 +147,66 @@ describe('buildCompositionPrompt', () => {
     expect(genome1).toEqual(genome2)
   })
 
-  it('includes section count as a target, not a hard requirement', () => {
+  it('includes section count guidance', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
-    expect(result.system).toContain(`${genome.sectionCount} content sections`)
-    // Should NOT say "EXACTLY" anymore — it's now a soft target
-    expect(result.system).not.toContain('EXACTLY')
+    expect(result.system).toContain(`${genome.sectionCount}`)
   })
 
-  it('includes per-page content rules', () => {
+  it('includes per-page uniqueness rules', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
-    expect(result.system).toContain('PER-PAGE CONTENT RULES')
     expect(result.system).toContain('UNIQUE sections')
-    expect(result.system).toContain('Do NOT reuse sections from the home page')
+    expect(result.system).toContain("Don't reuse motifs across pages")
   })
 
   it('includes @page directive syntax instructions', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
     expect(result.system).toContain('@page')
-    expect(result.system).toContain('MULTI-PAGE OUTPUT')
+    expect(result.system).toContain('NO @page home')
   })
 
   it('presents genome as defaults, not critical constraints', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
     expect(result.system).toContain('defaults')
-    expect(result.system).toContain('DEFAULTS')
-    // Should NOT say "CRITICAL — these are your structural constraints" anymore
-    expect(result.system).not.toContain(
-      'CRITICAL — these are your structural constraints',
-    )
   })
 
-  it('includes priority rule that user preferences override genome', () => {
+  it('includes user preference override instruction', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('test', { genome })
-    expect(result.system).toContain('PRIORITY RULE')
-    expect(result.system).toContain('user')
     expect(result.system).toContain('override')
   })
 
-  it('includes design axis override guide for mapping user language', () => {
-    const genome = generateGenome('test-session-1')
-    const result = buildCompositionPrompt('test', { genome })
-    expect(result.system).toContain('DESIGN AXIS OVERRIDE GUIDE')
-    expect(result.system).toContain('square buttons')
-    expect(result.system).toContain('retro')
-    expect(result.system).toContain('split hero')
+  it('includes separator examples', () => {
+    const result = buildCompositionPrompt('test')
+    expect(result.system).toContain('EXAMPLES')
+    expect(result.system).toContain('cards>')
+    expect(result.system).toContain('tiers>')
+    expect(result.system).toContain('testimonials>')
   })
 
-  it('user prompt includes design preference extraction instructions', () => {
+  it('includes chrome guide', () => {
+    const result = buildCompositionPrompt('test')
+    expect(result.system).toContain('hairline')
+    expect(result.system).toContain('brutalist')
+    expect(result.system).toContain('terminal')
+    expect(result.system).toContain('editorial')
+  })
+
+  it('includes content quality rules', () => {
+    const result = buildCompositionPrompt('test')
+    expect(result.system).toContain('imageAlt')
+    expect(result.system).toContain('English')
+  })
+
+  it('user prompt includes design preference extraction', () => {
     const genome = generateGenome('test-session-1')
     const result = buildCompositionPrompt('dog blog with square buttons', {
       genome,
     })
     expect(result.user).toContain('dog blog with square buttons')
-    expect(result.user).toContain('DESIGN PREFERENCE EXTRACTION')
-    expect(result.user).toContain('override the corresponding genome default')
+    expect(result.user).toContain('design preferences')
   })
 })

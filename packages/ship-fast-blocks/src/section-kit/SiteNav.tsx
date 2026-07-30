@@ -20,6 +20,89 @@ import {
 } from './nav-href.tsx'
 import { RouterLink } from './RouterLink.tsx'
 
+/* ---------------------------------------------------------------------------
+ * Scroll-collapse hook — shrinks the navbar on scroll (sliver effect).
+ * The brand row smoothly collapses; nav links stay pinned.
+ * Works inside any scroll container (window, .genui-preview, iframe, …).
+ * ------------------------------------------------------------------------- */
+
+function useScrollCollapse(threshold = 60) {
+  const [collapsed, setCollapsed] = React.useState(false)
+  const ref = React.useRef<HTMLElement | null>(null)
+
+  React.useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    // Find the nearest scrollable ancestor. Use a function so we can retry
+    // after content loads (scrollHeight may equal clientHeight at mount).
+    let scrollTarget: Element | Window = window
+    let cleanup: (() => void) | undefined
+
+    const findScrollTarget = () => {
+      let parent: Element | null = el.parentElement
+      while (parent) {
+        const cs = getComputedStyle(parent)
+        const canScroll =
+          (cs.overflowY === 'auto' || cs.overflowY === 'scroll') &&
+          parent.scrollHeight > parent.clientHeight
+        if (canScroll) return parent
+        parent = parent.parentElement
+      }
+      return null
+    }
+
+    let ticking = false
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const scrollTop =
+          scrollTarget === window
+            ? window.scrollY
+            : (scrollTarget as Element).scrollTop
+        setCollapsed(scrollTop > threshold)
+        ticking = false
+      })
+    }
+
+    const attach = (target: Element | Window) => {
+      target.addEventListener('scroll', onScroll, { passive: true })
+      cleanup = () => target.removeEventListener('scroll', onScroll)
+    }
+
+    // Try immediately; if no scroll container found, retry after a tick
+    // (content may still be loading).
+    const found = findScrollTarget()
+    if (found) {
+      scrollTarget = found
+      attach(scrollTarget)
+      onScroll()
+    } else {
+      attach(window)
+      onScroll()
+      // Retry after content has a chance to load
+      const id = setTimeout(() => {
+        cleanup?.()
+        const retry = findScrollTarget()
+        if (retry) {
+          scrollTarget = retry
+          attach(scrollTarget)
+          onScroll()
+        }
+      }, 300)
+      cleanup = () => {
+        clearTimeout(id)
+        window.removeEventListener('scroll', onScroll)
+      }
+    }
+
+    return () => cleanup?.()
+  }, [threshold])
+
+  return { collapsed, ref }
+}
+
 /**
  * Matches CTA labels that express an auth intent (sign in / log in / sign up /
  * sign out / account / profile). Used to auto-wire a nav CTA to the real
@@ -293,6 +376,7 @@ function LegacySiteNav(props: SiteNavProps) {
   const homeHref = useSectionKitNavHref(props.homeTarget ?? 'Home')
   const ctaHref = useSectionKitNavHref(cta?.target ?? cta?.label)
   const variant = props.variant ?? 'default'
+  const { collapsed, ref: scrollRef } = useScrollCollapse()
 
   // Design-aware nav height: compact=h-16, balanced=h-20, airy=h-24
   const heightClass = d.density.section.includes('py-10')
@@ -410,42 +494,77 @@ function LegacySiteNav(props: SiteNavProps) {
     ) : null
 
   // ── Variant: centered — brand centered on top row, links on bottom row ──
+  // Sliver effect: on scroll, brand row collapses and a compact brand
+  // smoothly slides into the links row (left side). Links stay pinned.
   if (variant === 'centered') {
     return (
       <>
-        <header className={cn(headerClasses, props.className)}>
+        <header ref={scrollRef} className={cn(headerClasses, 'transition-all duration-300 ease-out', collapsed && 'shadow-sm', props.className)}>
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className={cn('flex items-center justify-center', heightClass)}>
+            {/* Top row: large centered brand — collapses on scroll */}
+            <div
+              className={cn(
+                'flex items-center justify-center overflow-hidden transition-all duration-300 ease-out',
+                collapsed ? 'max-h-0 opacity-0' : 'max-h-24 opacity-100',
+                heightClass,
+              )}
+            >
               {brandLink}
             </div>
-            <div className="hidden items-center justify-center gap-8 border-t border-border py-3 md:flex">
-              {props.nav?.map((label) => (
-                <NavbarNavLink key={label} href={label}>
-                  {label}
-                </NavbarNavLink>
-              ))}
-              {ctaButton}
-              {phoneLink}
+            {/* Bottom row: links + compact brand that slides in on scroll */}
+            <div className={cn(
+              'flex items-center gap-8 border-t border-border py-3 transition-all duration-300 ease-out',
+              'hidden md:flex',
+              collapsed ? 'justify-between' : 'justify-center',
+            )}>
+              {/* Compact brand — invisible when expanded, slides in from left on scroll */}
+              <div
+                className={cn(
+                  'flex items-center gap-2 transition-all duration-300 ease-out',
+                  collapsed ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none',
+                )}
+              >
+                <Logo brand={props.brand ?? ''}>
+                  <LogoImage className="size-6" fallback={props.brandMark} />
+                  <LogoLabel
+                    className={cn(
+                      'text-sm font-medium text-foreground',
+                      brandFontClass,
+                      props.brandClassName,
+                    )}
+                  />
+                </Logo>
+              </div>
+              <div className="flex items-center gap-8">
+                {props.nav?.map((label) => (
+                  <NavbarNavLink key={label} href={label}>
+                    {label}
+                  </NavbarNavLink>
+                ))}
+                {ctaButton}
+                {phoneLink}
+              </div>
             </div>
           </div>
           <div className="flex items-center justify-end px-6 lg:px-8 md:hidden">
             {mobileDrawer}
           </div>
         </header>
-        {sticky && <div aria-hidden="true" className="h-20" />}
+        {sticky && <div aria-hidden="true" className={cn('transition-all duration-300 ease-out', collapsed ? 'h-14' : 'h-20')} />}
       </>
     )
   }
 
   // ── Variant: minimal — brand left, CTA right, no visible links ──
+  // Sliver: shrinks height on scroll, brand mark stays.
   if (variant === 'minimal') {
     return (
       <>
-        <header className={cn(headerClasses, props.className)}>
+        <header ref={scrollRef} className={cn(headerClasses, 'transition-all duration-300 ease-out', collapsed && 'shadow-sm', props.className)}>
           <nav
             className={cn(
-              'mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8',
-              heightClass,
+              'mx-auto flex max-w-7xl items-center justify-between px-6 transition-all duration-300 ease-out lg:px-8',
+              collapsed ? 'h-12' : heightClass,
             )}
           >
             {brandLink}
@@ -456,20 +575,21 @@ function LegacySiteNav(props: SiteNavProps) {
             </div>
           </nav>
         </header>
-        {sticky && <div aria-hidden="true" className="h-20" />}
+        {sticky && <div aria-hidden="true" className={collapsed ? 'h-12' : 'h-20'} />}
       </>
     )
   }
 
   // ── Variant: split — brand left, links right, CTA far right ──
+  // Sliver: shrinks height on scroll.
   if (variant === 'split') {
     return (
       <>
-        <header className={cn(headerClasses, props.className)}>
+        <header ref={scrollRef} className={cn(headerClasses, 'transition-all duration-300 ease-out', collapsed && 'shadow-sm', props.className)}>
           <nav
             className={cn(
-              'mx-auto flex max-w-7xl items-center gap-8 px-6 lg:px-8',
-              heightClass,
+              'mx-auto flex max-w-7xl items-center gap-8 px-6 transition-all duration-300 ease-out lg:px-8',
+              collapsed ? 'h-12' : heightClass,
             )}
           >
             {brandLink}
@@ -487,19 +607,20 @@ function LegacySiteNav(props: SiteNavProps) {
             </div>
           </nav>
         </header>
-        {sticky && <div aria-hidden="true" className="h-20" />}
+        {sticky && <div aria-hidden="true" className={collapsed ? 'h-12' : 'h-20'} />}
       </>
     )
   }
 
   // ── Variant: default — brand left, links center, CTA right ──
+  // Sliver: shrinks height on scroll.
   return (
     <>
-      <header className={cn(headerClasses, props.className)}>
+      <header ref={scrollRef} className={cn(headerClasses, 'transition-all duration-300 ease-out', collapsed && 'shadow-sm', props.className)}>
         <nav
           className={cn(
-            'mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8',
-            heightClass,
+            'mx-auto flex max-w-7xl items-center justify-between px-6 transition-all duration-300 ease-out lg:px-8',
+            collapsed ? 'h-12' : heightClass,
           )}
         >
           {brandLink}
@@ -512,7 +633,7 @@ function LegacySiteNav(props: SiteNavProps) {
         </nav>
       </header>
       {/* Spacer to offset fixed header so page content isn't hidden behind nav */}
-      {sticky && <div aria-hidden="true" className="h-20" />}
+      {sticky && <div aria-hidden="true" className={collapsed ? 'h-12' : 'h-20'} />}
     </>
   )
 }

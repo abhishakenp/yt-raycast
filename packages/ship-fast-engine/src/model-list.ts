@@ -2,7 +2,7 @@
 // in model.ts so all of them are selectable in the picker for testing — including
 // the small/fast ones. Default is the strongest reliable model.
 
-export type ModelProvider = 'groq' | 'gemini' | 'talaas'
+export type ModelProvider = 'groq' | 'gemini' | 'talaas' | 'cerebras'
 
 export interface ShipFastModel {
   id: string
@@ -11,6 +11,11 @@ export interface ShipFastModel {
 }
 
 export const SHIP_FAST_MODELS: readonly ShipFastModel[] = [
+  {
+    id: 'cerebras/gpt-oss-120b',
+    label: 'GPT-OSS 120B (Cerebras)',
+    provider: 'cerebras',
+  },
   { id: 'openai/gpt-oss-120b', label: 'GPT-OSS 120B', provider: 'groq' },
   { id: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B', provider: 'groq' },
   { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B', provider: 'groq' },
@@ -31,10 +36,17 @@ export const SHIP_FAST_MODELS: readonly ShipFastModel[] = [
   { id: 'llama3.1-8B', label: 'Llama 3.1 8B (Talaas)', provider: 'talaas' },
 ]
 
-// Default to GPT-OSS 120B via Groq — the strongest reliable reasoning model
-// available. `reasoning_effort: 'low'` is sent for these models (see
-// supportsReasoningEffort / generate.ts).
-export const DEFAULT_MODEL = 'openai/gpt-oss-120b'
+// Default to GPT-OSS 120B via Cerebras — same model quality as Groq 120B
+// but at ~1800 tok/s (vs Groq's ~500 tok/s), measured ~3x faster
+// (avg ~1.3s vs ~4.3s wall clock). Cerebras is an OpenAI-compatible backend;
+// see llm/cerebras.ts for the adapter. reasoning_format='hidden' nukes
+// reasoning from the streamed output (see buildModelOptions in generate.ts).
+// Fallback: openai/gpt-oss-20b via Groq if CEREBRAS_API_KEY is not set.
+// Benchmark: bun scripts/bench-model-comparison.mjs
+export const DEFAULT_MODEL =
+  process.env.CEREBRAS_API_KEY
+    ? 'cerebras/gpt-oss-120b'
+    : 'openai/gpt-oss-120b'
 
 export function isKnownModel(id: string): boolean {
   return SHIP_FAST_MODELS.some((m) => m.id === id)

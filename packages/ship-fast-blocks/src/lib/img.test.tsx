@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Image, ImageContextProvider } from './img'
+import { Image, ImageContextProvider, searchQueryFromAlt } from './img'
 import { encodeMultiImageSrc } from './multi-image-src'
 
 function srcOf(markup: string): string {
@@ -147,5 +147,46 @@ describe('Image + ImageContextProvider', () => {
     expect(markup).toContain('data-ship-image-carousel')
     expect(markup).toContain('animate-pulse')
     expect(markup).toContain('bg-accent')
+  })
+})
+
+// ─── Regression tests for non-English alt text fix ───────────────────────
+
+describe('searchQueryFromAlt non-English script handling', () => {
+  it('returns contextual query for Arabic alt text instead of nature', () => {
+    const q = searchQueryFromAlt('صورة المطعم')
+    expect(q).toBe('professional business')
+    expect(q).not.toBe('nature')
+  })
+
+  it('returns contextual query for Hindi alt text instead of nature', () => {
+    const q = searchQueryFromAlt('रेस्तरां की छवि')
+    expect(q).toBe('professional business')
+    expect(q).not.toBe('nature')
+  })
+
+  it('returns contextual query for Chinese alt text instead of nature', () => {
+    const q = searchQueryFromAlt('餐厅图片')
+    expect(q).toBe('professional business')
+    expect(q).not.toBe('nature')
+  })
+
+  it('returns contextual query for Malayalam alt text instead of nature', () => {
+    const q = searchQueryFromAlt('ബേക്കറി ചിത്രം')
+    expect(q).toBe('professional business')
+    expect(q).not.toBe('nature')
+  })
+
+  it('still returns nature for empty alt', () => {
+    expect(searchQueryFromAlt('')).toBe('nature')
+  })
+
+  it('still returns nature for generic English alt with no meaningful words', () => {
+    expect(searchQueryFromAlt('image')).toBe('nature')
+  })
+
+  it('extracts meaningful words from English alt', () => {
+    const q = searchQueryFromAlt('modern dental clinic reception')
+    expect(q).toContain('medical clinic healthcare')
   })
 })

@@ -203,3 +203,51 @@ describe('enum completeness', () => {
     }
   })
 })
+
+// ─── Regression tests for deductive break fixes ──────────────────────────
+
+describe('parseDesignLine alias + double-colon fixes', () => {
+  it('maps motion:gentle to subtle via alias', () => {
+    const d = parseDesignLine('@design motion:gentle')
+    expect(d.motion).toBe('subtle')
+  })
+
+  it('maps motion:kinetic to lively via alias', () => {
+    const d = parseDesignLine('@design motion:kinetic')
+    expect(d.motion).toBe('lively')
+  })
+
+  it('maps motion:static to none via alias', () => {
+    const d = parseDesignLine('@design motion:static')
+    expect(d.motion).toBe('none')
+  })
+
+  it('maps radius:square to sharp via alias', () => {
+    const d = parseDesignLine('@design radius:square')
+    expect(d.radius).toBe('sharp')
+  })
+
+  it('handles double-colon radius::sharp', () => {
+    const d = parseDesignLine('@design radius::sharp')
+    expect(d.radius).toBe('sharp')
+  })
+
+  it('handles double-colon on multiple axes', () => {
+    const d = parseDesignLine('@design ::radius::sharp ::shadow::none')
+    // The parser strips empty parts, so it should still resolve
+    expect(d.radius).toBe('sharp')
+    expect(d.shadow).toBe('none')
+  })
+
+  it('preserves valid motion values without alias', () => {
+    expect(parseDesignLine('@design motion:none').motion).toBe('none')
+    expect(parseDesignLine('@design motion:subtle').motion).toBe('subtle')
+    expect(parseDesignLine('@design motion:lively').motion).toBe('lively')
+  })
+
+  it('ignores garbage values and keeps defaults', () => {
+    const d = parseDesignLine('@design radius:banana shadow:nothing')
+    expect(d.radius).toBe(DEFAULT_DESIGN.radius)
+    expect(d.shadow).toBe(DEFAULT_DESIGN.shadow)
+  })
+})

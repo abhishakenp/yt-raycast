@@ -96,4 +96,20 @@ describe('generation prefetch reuse', () => {
       isGibberishPromptClient('a polished SaaS homepage for analytics'),
     ).toBe(false)
   })
+
+  it('does not flag non-English prompts as gibberish', () => {
+    expect(isGibberishPromptClient('मुंबई के लिए मराठी शादी प्लानर वेबसाइट')).toBe(false)
+    expect(isGibberishPromptClient('为我的餐厅创建一个网站')).toBe(false)
+    expect(isGibberishPromptClient('أنشئ موقعاً لمطعمي')).toBe(false)
+  })
+
+  it('flags single-char repeated gibberish', () => {
+    expect(isGibberishPromptClient('x x x x x')).toBe(true)
+    expect(isGibberishPromptClient('q q q q q q')).toBe(true)
+  })
+
+  it('allows short meaningful prompts', () => {
+    expect(isGibberishPromptClient('dental clinic')).toBe(false)
+    expect(isGibberishPromptClient('coffee shop')).toBe(false)
+  })
 })

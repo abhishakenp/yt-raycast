@@ -53,6 +53,7 @@ type ConvexTestState = {
 type AuthTestState = {
   clerkEnabled: boolean
   isSignedIn: boolean
+  isAdmin: boolean
   openSignIn: ReturnType<typeof vi.fn>
   ownerSecret?: string
 }
@@ -61,6 +62,7 @@ const { authState } = vi.hoisted(() => ({
   authState: {
     clerkEnabled: false,
     isSignedIn: false,
+    isAdmin: false,
     openSignIn: vi.fn(),
     ownerSecret: undefined as string | undefined,
   },
@@ -135,7 +137,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
-  useIsAdmin: () => false,
+  useIsAdmin: () => authState.isAdmin,
   useOptionalAuth: () => ({
     getToken: async () => null,
     isLoaded: true,
@@ -368,6 +370,7 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     getConvexState().themeMutation = vi.fn().mockResolvedValue(undefined)
     getAuthState().clerkEnabled = false
     getAuthState().isSignedIn = false
+    getAuthState().isAdmin = false
     getAuthState().ownerSecret = undefined
     getAuthState().openSignIn = vi.fn()
     window.localStorage.clear()
@@ -389,6 +392,7 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     getConvexState().sidePanelData = null
     getAuthState().clerkEnabled = false
     getAuthState().isSignedIn = false
+    getAuthState().isAdmin = false
     getAuthState().ownerSecret = undefined
     getAuthState().openSignIn = vi.fn()
     vi.clearAllMocks()
@@ -585,16 +589,40 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     )
   })
 
-  // 6. Refresh button
-  it('triggers a preview reload from the refresh button', () => {
+  // 6. Regenerate button (admin-only, replaces old refresh button)
+  it('triggers regenerate from the regenerate button for admins', async () => {
     setupReady()
-    const { reloadSpy } = installLocationMock()
+    getAuthState().isAdmin = true
+    getConvexState().publishMutation = vi
+      .fn()
+      .mockResolvedValue({ sessionId: 'new-regenerated-session' })
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }))
     render(<Dashboard sessionId="ready-session" />)
 
-    const refresh = screen.getByRole('button', { name: 'Reload page' })
-    expect(refresh.getAttribute('data-tip')).toBe('Refresh preview')
-    fireEvent.click(refresh)
-    expect(reloadSpy).toHaveBeenCalledTimes(1)
+    const regenerate = screen.getByRole('button', {
+      name: 'Regenerate session',
+    })
+    expect(regenerate.getAttribute('data-tip')).toBe('Regenerate session')
+    fireEvent.click(regenerate)
+
+    await waitFor(() => {
+      expect(getConvexState().publishMutation).toHaveBeenCalledWith({
+        sessionId: 'ready-session',
+      })
+    })
+    // Navigates to the new session
+    expect(routerMocks.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'new-regenerated-session' },
+    })
+    // Fire-and-forget VPS generation trigger
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/sessions/new-regenerated-session/start-generation',
+      expect.objectContaining({ method: 'POST' }),
+    )
+    fetchSpy.mockRestore()
   })
 
   // 7. Status indicator
@@ -665,6 +693,27 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Publish preview' }))
 
     expect(await screen.findByText('Publish failed')).toBeTruthy()
+  })
+
+  // 8b. Regenerate button (admin-only)
+  it('hides the regenerate button from non-admin users', () => {
+    setupReady()
+    getAuthState().isAdmin = false
+    render(<Dashboard sessionId="ready-session" />)
+
+    expect(
+      screen.queryByRole('button', { name: 'Regenerate session' }),
+    ).toBeNull()
+  })
+
+  it('shows the regenerate button to admin users', () => {
+    setupReady()
+    getAuthState().isAdmin = true
+    render(<Dashboard sessionId="ready-session" />)
+
+    expect(
+      screen.getByRole('button', { name: 'Regenerate session' }),
+    ).toBeTruthy()
   })
 
   // 9. Side rail panel switching

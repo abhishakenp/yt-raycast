@@ -71,7 +71,7 @@ import ThemePicker from '@/genui/components/ThemePicker'
 import LanguagePicker from '@/genui/components/LanguagePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { SignInGate, useSignInGate } from '@/shared/auth/SignInGate'
-import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
+import { useIsAdmin, useOptionalAuth } from '@/shared/auth/use-optional-auth'
 import { cn } from '#/lib/utils'
 
 const DeploymentPanel = lazy(() =>
@@ -486,7 +486,6 @@ export function Dashboard({ sessionId }: DashboardProps) {
     new WeakMap<HTMLElement, PendingTextChange>(),
   )
   const [dashboardSaves] = useState(createPendingDashboardSaves)
-  const reloadInFlightRef = useRef(false)
   const trackDashboardSave = dashboardSaves.track
   const activeLinkEditsRef = useRef(0)
   // Capture the element's original style attribute when the toolbar opens
@@ -623,6 +622,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
     sidePanelQueryArgs,
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
+  const regenerateSession = useMutation(api.sessions.regenerateSession)
   const setThemeOverrideMutation = useMutation(api.sessions.setThemeOverride)
   const setPreferredLanguageMutation = useMutation(
     api.sessions.setPreferredLanguage,
@@ -854,25 +854,6 @@ export function Dashboard({ sessionId }: DashboardProps) {
     void navigate({ to: '/' })
   }, [canGoBack, closeInlineEditingSurface, navigate, router])
 
-  const handlePreviewReload = () => {
-    closeInlineEditingSurface('cancel')
-    if (!dashboardSaves.hasPending()) {
-      window.location.reload()
-      return
-    }
-    if (reloadInFlightRef.current) return
-
-    reloadInFlightRef.current = true
-    void (async () => {
-      try {
-        await dashboardSaves.drain()
-        window.location.reload()
-      } finally {
-        reloadInFlightRef.current = false
-      }
-    })()
-  }
-
   useEffect(() => {
     const preventReloadDuringSave = (event: BeforeUnloadEvent) => {
       if (!dashboardSaves.hasPending()) return
@@ -897,6 +878,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
       : undefined
   const activeSessionId = resolvedSessionId ?? sessionId
   const { getToken } = useOptionalAuth()
+  const isAdmin = useIsAdmin()
   const activeAnonymousOwnerSecret =
     typeof window === 'undefined'
       ? undefined
@@ -1106,6 +1088,59 @@ export function Dashboard({ sessionId }: DashboardProps) {
     } finally {
       publishInFlightRef.current = false
       setIsPublishing(false)
+    }
+  }
+
+  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [regenerateError, setRegenerateError] = useState<string>()
+
+  const handleRegenerate = async () => {
+    if (resolvedSessionId === undefined || isRegenerating) return
+
+    closeInlineEditingSurface('cancel')
+    setRegenerateError(undefined)
+    setIsRegenerating(true)
+
+    try {
+      const result = await regenerateSession({
+        sessionId: resolvedSessionId,
+      })
+
+      if (typeof result.sessionId !== 'string' || !result.sessionId) {
+        throw new Error('Regeneration failed to produce a new session.')
+      }
+
+      // Navigate to the new session's dashboard.
+      navigate({
+        to: '/generate/$sessionId/$',
+        params: { sessionId: result.sessionId },
+      })
+
+      // Fire-and-forget: trigger VPS generation for the new session. The
+      // Convex mutation only admits the session; the warm VPS engine must be
+      // started via this route call.
+      const token = await getToken({ template: 'convex' })
+      void fetch(
+        `/api/sessions/${encodeURIComponent(result.sessionId)}/start-generation`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      ).catch((error) => {
+        console.error('[regenerate] VPS generation trigger failed', {
+          sessionId: result.sessionId,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      })
+    } catch (error) {
+      setRegenerateError(
+        error instanceof Error ? error.message : 'Regeneration failed',
+      )
+    } finally {
+      setIsRegenerating(false)
     }
   }
 
@@ -1792,31 +1827,37 @@ export function Dashboard({ sessionId }: DashboardProps) {
                         ? 'Republish'
                         : 'Publish'}
                   </button>
-                  <button
-                    type="button"
-                    className="dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white"
-                    id="preview-refresh-btn"
-                    data-tip="Refresh preview"
-                    aria-label="Reload page"
-                    onClick={handlePreviewReload}
-                  >
-                    <svg
-                      className="size-4"
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      aria-hidden="true"
+                  {isAdmin ? (
+                    <button
+                      type="button"
+                      className="dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white disabled:cursor-not-allowed disabled:opacity-45"
+                      id="preview-refresh-btn"
+                      data-tip="Regenerate session"
+                      aria-label="Regenerate session"
+                      disabled={isRegenerating}
+                      onClick={() => {
+                        if (!requireSignInForEdit()) return
+                        void handleRegenerate()
+                      }}
                     >
-                      <path
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16M21 21v-5h-5"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        className={cn('size-4', isRegenerating && 'animate-spin')}
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16M21 21v-5h-5"
+                        />
+                      </svg>
+                    </button>
+                  ) : null}
                   <div
                     className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1"
                     role="group"
@@ -1962,6 +2003,11 @@ export function Dashboard({ sessionId }: DashboardProps) {
               {publishError && (
                 <div className="absolute right-6 top-6 z-20 max-w-sm rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-100 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
                   {publishError}
+                </div>
+              )}
+              {regenerateError && (
+                <div className="absolute right-6 top-6 z-20 max-w-sm rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-100 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+                  {regenerateError}
                 </div>
               )}
               <div className="relative min-h-0 overflow-hidden bg-[#05070c]">

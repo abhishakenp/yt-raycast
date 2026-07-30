@@ -267,6 +267,38 @@ export function resolveDesign(intent: DesignIntent): DesignClasses {
 
 // ─── Parser: "@design radius:rounded gradients:vibrant ..." → DesignIntent ──
 
+/**
+ * Alias maps: values the prompt documents (but aren't in the enum) map to
+ * valid enum values. This prevents silent drops when the LLM emits a
+ * documented-but-invalid value like "motion:gentle" or "motion:kinetic".
+ */
+const RADIUS_ALIASES: Record<string, Radius> = {
+  soft: 'rounded',
+  square: 'sharp',
+  hard: 'sharp',
+}
+const SHADOW_ALIASES: Record<string, Shadow> = {}
+const GRADIENT_ALIASES: Record<string, Gradient> = {}
+const DENSITY_ALIASES: Record<string, Density> = {}
+const TYPOGRAPHY_ALIASES: Record<string, Typography> = {}
+const MOTION_ALIASES: Record<string, Motion> = {
+  static: 'none',
+  gentle: 'subtle',
+  kinetic: 'lively',
+  animated: 'lively',
+  lively: 'lively',
+}
+
+function resolveAxis<T extends string>(
+  v: string,
+  values: readonly T[],
+  aliases: Record<string, T>,
+): T | undefined {
+  if (values.includes(v as T)) return v as T
+  if (aliases[v]) return aliases[v]
+  return undefined
+}
+
 export function parseDesignLine(line: string): DesignIntent {
   const intent: Partial<DesignIntent> = { ...DEFAULT_DESIGN }
   // Strip leading "@design" token
@@ -274,33 +306,47 @@ export function parseDesignLine(line: string): DesignIntent {
   if (!body) return DEFAULT_DESIGN
   // Split on whitespace, each token is "key:value"
   for (const token of body.split(/\s+/)) {
-    const [key, value] = token.split(':')
-    if (!key || !value) continue
+    // Split on ":" and take the last non-empty part as the value.
+    // This handles double-colons ("radius::sharp") and trailing colons.
+    const parts = token.split(':').filter((p) => p.length > 0)
+    if (parts.length < 2) continue
+    const key = parts[0]
+    const value = parts[parts.length - 1]
     const v = value.toLowerCase()
     switch (key.toLowerCase()) {
-      case 'radius':
-        if (RADIUS_VALUES.includes(v as Radius)) intent.radius = v as Radius
+      case 'radius': {
+        const resolved = resolveAxis(v, RADIUS_VALUES, RADIUS_ALIASES)
+        if (resolved) intent.radius = resolved
         break
+      }
       case 'shadow':
-      case 'shadows':
-        if (SHADOW_VALUES.includes(v as Shadow)) intent.shadow = v as Shadow
+      case 'shadows': {
+        const resolved = resolveAxis(v, SHADOW_VALUES, SHADOW_ALIASES)
+        if (resolved) intent.shadow = resolved
         break
+      }
       case 'gradient':
-      case 'gradients':
-        if (GRADIENT_VALUES.includes(v as Gradient))
-          intent.gradient = v as Gradient
+      case 'gradients': {
+        const resolved = resolveAxis(v, GRADIENT_VALUES, GRADIENT_ALIASES)
+        if (resolved) intent.gradient = resolved
         break
-      case 'density':
-        if (DENSITY_VALUES.includes(v as Density)) intent.density = v as Density
+      }
+      case 'density': {
+        const resolved = resolveAxis(v, DENSITY_VALUES, DENSITY_ALIASES)
+        if (resolved) intent.density = resolved
         break
+      }
       case 'typography':
-      case 'type':
-        if (TYPOGRAPHY_VALUES.includes(v as Typography))
-          intent.typography = v as Typography
+      case 'type': {
+        const resolved = resolveAxis(v, TYPOGRAPHY_VALUES, TYPOGRAPHY_ALIASES)
+        if (resolved) intent.typography = resolved
         break
-      case 'motion':
-        if (MOTION_VALUES.includes(v as Motion)) intent.motion = v as Motion
+      }
+      case 'motion': {
+        const resolved = resolveAxis(v, MOTION_VALUES, MOTION_ALIASES)
+        if (resolved) intent.motion = resolved
         break
+      }
     }
   }
   return intent as DesignIntent

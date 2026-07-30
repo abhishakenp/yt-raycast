@@ -1360,7 +1360,7 @@ function NavbarSection({ section, siteSpec }) {
       {isStore ? (
         <div className="store-promo-bar">
           <div className="container store-promo-bar__inner">
-            <span className="store-promo-bar__msg">Free shipping on orders over $75 · Easy returns</span>
+            <span className="store-promo-bar__msg">{section.promoText || 'Free shipping on orders over $75 · Easy returns'}</span>
           </div>
         </div>
       ) : null}
@@ -1379,7 +1379,7 @@ function NavbarSection({ section, siteSpec }) {
             <span className="brand-name">{section.headline || 'Site'}</span>
           </SmartLink>
           <button className="nav-toggle" type="button" onClick={() => setOpen((value) => !value)}>
-            Menu
+            {section.menuLabel || 'Menu'}
           </button>
           <nav className="nav-links">
             {(section.links || []).filter(Boolean).map((link) => {
@@ -1409,11 +1409,11 @@ function NavbarSection({ section, siteSpec }) {
             {isStore ? (
               <div className="store-nav-tools">
                 <label className="store-search">
-                  <span className="visually-hidden">Search products</span>
-                  <input type="search" className="store-search__input" placeholder="Search products…" autoComplete="off" />
+                  <span className="visually-hidden">{section.searchLabel || 'Search products'}</span>
+                  <input type="search" className="store-search__input" placeholder={section.searchPlaceholder || 'Search products…'} autoComplete="off" />
                 </label>
                 <SmartLink className="store-account" href="/account">
-                  Account
+                  {section.accountLabel || 'Account'}
                 </SmartLink>
                 <SmartLink className="store-account" href="/wishlist">
                   Wishlist
@@ -1727,7 +1727,7 @@ export default function SectionRenderer({ section, siteSpec }) {
               </div>
               {item.body ? <p className="product-card__excerpt">{item.body}</p> : null}
               <button type="button" className="product-card__atc button button--primary">
-                Add to cart
+                {section.addToCartLabel || 'Add to cart'}
               </button>
             </div>
           </article>
@@ -1830,7 +1830,7 @@ export default function SectionRenderer({ section, siteSpec }) {
                       </div>
                       {item.body ? <p className="product-card__excerpt">{item.body}</p> : null}
                       <button type="button" className="product-card__atc button button--primary">
-                        Add to cart
+                        {section.addToCartLabel || 'Add to cart'}
                       </button>
                     </div>
                   </article>

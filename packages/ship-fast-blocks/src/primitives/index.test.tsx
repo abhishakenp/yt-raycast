@@ -350,10 +350,10 @@ describe('Divider', () => {
     expect(screen.getByText('Section')).toBeTruthy()
   })
 
-  it('renders marquee with repeated text', () => {
+  it('renders marquee with exactly 2 copies for seamless loop', () => {
     render(<Divider variant="marquee" text="Available now" />)
     const texts = screen.getAllByText('Available now')
-    expect(texts.length).toBeGreaterThan(1)
+    expect(texts.length).toBe(2)
   })
 })
 

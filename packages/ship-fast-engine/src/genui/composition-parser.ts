@@ -381,10 +381,10 @@ export function dslNodeToValue(node: DslNode, typeTree: TypeTree): unknown {
       if (node.fields.length === 1 && node.fields[0].includes(',')) {
         return node.fields[0]
           .split(',')
-          .map((s) => s.trim())
+          .map((s) => stripHlTags(s.trim()))
           .filter((s) => s.length > 0)
       }
-      return [...node.fields]
+      return node.fields.map(stripHlTags)
     case 'objectArray':
       return dslNodeToObjectArray(node, typeTree.fields)
     case 'object':
@@ -527,9 +527,9 @@ function dslNodeToObjectArray(
                 obj[field.name] = rawValue.includes(',')
                   ? rawValue
                       .split(',')
-                      .map((s) => s.trim())
+                      .map((s) => stripHlTags(s.trim()))
                       .filter((s) => s.length > 0)
-                  : [rawValue]
+                  : [stripHlTags(rawValue)]
               } else {
                 obj[field.name] = []
               }
@@ -545,7 +545,7 @@ function dslNodeToObjectArray(
       const nameField = typeFields.find(
         (f) => f.type.kind === 'primitive' && f.type.tsType === 'string',
       )
-      if (nameField) obj[nameField.name] = childName
+      if (nameField) obj[nameField.name] = stripHlTags(childName)
       for (const field of typeFields) {
         if (field.name === nameField?.name) continue
         obj[field.name] = dslNodeToValue(childNode, field.type)
@@ -655,9 +655,9 @@ function dslNodeToObject(
         obj[field.name] = rawValue.includes(',')
           ? rawValue
               .split(',')
-              .map((s) => s.trim())
+              .map((s) => stripHlTags(s.trim()))
               .filter((s) => s.length > 0)
-          : [rawValue]
+          : [stripHlTags(rawValue)]
       } else {
         obj[field.name] = []
       }
@@ -674,6 +674,10 @@ function dslNodeToObject(
   return obj
 }
 
+function stripHlTags(s: string): string {
+  return s.replace(/\[hl\]|\[\/hl\]/g, '')
+}
+
 function coercePrimitive(value: string, tsType: string): unknown {
   if (tsType === 'boolean')
     return value === 'true' || value === '1' || value === 'yes'
@@ -681,7 +685,7 @@ function coercePrimitive(value: string, tsType: string): unknown {
     const n = Number(value)
     return isNaN(n) ? value : n
   }
-  return value
+  return stripHlTags(value)
 }
 
 /**
@@ -728,7 +732,9 @@ export function sectionToProps(
     if (typeTree) {
       props[groupName] = dslNodeToValue(node, typeTree)
     } else {
-      props[groupName] = node.fields
+      props[groupName] = node.fields.map((f) =>
+        typeof f === 'string' ? stripHlTags(f) : f,
+      )
     }
   }
   if (section.design) {

@@ -179,7 +179,7 @@ function normalizeAlt(alt: unknown): string {
   return 'image'
 }
 
-function searchQueryFromAlt(alt: string): string {
+export function searchQueryFromAlt(alt: string): string {
   const trimmed = alt.trim()
   if (!trimmed) return 'nature'
 
@@ -197,6 +197,17 @@ function searchQueryFromAlt(alt: string): string {
   if (hint && core) return `${hint} ${core}`.trim().slice(0, 96)
   if (hint) return hint
   if (core) return core.slice(0, 96)
+
+  // Non-English alt text (Arabic, Hindi, Chinese, etc.) gets stripped to empty
+  // by the ASCII filter above. Instead of falling back to 'nature', detect
+  // non-Latin scripts and return a contextual generic query. The
+  // buildImageSearchQuery function will blend the page domain (brand/tagline)
+  // into this, so the photo matches the business rather than showing nature.
+  const hasNonLatin = /[\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u0900-\u097F\u0980-\u09FF\u0A00-\u0A7F\u0A80-\u0AFF\u0B00-\u0B7F\u0B80-\u0BFF\u0C00-\u0C7F\u0C80-\u0CFF\u0D00-\u0D7F\u0D80-\u0DFF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(
+    trimmed,
+  )
+  if (hasNonLatin) return 'professional business'
+
   return 'nature'
 }
 

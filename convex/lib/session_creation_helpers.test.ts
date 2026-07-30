@@ -941,6 +941,87 @@ describe('session creation helpers', () => {
     expect(runAfter).not.toHaveBeenCalled()
   })
 
+  it('forceFresh skips idempotent workspace lookup and always creates a new session', async () => {
+    vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
+    vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
+    vi.stubEnv('DISABLE_LIMIT', 'true')
+    const references = createReferences()
+    const existingSession = sessionDoc({
+      _id: 'existing_session' as Doc<'sessions'>['_id'],
+      prompt: 'Build a luxury ski chalet site',
+      workspace: 'workspace-force-fresh',
+      previewVersion: 1,
+      isPrivate: false,
+    })
+    const { ctx, inserted } = createMutationCtxFor({
+      sessions: [existingSession],
+    })
+
+    const result = await createGenerationSession(
+      ctx,
+      {
+        prompt: 'Build a luxury ski chalet site',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace-force-fresh',
+        clientIpHash: 'ip_hash_force_fresh',
+        forceFresh: true,
+      },
+      references,
+    )
+
+    // Should create a NEW session, not return the existing one
+    expect(result.cached).toBe(false)
+    expect(result.sessionId).not.toBe('existing_session')
+    const session = inserted.find((row) => row.table === 'sessions')
+    expect(session?.value).toMatchObject({
+      prompt: 'Build a luxury ski chalet site',
+      status: 'queued',
+      previewVersion: 0,
+    })
+  })
+
+  it('forceFresh skips prompt-cache reuse even for public anonymous prompts', async () => {
+    vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
+    vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
+    vi.stubEnv('DISABLE_LIMIT', 'true')
+    const references = createReferences()
+    const cachedSession = sessionDoc({
+      _id: 'cached_session' as Doc<'sessions'>['_id'],
+      prompt: 'Build a luxury ski chalet site',
+      promptCacheKey: 'build-a-luxury-ski-chalet-site|en',
+      previewVersion: 1,
+      isPrivate: false,
+    })
+    const { ctx, inserted } = createMutationCtxFor({
+      sessions: [cachedSession],
+    })
+
+    const result = await createGenerationSession(
+      ctx,
+      {
+        prompt: 'Build a luxury ski chalet site',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace-cache-skip',
+        forceFresh: true,
+      },
+      references,
+    )
+
+    // Should create a NEW session, not reuse the cached one
+    expect(result.cached).toBe(false)
+    expect(result.sessionId).not.toBe('cached_session')
+    expect(result.reused).not.toBe(true)
+    const session = inserted.find((row) => row.table === 'sessions')
+    expect(session?.value).toMatchObject({
+      prompt: 'Build a luxury ski chalet site',
+      status: 'queued',
+    })
+  })
+
   it('create handler delegates to createGenerationSession helper with references', async () => {
     vi.resetModules()
     vi.doMock('./session_creation_helpers', () => ({
@@ -977,6 +1058,143 @@ describe('session creation helpers', () => {
       })
     } finally {
       vi.doUnmock('./session_creation_helpers')
+      vi.resetModules()
+    }
+  })
+
+  it('regenerateSession throws FORBIDDEN when auth enabled and user is not admin', async () => {
+    vi.resetModules()
+    vi.doMock('./session_creation_helpers', () => ({
+      createGenerationSession: vi.fn(async () => ({
+        sessionId: 'new-session',
+        cached: false,
+      })),
+    }))
+    vi.doMock('./session_export_helpers', () => ({
+      isAuthDisabled: () => false,
+    }))
+    vi.doMock('./session_access_helpers', () => ({
+      isUserAdmin: vi.fn(async () => false),
+      getUserId: vi.fn(),
+    }))
+    try {
+      const { regenerateSession } = await import('../sessions')
+      const ctx = {
+        db: { get: async () => null },
+      } as unknown as MutationCtx
+      const handler =
+        regenerateSession as unknown as MutationHandler<{ sessionId: string }>
+      await expect(
+        handler(ctx, { sessionId: 'session_x' as never }),
+      ).rejects.toMatchObject({
+        data: { code: 'FORBIDDEN' },
+      })
+    } finally {
+      vi.doUnmock('./session_creation_helpers')
+      vi.doUnmock('./session_export_helpers')
+      vi.doUnmock('./session_access_helpers')
+      vi.resetModules()
+    }
+  })
+
+  it('regenerateSession throws NOT_FOUND when session is missing', async () => {
+    vi.resetModules()
+    vi.doMock('./session_creation_helpers', () => ({
+      createGenerationSession: vi.fn(async () => ({
+        sessionId: 'new-session',
+        cached: false,
+      })),
+    }))
+    vi.doMock('./session_export_helpers', () => ({
+      isAuthDisabled: () => true,
+    }))
+    vi.doMock('./session_access_helpers', () => ({
+      isUserAdmin: vi.fn(async () => true),
+      getUserId: vi.fn(),
+    }))
+    try {
+      const { regenerateSession } = await import('../sessions')
+      const ctx = {
+        db: { get: async () => null },
+      } as unknown as MutationCtx
+      const handler =
+        regenerateSession as unknown as MutationHandler<{ sessionId: string }>
+      await expect(
+        handler(ctx, { sessionId: 'missing_session' as never }),
+      ).rejects.toMatchObject({
+        data: { code: 'NOT_FOUND' },
+      })
+    } finally {
+      vi.doUnmock('./session_creation_helpers')
+      vi.doUnmock('./session_export_helpers')
+      vi.doUnmock('./session_access_helpers')
+      vi.resetModules()
+    }
+  })
+
+  it('regenerateSession reuses the source session prompt with forceFresh=true', async () => {
+    vi.resetModules()
+    const sourceSession = {
+      _id: 'source_session',
+      prompt: 'Build a luxury ski chalet site',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      designReferenceUrls: ['https://example.com/inspiration'],
+      designReferenceNotes: 'warm editorial',
+      cloneUrl: 'https://example.com/source',
+      engineVersion: 'v2',
+    }
+    vi.doMock('./session_creation_helpers', () => ({
+      createGenerationSession: vi.fn(async () => ({
+        sessionId: 'new-regenerated-session',
+        cached: false,
+      })),
+    }))
+    vi.doMock('./session_export_helpers', () => ({
+      isAuthDisabled: () => true,
+    }))
+    vi.doMock('./session_access_helpers', () => ({
+      isUserAdmin: vi.fn(async () => true),
+      getUserId: vi.fn(),
+    }))
+    try {
+      const { regenerateSession } = await import('../sessions')
+      const mockedModule = await import('./session_creation_helpers')
+      const mockedCreateGenerationSession = vi.mocked(
+        mockedModule.createGenerationSession,
+      )
+      const ctx = {
+        db: { get: async () => sourceSession },
+      } as unknown as MutationCtx
+      const handler =
+        regenerateSession as unknown as MutationHandler<{ sessionId: string }>
+      const result = await handler(ctx, {
+        sessionId: 'source_session' as never,
+      })
+
+      expect(result).toMatchObject({
+        sessionId: 'new-regenerated-session',
+        cached: false,
+      })
+      expect(mockedCreateGenerationSession).toHaveBeenCalledTimes(1)
+      const [, callArgs] = mockedCreateGenerationSession.mock.calls[0]
+      expect(callArgs).toMatchObject({
+        prompt: 'Build a luxury ski chalet site',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: '',
+        designReferenceUrls: ['https://example.com/inspiration'],
+        designReferenceNotes: 'warm editorial',
+        cloneUrl: 'https://example.com/source',
+        engineVersion: 'v2',
+        forceFresh: true,
+      })
+    } finally {
+      vi.doUnmock('./session_creation_helpers')
+      vi.doUnmock('./session_export_helpers')
+      vi.doUnmock('./session_access_helpers')
       vi.resetModules()
     }
   })

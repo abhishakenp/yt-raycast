@@ -90,6 +90,7 @@ import {
   createSessionExport,
   ensureExportArtifactBuild,
   exportGeneratorRevision,
+  isAuthDisabled,
   loadOwnedExportArtifactDownload,
   loadOwnedExportBuildInput,
   loadOwnedExportForGitHubPush,
@@ -310,6 +311,55 @@ export const create = mutation({
           internal.sessions.deleteDraftSessionIfStillDraft,
       },
     )
+    return result
+  },
+})
+
+export const regenerateSessionArgs = {
+  sessionId: v.id('sessions'),
+}
+
+export const regenerateSession = mutation({
+  args: regenerateSessionArgs,
+  handler: async (ctx, args) => {
+    // Admin-only: VITE_DISABLE_CLERK bypasses auth, otherwise require admin role.
+    if (!isAuthDisabled() && !(await isUserAdmin(ctx))) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Only admins can regenerate sessions.',
+      })
+    }
+
+    const session = await ctx.db.get(args.sessionId)
+    if (session === null || session.deletedAt !== undefined) {
+      throw new ConvexError({ code: 'NOT_FOUND', message: 'Session not found' })
+    }
+
+    // Reuse the same creation logic as /api/sessions/create, but force a
+    // fresh session (skip idempotency + prompt-cache reuse) so regeneration
+    // always produces a new session with the same prompt.
+    const result = await createGenerationSession(
+      ctx,
+      {
+        prompt: session.prompt,
+        preferredLanguage: session.preferredLanguage,
+        preferredExportTarget: session.preferredExportTarget,
+        isPrivate: session.isPrivate ?? false,
+        workspace: '', // fresh workspace — no idempotency collision
+        designReferenceUrls: session.designReferenceUrls,
+        designReferenceNotes: session.designReferenceNotes,
+        cloneUrl: session.cloneUrl,
+        engineVersion: session.engineVersion,
+        forceFresh: true,
+      },
+      {
+        sendOperationalNotification:
+          sessionInternalReferences.sendOperationalNotification,
+        deleteDraftSessionIfStillDraft:
+          internal.sessions.deleteDraftSessionIfStillDraft,
+      },
+    )
+
     return result
   },
 })

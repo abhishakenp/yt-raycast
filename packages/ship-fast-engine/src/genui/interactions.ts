@@ -24,7 +24,7 @@ export const INTERACTIONS: Record<string, InteractionProfile> = {
       submit: 'createBooking',
     },
   },
-  NewsletterSignup: {
+  NewsletterCta: {
     profiles: ['submission'],
     submissionTable: 'subscribers',
     submissionFields: ['label', 'source'],

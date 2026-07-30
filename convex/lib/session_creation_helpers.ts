@@ -309,6 +309,11 @@ export type CreateGenerationSessionInput = {
   cloneUrl?: string
   engineVersion?: string
   isDraft?: boolean
+  /**
+   * When true, skips idempotent workspace lookup and prompt-cache reuse so a
+   * fresh session is always created. Used by admin-only regenerate.
+   */
+  forceFresh?: boolean
 }
 
 export type CreateGenerationSessionReferences = {
@@ -369,19 +374,21 @@ export async function createGenerationSession(
     designReferenceNotes,
   ])
   const promptCacheKey = normalizePromptCacheKey(prompt, args.preferredLanguage)
-  const idempotentSession = await findIdempotentWorkspaceSession(ctx, {
-    workspace: args.workspace,
-    prompt,
-    preferredLanguage: args.preferredLanguage,
-    preferredExportTarget: args.preferredExportTarget,
-    designReferenceFingerprint,
-    cloneUrl,
-    engineVersion: args.engineVersion,
-    isPrivate: args.isPrivate,
-    userId,
-    anonymousClientIdHash,
-    clientIpHash,
-  })
+  const idempotentSession = args.forceFresh
+    ? null
+    : await findIdempotentWorkspaceSession(ctx, {
+        workspace: args.workspace,
+        prompt,
+        preferredLanguage: args.preferredLanguage,
+        preferredExportTarget: args.preferredExportTarget,
+        designReferenceFingerprint,
+        cloneUrl,
+        engineVersion: args.engineVersion,
+        isPrivate: args.isPrivate,
+        userId,
+        anonymousClientIdHash,
+        clientIpHash,
+      })
 
   if (idempotentSession !== null) {
     if (idempotentSession.isDraft === true && !isDraft) {
@@ -404,6 +411,7 @@ export async function createGenerationSession(
   // cache still makes fresh generations cheap; the per-session seed re-randomizes
   // layout so unseen prompts still vary.
   const canUsePromptCache =
+    !args.forceFresh &&
     designReferenceFingerprint === undefined &&
     args.isPrivate === false &&
     userId === undefined
