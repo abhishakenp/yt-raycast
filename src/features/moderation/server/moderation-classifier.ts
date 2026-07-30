@@ -9,6 +9,7 @@ import {
 export const CONTENT_MODERATION_MODEL = 'openai/gpt-oss-safeguard-20b'
 export const CONTENT_MODERATION_TIMEOUT_MS = 4000
 export const CONTENT_MODERATION_MAX_CHUNK_CHARS = 32_000
+export const CONTENT_MODERATION_MAX_CONCURRENCY = 8
 export const CONTENT_MODERATION_UNAVAILABLE_MESSAGE =
   'Ship Fast’s safety check is temporarily unavailable. Try again shortly.'
 
@@ -123,16 +124,64 @@ const createClassificationBatches = (
   const totalChars = fields.reduce((sum, [, value]) => sum + value.length, 0)
   if (totalChars <= CONTENT_MODERATION_MAX_CHUNK_CHARS) return [fields]
 
+  const companionBudgetChars = 4_000
+  const companionLimit = Math.floor(
+    companionBudgetChars / Math.max(1, fields.length - 1),
+  )
+  const longestFieldIndex = fields.reduce(
+    (longest, current, index) =>
+      current[1].length > fields[longest][1].length ? index : longest,
+    0,
+  )
+  const primaryFields = fields.filter(
+    ([, value], index) =>
+      index === longestFieldIndex || value.length > companionLimit,
+  )
   const batches: SuppliedField[][] = []
   const overlapChars = 256
-  for (const [field, value] of fields) {
+  const openingContextChars = 512
+  const reservedLabelChars = 512
+  const excerpt = (value: string) => {
+    if (value.length <= companionLimit) return value
+    const marker = '\n[…]\n'
+    const sideChars = Math.max(
+      1,
+      Math.floor((companionLimit - marker.length) / 2),
+    )
+    return `${value.slice(0, sideChars)}${marker}${value.slice(-sideChars)}`
+  }
+
+  for (const [primaryField, value] of primaryFields) {
+    const companions = fields
+      .filter(([field]) => field !== primaryField)
+      .map(([field, companion]) => [field, excerpt(companion)] as SuppliedField)
+    const companionChars = companions.reduce(
+      (sum, [, companion]) => sum + companion.length,
+      0,
+    )
+    const primaryBudget = Math.max(
+      1_000,
+      CONTENT_MODERATION_MAX_CHUNK_CHARS - companionChars - reservedLabelChars,
+    )
     let start = 0
     while (start < value.length) {
-      const end = Math.min(
-        start + CONTENT_MODERATION_MAX_CHUNK_CHARS,
-        value.length,
+      const openingContext =
+        start === 0
+          ? ''
+          : `${value.slice(0, openingContextChars)}\n[…current segment…]\n`
+      const segmentBudget = primaryBudget - openingContext.length
+      const end = Math.min(start + segmentBudget, value.length)
+      const primaryValue = `${openingContext}${value.slice(start, end)}`
+      batches.push(
+        fields.map(([field]) =>
+          field === primaryField
+            ? [field, primaryValue]
+            : (companions.find(([companion]) => companion === field) ?? [
+                field,
+                '',
+              ]),
+        ),
       )
-      batches.push([[field, value.slice(start, end)]])
       if (end === value.length) break
       start = end - overlapChars
     }
@@ -201,17 +250,15 @@ const classifySemanticBatch = async ({
   originalFields,
   apiKey,
   fetchImpl,
-  timeoutMs,
+  signal,
 }: {
   surface: ModerationSurface
   fields: SuppliedField[]
   originalFields: SuppliedField[]
   apiKey: string
   fetchImpl: typeof fetch
-  timeoutMs: number
+  signal: AbortSignal
 }): Promise<SafeDecision | SemanticBlockedDecision | UnavailableDecision> => {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
     const response = await fetchImpl(
       'https://api.groq.com/openai/v1/chat/completions',
@@ -232,7 +279,7 @@ const classifySemanticBatch = async ({
           ],
           response_format: responseFormat,
         }),
-        signal: controller.signal,
+        signal,
       },
     )
     if (!response.ok) return unavailable('provider_error')
@@ -253,11 +300,7 @@ const classifySemanticBatch = async ({
       unavailable('invalid_provider_response')
     )
   } catch {
-    return unavailable(
-      controller.signal.aborted ? 'provider_timeout' : 'provider_error',
-    )
-  } finally {
-    clearTimeout(timer)
+    return unavailable(signal.aborted ? 'provider_timeout' : 'provider_error')
   }
 }
 
@@ -275,16 +318,46 @@ export const classifyUserInput = async ({
   if (suppliedFields.length === 0) return { decision: 'safe' }
   if (!apiKey) return unavailable('missing_api_key')
 
-  for (const batch of createClassificationBatches(suppliedFields)) {
-    const result = await classifySemanticBatch({
-      surface,
-      fields: batch,
-      originalFields: suppliedFields,
-      apiKey,
-      fetchImpl,
-      timeoutMs,
-    })
-    if (result.decision !== 'safe') return result
+  const batches = createClassificationBatches(suppliedFields)
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  let nextBatch = 0
+  let terminal: SemanticBlockedDecision | UnavailableDecision | undefined
+
+  const worker = async () => {
+    while (!terminal && !controller.signal.aborted) {
+      const batchIndex = nextBatch
+      nextBatch += 1
+      const batch = batches[batchIndex]
+      if (!batch) return
+      const result = await classifySemanticBatch({
+        surface,
+        fields: batch,
+        originalFields: suppliedFields,
+        apiKey,
+        fetchImpl,
+        signal: controller.signal,
+      })
+      if (result.decision !== 'safe' && !terminal) {
+        terminal = result
+        controller.abort()
+      }
+    }
   }
-  return { decision: 'safe' }
+
+  try {
+    await Promise.all(
+      Array.from(
+        {
+          length: Math.min(CONTENT_MODERATION_MAX_CONCURRENCY, batches.length),
+        },
+        worker,
+      ),
+    )
+    if (terminal) return terminal
+    if (controller.signal.aborted) return unavailable('provider_timeout')
+    return { decision: 'safe' }
+  } finally {
+    clearTimeout(timer)
+  }
 }
