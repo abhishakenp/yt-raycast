@@ -26,7 +26,7 @@ const RoomGrid = React.forwardRef<
   return (
     <Comp
       data-slot="room-grid"
-      className={cn(roomGridVariants({ cols }), className)}
+      data-d-role="grid"className={cn(roomGridVariants({ cols }), className)}
       ref={ref}
       {...props}
     />
@@ -42,7 +42,7 @@ const RoomCard = React.forwardRef<
   return (
     <Comp
       data-slot="room-card"
-      className={cn('group flex flex-col overflow-hidden', className)}
+      data-d-role="card"className={cn('group flex flex-col overflow-hidden', className)}
       ref={ref}
       {...props}
     />

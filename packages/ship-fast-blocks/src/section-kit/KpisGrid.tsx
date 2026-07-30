@@ -30,7 +30,7 @@ const KpisGrid = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="kpis-grid"
-      className={cn(className)}
+      data-d-role="grid"className={cn(className)}
       {...props}
     />
   )

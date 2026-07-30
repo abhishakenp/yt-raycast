@@ -19,16 +19,16 @@ describe('pickThemeForDesignIntent', () => {
     const designs: DesignIntent[] = [
       {
         ...DEFAULT_DESIGN,
-        shadow: 'brutalist',
-        radius: 'sharp',
+        shadow: 'shadow-[8px_8px_0_0]',
+        radius: 'rounded-none',
         typography: 'technical',
       },
-      { ...DEFAULT_DESIGN, typography: 'editorial', radius: 'rounded' },
+      { ...DEFAULT_DESIGN, typography: 'editorial', radius: 'rounded-xl' },
       { ...DEFAULT_DESIGN, typography: 'technical' },
       { ...DEFAULT_DESIGN, typography: 'display', gradient: 'vibrant' },
-      { ...DEFAULT_DESIGN, typography: 'humanist', radius: 'rounded' },
+      { ...DEFAULT_DESIGN, typography: 'humanist', radius: 'rounded-xl' },
       { ...DEFAULT_DESIGN, gradient: 'subtle', typography: 'humanist' },
-      { ...DEFAULT_DESIGN, radius: 'pill' },
+      { ...DEFAULT_DESIGN, radius: 'rounded-full' },
       { ...DEFAULT_DESIGN, gradient: 'mesh' },
       DEFAULT_DESIGN,
     ]
@@ -49,7 +49,7 @@ describe('pickThemeForDesignIntent', () => {
     const design: DesignIntent = {
       ...DEFAULT_DESIGN,
       typography: 'editorial',
-      radius: 'rounded',
+      radius: 'rounded-xl',
     }
     const a = pickThemeForDesignIntent(design, rngFrom([0.05]))
     const b = pickThemeForDesignIntent(design, rngFrom([0.95]))
@@ -64,7 +64,7 @@ describe('pickThemeForDesignIntent', () => {
       'bold-tech',
       'cyberpunk',
     ]
-    const design: DesignIntent = { ...DEFAULT_DESIGN, shadow: 'brutalist' }
+    const design: DesignIntent = { ...DEFAULT_DESIGN, shadow: 'shadow-[8px_8px_0_0]' }
     // Try multiple rng values — all should land in the brutalist pool
     for (const v of [0.0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
       const theme = pickThemeForDesignIntent(design, rngFrom([v]))
@@ -81,7 +81,7 @@ describe('pickThemeForDesignIntent', () => {
       'clean-slate',
       'supabase',
     ]
-    const design: DesignIntent = { ...DEFAULT_DESIGN, typography: 'technical' }
+    const design: DesignIntent = { ...DEFAULT_DESIGN, typography: 'technical', shadow: 'shadow-sm' }
     for (const v of [0.0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
       const theme = pickThemeForDesignIntent(design, rngFrom([v]))
       expect(techPool).toContain(theme)
@@ -100,7 +100,8 @@ describe('pickThemeForDesignIntent', () => {
     const design: DesignIntent = {
       ...DEFAULT_DESIGN,
       typography: 'editorial',
-      radius: 'rounded',
+      radius: 'rounded-xl',
+      shadow: 'shadow-sm',
     }
     for (const v of [0.0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
       const theme = pickThemeForDesignIntent(design, rngFrom([v]))

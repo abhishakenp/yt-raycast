@@ -301,7 +301,7 @@ describe('HeroMediaPanel', () => {
     const el = screen.getByTestId('img')
     expect(el.tagName).toBe('DIV')
     expect(el.className).toContain('overflow-hidden')
-    expect(el.className).toContain('rounded-2xl')
+    expect(el.getAttribute('data-d-role')).toBeTruthy()
     expect(el.getAttribute('data-slot')).toBe('hero-image')
     const img = container.querySelector('img')
     expect(img).toBeTruthy()

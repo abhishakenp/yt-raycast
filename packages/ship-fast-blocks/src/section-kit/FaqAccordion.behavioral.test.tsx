@@ -93,7 +93,7 @@ describe('FaqItem', () => {
     expect(el.className).toContain('border')
     expect(el.className).toContain('border-border')
     expect(el.className).toContain('bg-card')
-    expect(el.className).toContain('rounded-xl')
+    expect(el.getAttribute('data-d-role')).toBe('card')
     expect(el.getAttribute('data-slot')).toBe('faq-item')
   })
 
@@ -104,9 +104,9 @@ describe('FaqItem', () => {
     expect(el.className).not.toContain('border-border')
   })
 
-  it('bordered-lg variant has rounded-lg', () => {
+  it('bordered-lg variant has card role', () => {
     render(<FaqItem variant="bordered-lg" data-testid="item" />)
-    expect(screen.getByTestId('item').className).toContain('rounded-lg')
+    expect(screen.getByTestId('item').getAttribute('data-d-role')).toBe('card')
   })
 
   it('minimal variant has bg-background no border', () => {
@@ -124,11 +124,11 @@ describe('FaqItem', () => {
     expect(el.className).not.toContain('bg-card')
   })
 
-  it('open-raised variant has open: bg-card and shadow-sm', () => {
+  it('open-raised variant has open: bg-card and card role', () => {
     render(<FaqItem variant="open-raised" data-testid="item" />)
     const el = screen.getByTestId('item')
     expect(el.className).toContain('open:bg-card')
-    expect(el.className).toContain('open:shadow-sm')
+    expect(el.getAttribute('data-d-role')).toBe('card')
     expect(el.className).toContain('bg-muted/40')
   })
 

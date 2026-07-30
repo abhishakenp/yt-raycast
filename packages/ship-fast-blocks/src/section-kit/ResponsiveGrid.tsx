@@ -52,7 +52,7 @@ const ResponsiveGrid = React.forwardRef<HTMLDivElement, ResponsiveGridProps>(
       <Comp
         ref={ref}
         data-slot="responsive-grid"
-        className={cn(gridColsVariants({ cols }), className)}
+        data-d-role="grid"className={cn(gridColsVariants({ cols }), className)}
         {...props}
       />
     )

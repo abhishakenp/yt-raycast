@@ -18,7 +18,7 @@ const RestaurantList = React.forwardRef<
   return (
     <Comp
       data-slot="restaurant-list"
-      className={cn(RestaurantListVariants({}), className)}
+      data-d-role="list"className={cn(RestaurantListVariants({}), className)}
       ref={ref}
       {...props}
     />
@@ -34,7 +34,7 @@ const RestaurantItem = React.forwardRef<
   return (
     <Comp
       data-slot="restaurant-list-item"
-      className={cn('flex flex-col', className)}
+      data-d-role="list"className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />

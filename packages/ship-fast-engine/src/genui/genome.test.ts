@@ -58,8 +58,10 @@ describe('generateGenome', () => {
 
   it('design axes are from valid sets', () => {
     const genome = generateGenome('test-session')
-    expect(['sharp', 'rounded', 'pill']).toContain(genome.design.radius)
-    expect(['none', 'soft', 'brutalist']).toContain(genome.design.shadow)
+    // radius/shadow are now Tailwind classes
+    expect(['rounded-none', 'rounded-lg', 'rounded-xl', 'rounded-full']).toContain(genome.design.radius)
+    expect(['shadow-none', 'shadow-sm', 'shadow-[4px_4px_0_0]', 'shadow-[8px_8px_0_0]']).toContain(genome.design.shadow)
+    // gradient/density/typography are still named concepts
     expect(['none', 'subtle', 'vibrant']).toContain(genome.design.gradient)
     expect(['compact', 'balanced', 'airy']).toContain(genome.design.density)
     expect(['editorial', 'technical', 'display', 'humanist']).toContain(

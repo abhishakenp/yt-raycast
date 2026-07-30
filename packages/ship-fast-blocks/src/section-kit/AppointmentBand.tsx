@@ -25,6 +25,7 @@ const AppointmentBand = React.forwardRef<
   const Comp = asChild ? Slot : 'section'
   return (
     <Comp
+      data-d-role="section"
       data-slot="appointment-band"
       className={cn(
         'flex flex-col items-center gap-6',

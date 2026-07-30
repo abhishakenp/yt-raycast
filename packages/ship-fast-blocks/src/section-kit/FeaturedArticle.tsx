@@ -60,7 +60,7 @@ const FeaturedArticleContent = React.forwardRef<
   return (
     <Comp
       data-slot="featured-article-content"
-      className={cn('flex flex-col', className)}
+      data-d-role="container"className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />
@@ -76,7 +76,7 @@ const FeaturedArticleMeta = React.forwardRef<
   return (
     <Comp
       data-slot="featured-article-meta"
-      className={cn(
+      data-d-role="body"className={cn(
         'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground',
         className,
       )}

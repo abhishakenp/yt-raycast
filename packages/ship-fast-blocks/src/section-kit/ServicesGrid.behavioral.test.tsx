@@ -112,10 +112,10 @@ describe('ServiceCard', () => {
 
   it('applies default card classes', () => {
     render(<ServiceCard data-testid="card">x</ServiceCard>)
-    const cls = screen.getByTestId('card').className
-    expect(cls).toContain('rounded-xl')
-    expect(cls).toContain('border')
-    expect(cls).toContain('bg-card')
+    const el = screen.getByTestId('card')
+    expect(el.getAttribute('data-d-role')).toBe('card')
+    expect(el.className).toContain('border')
+    expect(el.className).toContain('bg-card')
   })
 
   it('asChild renders as Slot child', () => {
@@ -141,7 +141,6 @@ describe('ServiceIcon', () => {
     const cls = screen.getByTestId('icon').className
     expect(cls).toContain('bg-primary/10')
     expect(cls).toContain('text-primary')
-    expect(cls).toContain('rounded-lg')
   })
 })
 

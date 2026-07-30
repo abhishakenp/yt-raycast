@@ -239,12 +239,12 @@ describe('ProductCard', () => {
     expect(el.className).not.toContain('overflow-hidden')
   })
 
-  it('variant="elevated" has bg-card, rounded-xl, no border', () => {
+  it('variant="elevated" has bg-card, card role, no border', () => {
     render(<ProductCard variant="elevated" data-testid="pc" />)
     const el = screen.getByTestId('pc')
     expect(el.className).toContain('bg-card')
     expect(el.className).toContain('overflow-hidden')
-    expect(el.className).toContain('rounded-xl')
+    expect(el.getAttribute('data-d-role')).toBe('card')
     expect(el.className).not.toContain('border-border')
   })
 
@@ -354,17 +354,17 @@ describe('ProductCard', () => {
 })
 
 describe('PersonCard', () => {
-  it('renders as article with border, bg-card, rounded-xl', () => {
+  it('renders as article with border, bg-card, card role', () => {
     render(<PersonCard data-testid="pc" />)
     const el = screen.getByTestId('pc')
     expect(el.tagName).toBe('ARTICLE')
     expect(el.className).toContain('border')
     expect(el.className).toContain('bg-card')
-    expect(el.className).toContain('rounded-xl')
+    expect(el.getAttribute('data-d-role')).toBe('card')
     expect(el.getAttribute('data-slot')).toBe('person-card')
   })
 
-  it('elevated variant is shadowed with no border', () => {
+  it('elevated variant has card role with no border', () => {
     render(
       <PersonCard
         variant="elevated"
@@ -374,7 +374,7 @@ describe('PersonCard', () => {
     )
     const el = screen.getByTestId('pc')
     expect(el.className).toContain('rounded-2xl')
-    expect(el.className).toContain('shadow-sm')
+    expect(el.getAttribute('data-d-role')).toBe('card')
     expect(el.className).toContain('bg-card')
     expect(el.className).not.toContain('border-border')
   })
@@ -472,13 +472,13 @@ describe('PersonCard', () => {
 })
 
 describe('Card', () => {
-  it('renders as div with border, bg-card, rounded-xl, p-6 by default', () => {
+  it('renders as div with border, bg-card, card role, p-6 by default', () => {
     render(<Card data-testid="card" />)
     const el = screen.getByTestId('card')
     expect(el.tagName).toBe('DIV')
     expect(el.className).toContain('border')
     expect(el.className).toContain('bg-card')
-    expect(el.className).toContain('rounded-xl')
+    expect(el.getAttribute('data-d-role')).toBe('card')
     expect(el.className).toContain('p-6')
     expect(el.getAttribute('data-slot')).toBe('card')
   })
@@ -503,9 +503,9 @@ describe('Card', () => {
     expect(el.className).not.toContain('bg-card')
   })
 
-  it('elevated variant has shadow-sm', () => {
+  it('elevated variant has card role', () => {
     render(<Card variant="elevated" data-testid="card" />)
-    expect(screen.getByTestId('card').className).toContain('shadow-sm')
+    expect(screen.getByTestId('card').getAttribute('data-d-role')).toBe('card')
   })
 
   it('merges className', () => {

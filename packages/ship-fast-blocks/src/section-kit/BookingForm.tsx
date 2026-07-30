@@ -27,7 +27,7 @@ const BookingForm = React.forwardRef<
   return (
     <Comp
       data-slot="booking-form"
-      className={cn(BookingFormVariants({ variant }), className)}
+      data-d-role="form"className={cn(BookingFormVariants({ variant }), className)}
       ref={ref}
       {...props}
     />

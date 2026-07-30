@@ -3,7 +3,7 @@
  *
  * New format (no kinds, no roles):
  *
- *   @design radius:rounded shadow:soft gradient:vibrant density:airy typography:display
+ *   @design rounded-xl shadow-lg gradient:vibrant density:airy typography:display
  *   @brand Acme
  *   @title Acme — We ship fast
  *   @pages home about pricing contact
@@ -15,7 +15,7 @@
  *     stats>120+ Projects^45 Awards^98% Retention
  *
  *   @section CardGrid
- *     @design radius:sharp
+ *     @design rounded-none
  *     eyebrow Features
  *     heading Everything you need
  *     cards>Feature One~Does the thing^Feature Two~Does another
@@ -747,6 +747,16 @@ function serializeDesignForProp(intent: DesignIntent): string {
   // Data-driven: iterate all keys, serialize non-undefined ones
   const parts: string[] = []
   for (const [key, val] of Object.entries(intent)) {
+    if (key === 'roles') {
+      // Per-role overrides: roles is Record<axis, Record<role, value>>
+      const roles = val as Record<string, Record<string, string>>
+      for (const [axis, roleMap] of Object.entries(roles)) {
+        for (const [role, value] of Object.entries(roleMap)) {
+          parts.push(`${role}:${value}`)
+        }
+      }
+      continue
+    }
     if (val !== undefined && val !== null) {
       parts.push(`${key}:${val}`)
     }

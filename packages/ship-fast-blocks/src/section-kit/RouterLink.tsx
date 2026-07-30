@@ -15,7 +15,7 @@ const RouterLink = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
   ({ href, children, exactActive, ...props }, ref) => {
     if (isNativeHref(href)) {
       return (
-        <a ref={ref} href={href} {...props}>
+        <a data-d-role="link" ref={ref} href={href} {...props}>
           {children}
         </a>
       )
@@ -27,7 +27,7 @@ const RouterLink = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
     const router = useRouter({ warn: false })
     if (!router) {
       return (
-        <a ref={ref} href={href} {...props}>
+        <a data-d-role="link" ref={ref} href={href} {...props}>
           {children}
         </a>
       )
@@ -35,6 +35,7 @@ const RouterLink = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
 
     return (
       <Link
+        data-d-role="link"
         ref={ref}
         to={href}
         activeOptions={exactActive ? { exact: true } : undefined}

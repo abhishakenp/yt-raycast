@@ -137,19 +137,20 @@ export function buildCompositionPrompt(
 @hero ${genome!.hero}
 
 RULES:
-- User's design preferences override genome defaults. Infer intent from language ("sharp corners"→radius:sharp, "minimal"→gradient:none+shadow:none, "brutalist"→radius:sharp+shadow:brutalist+typography:display, etc.)
+- User's design preferences override genome defaults. Infer intent from language ("sharp corners"→rounded-none, "minimal"→gradient:none+shadow-none, "brutalist"→rounded-none+shadow-[8px_8px_0_0]+typography:display, etc.)
 - Navbar first, Footer last on every page. Use @navbarVariant for the Navbar variant prop.
 - ~${sectionCount} home sections, ~${pageCount} pages total. Follow user if they imply more/fewer.
 - Each page gets UNIQUE sections with page-specific content. Don't reuse motifs across pages.
 - Assign chromes to 3-5 key sections. Vary them.
 - Vary section heights and rhythms. Don't stack 3 grids in a row.`
-    : `DESIGN AXES (pick what fits the brand):
-  radius: sharp | rounded | pill
-  shadow: none | soft | brutalist
-  gradient: none | subtle | vibrant
+    : `@design: emit Tailwind classes directly (rounded-xl, shadow-lg, tracking-wide, font-black, uppercase, border-2, grayscale, etc.) plus named concepts for things Tailwind doesn't cover:
   density: compact | balanced | airy
   typography: editorial | technical | display | humanist
-  motion: static | gentle | kinetic
+  gradient: none | subtle | vibrant | mesh
+  motion: none | subtle | lively
+  chrome: hairline | brutalist | terminal | editorial | gradient | none
+  decor: dot-grid | graph-paper | glow | none
+  Per-role: btn:rounded-full card:rounded-2xl
 
 Pick 4-8 sections that fit the content. Don't use every motif. Don't repeat motifs unless clearly needed.
 Vary section types for visual rhythm — don't stack 3 grids in a row.`
@@ -159,7 +160,7 @@ Vary section types for visual rhythm — don't stack 3 grids in a row.`
 <reasoning>...</reasoning> first: business type, brand, pages, motifs, content. Then DSL only.
 
 DSL:
-@design radius:rounded shadow:soft gradient:vibrant density:airy typography:display
+@design rounded-xl shadow-lg gradient:vibrant density:airy typography:display
 @brand BrandName
 @title Brand — Tagline
 @pages home about pricing contact
@@ -188,6 +189,7 @@ DSL:
   people>Jane Doe~CEO~Built 3 startups~Portrait of confident woman in blazer~jane.jpg^John Smith~CTO~10 years in tech~Portrait of man at desk~john.jpg
 
 RULES:
+- @design: Tailwind classes + named concepts (density, typography, gradient, motion, chrome, decor). Per-role: btn:rounded-full card:rounded-2xl.
 - Home sections first (NO @page home). Then @page id + that page's sections. Each page: Navbar first, Footer last.
 - Separators: | sibling groups, > group→content, ^ items, ~ fields, , string[] values
 - string[] uses commas: links>Home, About, Contact. NOT ~.

@@ -21,9 +21,9 @@ const DESIGN_THEME_POOLS: Array<{
   match: (d: DesignIntent) => boolean
   pool: string[]
 }> = [
-  // Brutalist / bold — shadow:brutalist is the strongest signal
+  // Brutalist / bold — hard offset shadow is the strongest signal
   {
-    match: (d) => d.shadow === 'brutalist',
+    match: (d) => d.shadow === 'shadow-[8px_8px_0_0]' || d.shadow === 'shadow-[4px_4px_0_0]',
     pool: ['neo-brutalism', 'doom-64', 'mono', 'bold-tech', 'cyberpunk'],
   },
   // Mesh / futuristic — gradient:mesh is distinctive
@@ -45,7 +45,7 @@ const DESIGN_THEME_POOLS: Array<{
   },
   // Luxury / elegant / editorial serif
   {
-    match: (d) => d.typography === 'editorial' && d.radius !== 'pill',
+    match: (d) => d.typography === 'editorial' && d.radius !== 'rounded-full',
     pool: [
       'elegant-luxury',
       'starry-night',
@@ -80,7 +80,7 @@ const DESIGN_THEME_POOLS: Array<{
   },
   // Humanist / soft / friendly
   {
-    match: (d) => d.typography === 'humanist' && d.radius === 'rounded',
+    match: (d) => d.typography === 'humanist' && (d.radius === 'rounded-xl' || d.radius === 'rounded-2xl'),
     pool: [
       't3-chat',
       'bubblegum',
@@ -92,7 +92,7 @@ const DESIGN_THEME_POOLS: Array<{
   },
   // Soft / rounded / gentle
   {
-    match: (d) => d.radius === 'pill',
+    match: (d) => d.radius === 'rounded-full',
     pool: [
       'violet-bloom',
       'amethyst-haze',

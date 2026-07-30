@@ -1,101 +1,76 @@
 import { describe, it, expect } from 'vitest'
 import {
-  resolveDesign,
   parseDesignLine,
-  DEFAULT_DESIGN,
+  parseDesignOverride,
+  mergeDesign,
   serializeDesignIntent,
-  RADIUS_VALUES,
-  SHADOW_VALUES,
-  GRADIENT_VALUES,
-  DENSITY_VALUES,
-  TYPOGRAPHY_VALUES,
-  MOTION_VALUES,
+  designValueToCss,
+  isNamedPreset,
+  DEFAULT_DESIGN,
+  GRADIENT_PRESETS,
+  DENSITY_PRESETS,
+  TYPOGRAPHY_PRESETS,
+  MOTION_PRESETS,
   type DesignIntent,
 } from './design-system.ts'
 
-describe('resolveDesign', () => {
-  it('resolves default design to sharp radius + hard shadow', () => {
-    const d = resolveDesign(DEFAULT_DESIGN)
-    expect(d.radius.btn).toBe('rounded-none')
-    expect(d.shadow.btn).toContain('shadow-[4px_4px_0_0]')
+describe('parseDesignLine — Tailwind axes', () => {
+  it('parses bare rounded-xl as radius', () => {
+    const intent = parseDesignLine('@design rounded-xl')
+    expect(intent.radius).toBe('rounded-xl')
   })
 
-  it('resolves rounded radius to rounded-xl on buttons', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, radius: 'rounded' })
-    expect(d.radius.btn).toBe('rounded-xl')
-    expect(d.radius.card).toBe('rounded-xl')
+  it('parses bare shadow-lg as shadow', () => {
+    const intent = parseDesignLine('@design shadow-lg')
+    expect(intent.shadow).toBe('shadow-lg')
   })
 
-  it('resolves pill radius to rounded-full on buttons', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, radius: 'pill' })
-    expect(d.radius.btn).toBe('rounded-full')
+  it('parses bare tracking-wide as tracking', () => {
+    const intent = parseDesignLine('@design tracking-wide')
+    expect(intent.tracking).toBe('tracking-wide')
   })
 
-  it('resolves soft shadow to shadow-sm', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, shadow: 'soft' })
-    expect(d.shadow.card).toBe('shadow-sm')
+  it('parses bare font-black as weight', () => {
+    const intent = parseDesignLine('@design font-black')
+    expect(intent.weight).toBe('font-black')
   })
 
-  it('resolves none shadow to empty string', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, shadow: 'none' })
-    expect(d.shadow.btn).toBe('')
-    expect(d.shadow.card).toBe('')
+  it('parses bare uppercase as transform', () => {
+    const intent = parseDesignLine('@design uppercase')
+    expect(intent.transform).toBe('uppercase')
   })
 
-  it('resolves vibrant gradient to indigo-violet-fuchsia', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, gradient: 'vibrant' })
-    expect(d.gradient.highlight).toContain('from-indigo-500')
-    expect(d.gradient.highlight).toContain('via-violet-500')
-    expect(d.gradient.highlight).toContain('to-fuchsia-500')
-    expect(d.gradient.text).toContain('[-webkit-text-fill-color:transparent]')
+  it('parses bare border-2 as border', () => {
+    const intent = parseDesignLine('@design border-2')
+    expect(intent.border).toBe('border-2')
   })
 
-  it('resolves none gradient to solid primary', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, gradient: 'none' })
-    expect(d.gradient.highlight).toBe('bg-primary')
-    expect(d.gradient.text).toBe('')
+  it('parses arbitrary rounded-[13px] as radius', () => {
+    const intent = parseDesignLine('@design rounded-[13px]')
+    expect(intent.radius).toBe('rounded-[13px]')
   })
 
-  it('resolves airy density to py-24', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, density: 'airy' })
-    expect(d.density.section).toBe('py-24')
-    expect(d.density.card).toBe('p-8')
+  it('parses arbitrary shadow-[4px_4px_0_0] as shadow', () => {
+    const intent = parseDesignLine('@design shadow-[4px_4px_0_0]')
+    expect(intent.shadow).toBe('shadow-[4px_4px_0_0]')
   })
 
-  it('resolves compact density to py-10', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, density: 'compact' })
-    expect(d.density.section).toBe('py-10')
-    expect(d.density.card).toBe('p-4')
+  it('parses radius:rounded-xl via axis:key syntax', () => {
+    const intent = parseDesignLine('@design radius:rounded-xl')
+    expect(intent.radius).toBe('rounded-xl')
   })
 
-  it('resolves display typography to font-black', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, typography: 'display' })
-    expect(d.typography.display).toContain('font-black')
-  })
-
-  it('resolves technical typography to tabular-nums', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, typography: 'technical' })
-    expect(d.typography.display).toContain('tabular-nums')
-  })
-
-  it('resolves lively motion to scale on hover', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, motion: 'lively' })
-    expect(d.motion.hover).toContain('hover:scale-[1.02]')
-  })
-
-  it('resolves none motion to empty strings', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, motion: 'none' })
-    expect(d.motion.hover).toBe('')
-    expect(d.motion.transition).toBe('')
+  it('parses shadow:shadow-lg via axis:key syntax', () => {
+    const intent = parseDesignLine('@design shadow:shadow-lg')
+    expect(intent.shadow).toBe('shadow-lg')
   })
 })
 
-describe('parseDesignLine', () => {
-  it('parses a full @design line', () => {
-    const line =
-      '@design radius:rounded gradients:vibrant density:airy typography:display motion:lively'
-    const intent = parseDesignLine(line)
-    expect(intent.radius).toBe('rounded')
+describe('parseDesignLine — named-concept axes', () => {
+  it('parses named presets', () => {
+    const intent = parseDesignLine(
+      '@design gradient:vibrant density:airy typography:display motion:lively',
+    )
     expect(intent.gradient).toBe('vibrant')
     expect(intent.density).toBe('airy')
     expect(intent.typography).toBe('display')
@@ -103,20 +78,15 @@ describe('parseDesignLine', () => {
   })
 
   it('uses defaults for unspecified axes', () => {
-    const intent = parseDesignLine('@design radius:rounded')
-    expect(intent.radius).toBe('rounded')
+    const intent = parseDesignLine('@design rounded-xl')
+    expect(intent.radius).toBe('rounded-xl')
     expect(intent.shadow).toBe(DEFAULT_DESIGN.shadow)
     expect(intent.gradient).toBe(DEFAULT_DESIGN.gradient)
   })
 
   it('ignores unknown keys', () => {
-    const intent = parseDesignLine('@design radius:rounded foo:bar')
-    expect(intent.radius).toBe('rounded')
-  })
-
-  it('ignores invalid enum values', () => {
-    const intent = parseDesignLine('@design radius:extraround')
-    expect(intent.radius).toBe(DEFAULT_DESIGN.radius)
+    const intent = parseDesignLine('@design rounded-xl foo:bar')
+    expect(intent.radius).toBe('rounded-xl')
   })
 
   it('accepts singular and plural keys (gradient/gradients)', () => {
@@ -127,10 +97,10 @@ describe('parseDesignLine', () => {
   })
 
   it('accepts shadow and shadows', () => {
-    const a = parseDesignLine('@design shadow:soft')
-    const b = parseDesignLine('@design shadows:soft')
-    expect(a.shadow).toBe('soft')
-    expect(b.shadow).toBe('soft')
+    const a = parseDesignLine('@design shadow:shadow-lg')
+    const b = parseDesignLine('@design shadows:shadow-lg')
+    expect(a.shadow).toBe('shadow-lg')
+    expect(b.shadow).toBe('shadow-lg')
   })
 
   it('accepts type as alias for typography', () => {
@@ -144,16 +114,125 @@ describe('parseDesignLine', () => {
   })
 
   it('is case-insensitive on keys and values', () => {
-    const intent = parseDesignLine('@design RADIUS:ROUNDED')
-    expect(intent.radius).toBe('rounded')
+    const intent = parseDesignLine('@design DENSITY:AIRY')
+    expect(intent.density).toBe('airy')
+  })
+})
+
+describe('parseDesignLine — mixed Tailwind + named', () => {
+  it('parses mixed Tailwind + named presets', () => {
+    const intent = parseDesignLine(
+      '@design rounded-xl shadow-lg density:airy typography:display',
+    )
+    expect(intent.radius).toBe('rounded-xl')
+    expect(intent.shadow).toBe('shadow-lg')
+    expect(intent.density).toBe('airy')
+    expect(intent.typography).toBe('display')
+  })
+})
+
+describe('parseDesignLine — per-role overrides', () => {
+  it('parses btn:rounded-full as per-role radius override', () => {
+    const intent = parseDesignLine('@design btn:rounded-full')
+    expect(intent.roles?.radius?.btn).toBe('rounded-full')
+  })
+
+  it('parses card:rounded-2xl as per-role radius override', () => {
+    const intent = parseDesignLine('@design card:rounded-2xl')
+    expect(intent.roles?.radius?.card).toBe('rounded-2xl')
+  })
+
+  it('parses mixed global + per-role', () => {
+    const intent = parseDesignLine(
+      '@design rounded-xl btn:rounded-full shadow-lg',
+    )
+    expect(intent.radius).toBe('rounded-xl')
+    expect(intent.shadow).toBe('shadow-lg')
+    expect(intent.roles?.radius?.btn).toBe('rounded-full')
+  })
+})
+
+describe('parseDesignLine — aliases', () => {
+  it('maps motion:gentle to subtle via alias', () => {
+    expect(parseDesignLine('@design motion:gentle').motion).toBe('subtle')
+  })
+
+  it('maps motion:kinetic to lively via alias', () => {
+    expect(parseDesignLine('@design motion:kinetic').motion).toBe('lively')
+  })
+
+  it('maps motion:static to none via alias', () => {
+    expect(parseDesignLine('@design motion:static').motion).toBe('none')
+  })
+
+  it('preserves valid motion values without alias', () => {
+    expect(parseDesignLine('@design motion:none').motion).toBe('none')
+    expect(parseDesignLine('@design motion:subtle').motion).toBe('subtle')
+    expect(parseDesignLine('@design motion:lively').motion).toBe('lively')
+  })
+})
+
+describe('parseDesignLine — edge cases', () => {
+  it('handles double-colon radius::rounded-xl', () => {
+    expect(parseDesignLine('@design radius::rounded-xl').radius).toBe('rounded-xl')
+  })
+
+  it('handles double-colon on multiple axes', () => {
+    const d = parseDesignLine('@design ::rounded-xl ::shadow-lg')
+    expect(d.radius).toBe('rounded-xl')
+    expect(d.shadow).toBe('shadow-lg')
+  })
+
+  it('accepts unknown values as-is (Tailwind classes or arbitrary)', () => {
+    const d = parseDesignLine('@design radius:banana shadow:nothing')
+    expect(d.radius).toBe('banana')
+    expect(d.shadow).toBe('nothing')
+  })
+})
+
+describe('parseDesignOverride', () => {
+  it('returns only explicitly set axes', () => {
+    const override = parseDesignOverride('@design rounded-xl')
+    expect(override.radius).toBe('rounded-xl')
+    expect(override.shadow).toBeUndefined()
+  })
+
+  it('returns empty object for empty line', () => {
+    expect(parseDesignOverride('@design')).toEqual({})
+  })
+
+  it('parses per-role overrides', () => {
+    const override = parseDesignOverride('@design btn:rounded-full')
+    expect(override.roles?.radius?.btn).toBe('rounded-full')
+  })
+})
+
+describe('mergeDesign', () => {
+  it('merges override onto parent', () => {
+    const parent = DEFAULT_DESIGN
+    const merged = mergeDesign(parent, { radius: 'rounded-xl' })
+    expect(merged.radius).toBe('rounded-xl')
+    expect(merged.shadow).toBe(parent.shadow)
+  })
+
+  it('deep merges per-role overrides', () => {
+    const parent: DesignIntent = {
+      ...DEFAULT_DESIGN,
+      roles: { radius: { btn: 'rounded-full' } },
+    }
+    const merged = mergeDesign(parent, {
+      roles: { radius: { card: 'rounded-2xl' } },
+    })
+    expect(merged.roles?.radius?.btn).toBe('rounded-full')
+    expect(merged.roles?.radius?.card).toBe('rounded-2xl')
   })
 })
 
 describe('serializeDesignIntent', () => {
   it('round-trips through parse → serialize → parse', () => {
     const original: DesignIntent = {
-      radius: 'rounded',
-      shadow: 'soft',
+      radius: 'rounded-xl',
+      shadow: 'shadow-lg',
       gradient: 'vibrant',
       density: 'airy',
       typography: 'display',
@@ -165,89 +244,67 @@ describe('serializeDesignIntent', () => {
   })
 })
 
-describe('enum completeness', () => {
-  it('all radius values resolve', () => {
-    for (const v of RADIUS_VALUES) {
-      const d = resolveDesign({ ...DEFAULT_DESIGN, radius: v })
-      expect(d.radius.btn).toBeTruthy()
-    }
+describe('designValueToCss', () => {
+  it('converts arbitrary bracket values', () => {
+    expect(designValueToCss('[13px]')).toBe('13px')
   })
-  it('all shadow values resolve', () => {
-    for (const v of SHADOW_VALUES) {
-      const d = resolveDesign({ ...DEFAULT_DESIGN, shadow: v })
-      expect(d.shadow).toBeDefined()
-    }
+
+  it('converts Tailwind classes', () => {
+    expect(designValueToCss('rounded-xl')).toBe('0.75rem')
+    expect(designValueToCss('font-black')).toBe('900')
+    expect(designValueToCss('tracking-wide')).toBe('0.025em')
   })
-  it('all gradient values resolve', () => {
-    for (const v of GRADIENT_VALUES) {
-      const d = resolveDesign({ ...DEFAULT_DESIGN, gradient: v })
-      expect(d.gradient.highlight).toBeDefined()
-    }
+
+  it('returns null for named-concept presets', () => {
+    expect(designValueToCss('airy')).toBeNull()
+    expect(designValueToCss('vibrant')).toBeNull()
   })
-  it('all density values resolve', () => {
-    for (const v of DENSITY_VALUES) {
-      const d = resolveDesign({ ...DEFAULT_DESIGN, density: v })
-      expect(d.density.section).toBeTruthy()
-    }
-  })
-  it('all typography values resolve', () => {
-    for (const v of TYPOGRAPHY_VALUES) {
-      const d = resolveDesign({ ...DEFAULT_DESIGN, typography: v })
-      expect(d.typography.display).toBeTruthy()
-    }
-  })
-  it('all motion values resolve', () => {
-    for (const v of MOTION_VALUES) {
-      const d = resolveDesign({ ...DEFAULT_DESIGN, motion: v })
-      expect(d.motion).toBeDefined()
-    }
+
+  it('passes through raw CSS values', () => {
+    expect(designValueToCss('0.75rem')).toBe('0.75rem')
   })
 })
 
-// ─── Regression tests for deductive break fixes ──────────────────────────
-
-describe('parseDesignLine alias + double-colon fixes', () => {
-  it('maps motion:gentle to subtle via alias', () => {
-    const d = parseDesignLine('@design motion:gentle')
-    expect(d.motion).toBe('subtle')
+describe('isNamedPreset', () => {
+  it('returns true for named-concept presets', () => {
+    expect(isNamedPreset('density', 'airy')).toBe(true)
+    expect(isNamedPreset('typography', 'display')).toBe(true)
+    expect(isNamedPreset('gradient', 'vibrant')).toBe(true)
+    expect(isNamedPreset('motion', 'lively')).toBe(true)
   })
 
-  it('maps motion:kinetic to lively via alias', () => {
-    const d = parseDesignLine('@design motion:kinetic')
-    expect(d.motion).toBe('lively')
+  it('returns false for Tailwind axes (no presets)', () => {
+    expect(isNamedPreset('radius', 'rounded-xl')).toBe(false)
+    expect(isNamedPreset('shadow', 'shadow-lg')).toBe(false)
+  })
+})
+
+describe('preset completeness', () => {
+  it('all gradient presets are valid', () => {
+    for (const v of GRADIENT_PRESETS) {
+      const intent = parseDesignLine(`@design gradient:${v}`)
+      expect(intent.gradient).toBe(v)
+    }
   })
 
-  it('maps motion:static to none via alias', () => {
-    const d = parseDesignLine('@design motion:static')
-    expect(d.motion).toBe('none')
+  it('all density presets are valid', () => {
+    for (const v of DENSITY_PRESETS) {
+      const intent = parseDesignLine(`@design density:${v}`)
+      expect(intent.density).toBe(v)
+    }
   })
 
-  it('maps radius:square to sharp via alias', () => {
-    const d = parseDesignLine('@design radius:square')
-    expect(d.radius).toBe('sharp')
+  it('all typography presets are valid', () => {
+    for (const v of TYPOGRAPHY_PRESETS) {
+      const intent = parseDesignLine(`@design typography:${v}`)
+      expect(intent.typography).toBe(v)
+    }
   })
 
-  it('handles double-colon radius::sharp', () => {
-    const d = parseDesignLine('@design radius::sharp')
-    expect(d.radius).toBe('sharp')
-  })
-
-  it('handles double-colon on multiple axes', () => {
-    const d = parseDesignLine('@design ::radius::sharp ::shadow::none')
-    // The parser strips empty parts, so it should still resolve
-    expect(d.radius).toBe('sharp')
-    expect(d.shadow).toBe('none')
-  })
-
-  it('preserves valid motion values without alias', () => {
-    expect(parseDesignLine('@design motion:none').motion).toBe('none')
-    expect(parseDesignLine('@design motion:subtle').motion).toBe('subtle')
-    expect(parseDesignLine('@design motion:lively').motion).toBe('lively')
-  })
-
-  it('ignores garbage values and keeps defaults', () => {
-    const d = parseDesignLine('@design radius:banana shadow:nothing')
-    expect(d.radius).toBe(DEFAULT_DESIGN.radius)
-    expect(d.shadow).toBe(DEFAULT_DESIGN.shadow)
+  it('all motion presets are valid', () => {
+    for (const v of MOTION_PRESETS) {
+      const intent = parseDesignLine(`@design motion:${v}`)
+      expect(intent.motion).toBe(v)
+    }
   })
 })

@@ -26,7 +26,7 @@ const ScheduleList = React.forwardRef<
   return (
     <Comp
       data-slot="schedule-list"
-      className={cn(scheduleListVariants({ layout }), className)}
+      data-d-role="list"className={cn(scheduleListVariants({ layout }), className)}
       ref={ref}
       {...props}
     />
@@ -42,7 +42,7 @@ const ScheduleItem = React.forwardRef<
   return (
     <Comp
       data-slot="schedule-item"
-      className={cn('flex flex-col gap-2 sm:flex-row sm:gap-8', className)}
+      data-d-role="card"className={cn('flex flex-col gap-2 sm:flex-row sm:gap-8', className)}
       ref={ref}
       {...props}
     />
@@ -77,7 +77,7 @@ const ScheduleContent = React.forwardRef<
   return (
     <Comp
       data-slot="schedule-content"
-      className={cn('flex flex-col', className)}
+      data-d-role="container"className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />
@@ -93,7 +93,7 @@ const ScheduleTitle = React.forwardRef<
   return (
     <Comp
       data-slot="schedule-title"
-      className={cn('text-base font-semibold text-foreground', className)}
+      data-d-role="heading"className={cn('text-base font-semibold text-foreground', className)}
       ref={ref}
       {...props}
     />

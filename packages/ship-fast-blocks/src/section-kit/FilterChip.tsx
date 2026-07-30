@@ -60,6 +60,7 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
     const resolvedVariant = active ? 'default' : variant
     return (
       <Comp
+        data-d-role="btn"
         ref={ref}
         data-slot="filter-chip"
         data-active={active}

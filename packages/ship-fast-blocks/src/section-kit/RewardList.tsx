@@ -18,7 +18,7 @@ const RewardList = React.forwardRef<
   return (
     <Comp
       data-slot="reward-list"
-      className={cn(RewardListVariants({}), className)}
+      data-d-role="list"className={cn(RewardListVariants({}), className)}
       ref={ref}
       {...props}
     />
@@ -34,7 +34,7 @@ const RewardItem = React.forwardRef<
   return (
     <Comp
       data-slot="reward-list-item"
-      className={cn('flex flex-col', className)}
+      data-d-role="list"className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />

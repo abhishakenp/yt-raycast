@@ -231,7 +231,6 @@ describe('NavbarNavLink', () => {
     expect(activeLink.getAttribute('aria-current')).toBe('page')
     expect(activeLink.getAttribute('href')).toBe(window.location.href)
     expect(activeLink.className).toContain('bg-muted')
-    expect(activeLink.className).toContain('rounded-md')
     expect(activeLink.className).toContain('text-foreground')
     // Active link has the underline pseudo-element at full width
     expect(activeLink.className.split(' ')).toContain('after:w-3/4')
@@ -535,7 +534,7 @@ describe('NavbarCta', () => {
     expect(el.tagName).toBe('BUTTON')
     expect(el.getAttribute('data-slot')).toBe('navbar-cta')
     expect(el.className).toContain('bg-primary')
-    expect(el.className).toContain('rounded-lg')
+    expect(el.getAttribute('data-d-role')).toBe('btn')
   })
 
   it('renders primary-pill variant', () => {

@@ -48,7 +48,7 @@ export const DotGrid = React.forwardRef<HTMLDivElement, DotGridProps>(
       ref={ref}
       aria-hidden="true"
       data-slot="decor-dot-grid"
-      className={cn(dotGridVariants({ density, tone, fade }), className)}
+      data-d-role="grid"className={cn(dotGridVariants({ density, tone, fade }), className)}
       {...props}
     />
   ),
@@ -64,7 +64,7 @@ export const Watermark = React.forwardRef<
     ref={ref}
     aria-hidden="true"
     data-slot="decor-watermark"
-    className={cn(
+    data-d-role="decor"className={cn(
       'pointer-events-none absolute select-none whitespace-nowrap font-extrabold leading-none tracking-tighter text-foreground/[0.04]',
       className,
     )}
@@ -99,7 +99,7 @@ export const MonoTag = React.forwardRef<HTMLSpanElement, MonoTagProps>(
     <span
       ref={ref}
       data-slot="decor-mono-tag"
-      className={cn(monoTagVariants({ tone }), className)}
+      data-d-role="decor"className={cn(monoTagVariants({ tone }), className)}
       {...props}
     />
   ),
@@ -115,7 +115,7 @@ export const GraphPaper = React.forwardRef<
     ref={ref}
     aria-hidden="true"
     data-slot="decor-graph-paper"
-    className={cn(
+    data-d-role="decor"className={cn(
       'pointer-events-none absolute bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] [background-size:48px_48px] text-foreground/[0.045]',
       className,
     )}

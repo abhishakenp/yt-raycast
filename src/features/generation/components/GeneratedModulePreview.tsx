@@ -120,7 +120,7 @@ function parseSiteSpecTheme(
 }
 
 /** Parse the @design intent from the site-spec JSON.
- *  The composition runner stores it as a serialized `@design radius:sharp ...` string. */
+ *  The composition runner stores it as a serialized `@design radius:rounded-none ...` string. */
 function parseSiteSpecDesignIntent(
   siteSpecJson: string | undefined,
 ): DesignIntent | null {

@@ -166,7 +166,7 @@ export function Reveal(props: {
         }
 
   return (
-    <div ref={ref} className={props.className} style={style}>
+    <div data-d-role="container" ref={ref} className={props.className} style={style}>
       {props.children}
     </div>
   )
@@ -201,7 +201,7 @@ export function WordReveal(props: {
 
   if (phase === 'static') {
     return (
-      <Tag ref={ref} className={props.className}>
+      <Tag data-d-role="display" ref={ref} className={props.className}>
         {text}
       </Tag>
     )
@@ -209,7 +209,7 @@ export function WordReveal(props: {
 
   const words = text.split(/\s+/).filter(Boolean)
   return (
-    <Tag ref={ref} className={props.className}>
+    <Tag data-d-role="display" ref={ref} className={props.className}>
       {words.flatMap((word, index) => [
         <span
           key={`${word}-${index}`}
@@ -281,6 +281,7 @@ export function Tilt(props: {
 
   return (
     <div
+      data-d-role="container"
       ref={ref}
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
@@ -310,6 +311,7 @@ export function Tilt(props: {
 export function Glow(props: { className?: string }) {
   return (
     <div
+      data-d-role="decor"
       aria-hidden="true"
       className={cn(
         'pointer-events-none absolute rounded-full bg-primary/20 blur-3xl',
@@ -341,11 +343,12 @@ export function Float(props: {
   const delay = finiteOr(props.delay, 0)
 
   if (reduced) {
-    return <div className={props.className}>{props.children}</div>
+    return <div data-d-role="container" className={props.className}>{props.children}</div>
   }
 
   return (
     <motion.div
+      data-d-role="container"
       className={props.className}
       animate={{ y: [0, -amplitude, 0] }}
       transition={{
@@ -381,6 +384,7 @@ export function GridField(props: {
       : 'radial-gradient(ellipse 100% 80% at 50% 0%, black 25%, transparent 75%)'
   return (
     <div
+      data-d-role="decor"
       aria-hidden="true"
       className={cn(
         'pointer-events-none absolute inset-0 text-foreground/[0.05]',
@@ -422,11 +426,12 @@ export function Drift(props: {
   const delay = finiteOr(props.delay, 0)
 
   if (reduced) {
-    return <div className={props.className}>{props.children}</div>
+    return <div data-d-role="container" className={props.className}>{props.children}</div>
   }
 
   return (
     <motion.div
+      data-d-role="container"
       className={props.className}
       animate={{ x: [0, x, 0], y: [0, y, 0] }}
       transition={{ duration, delay, repeat: Infinity, ease: 'easeInOut' }}
@@ -472,6 +477,7 @@ export function Magnetic(props: {
 
   return (
     <motion.div
+      data-d-role="container"
       ref={ref}
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
@@ -516,14 +522,14 @@ export function Marquee(props: {
 
   if (!armed) {
     return (
-      <div className={cn('flex overflow-hidden', props.className)}>
+      <div data-d-role="container" className={cn('flex overflow-hidden', props.className)}>
         {copy(false)}
       </div>
     )
   }
 
   return (
-    <div className={cn('flex overflow-hidden', props.className)}>
+    <div data-d-role="container" className={cn('flex overflow-hidden', props.className)}>
       <motion.div
         className="flex shrink-0 items-stretch"
         animate={{ x: props.reverse ? ['-50%', '0%'] : ['0%', '-50%'] }}
@@ -609,7 +615,7 @@ export function CountUp(props: {
   }, [raw, duration])
 
   return (
-    <span ref={ref} className={props.className}>
+    <span data-d-role="stat-value" ref={ref} className={props.className}>
       {display}
     </span>
   )
@@ -646,6 +652,7 @@ export function Spotlight(props: {
 
   return (
     <div
+      data-d-role="container"
       ref={ref}
       onPointerMove={handleMove}
       onPointerLeave={() => setActive(false)}
@@ -695,14 +702,14 @@ export function ParallaxLayer(props: {
 
   if (!armed) {
     return (
-      <div ref={ref} className={props.className}>
+      <div data-d-role="container" ref={ref} className={props.className}>
         {props.children}
       </div>
     )
   }
 
   return (
-    <motion.div ref={ref} style={{ y }} className={props.className}>
+    <motion.div data-d-role="container" ref={ref} style={{ y }} className={props.className}>
       {props.children}
     </motion.div>
   )

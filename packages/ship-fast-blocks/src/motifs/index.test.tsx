@@ -57,8 +57,8 @@ import {
   type DesignIntent,
 } from '#/primitives/design-system.ts'
 
-const SHARP_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'sharp' }
-const ROUNDED_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'rounded' }
+const SHARP_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'rounded-none' }
+const ROUNDED_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'rounded-xl' }
 
 // Helper: render a capsule with props
 function renderCapsule(
@@ -498,15 +498,19 @@ describe('PosterHero', () => {
 
   it('inherits parent DesignSystemProvider context when props.design is absent', () => {
     // When props.design is not set, the motif should NOT override the parent
-    // DesignSystemProvider. The CTA should get the parent's radius class.
+    // DesignSystemProvider. The CTA gets radius from the parent's --d-radius CSS var.
     render(
       <DesignSystemProvider intent={SHARP_DESIGN}>
         <PosterHero.component props={{ heading: 'Test', cta: 'Click me' }} />
       </DesignSystemProvider>,
     )
     const cta = screen.getByText('Click me')
-    // radius:sharp → rounded-none on the CTA
-    expect(cta.className).toContain('rounded-none')
+    // CTA is tagged with data-d-role="btn" so CSS applies --d-radius
+    expect(cta.getAttribute('data-d-role')).toBe('btn')
+    // Provider wrapper carries the --d-radius CSS custom property
+    const wrapper = cta.closest('[style*="--d-radius"]')
+    expect(wrapper).not.toBeNull()
+    expect(wrapper?.getAttribute('style') ?? '').toContain('--d-radius: 0px')
   })
 
   it('overrides parent context when props.design is explicitly set', () => {
@@ -517,14 +521,17 @@ describe('PosterHero', () => {
             heading: 'Test',
             cta: 'Click me',
             design:
-              '@design radius:rounded shadow:soft gradient:none density:balanced typography:editorial motion:subtle',
+              '@design radius:rounded-xl shadow:shadow-sm gradient:none density:balanced typography:editorial motion:subtle',
           }}
         />
       </DesignSystemProvider>,
     )
     const cta = screen.getByText('Click me')
-    // Explicit design overrides parent → rounded-xl (radius:rounded)
-    expect(cta.className).toContain('rounded-xl')
+    // Explicit design overrides parent → CTA still tagged btn, but wrapper has new --d-radius
+    expect(cta.getAttribute('data-d-role')).toBe('btn')
+    const wrapper = cta.closest('[style*="--d-radius"]')
+    expect(wrapper).not.toBeNull()
+    expect(wrapper?.getAttribute('style') ?? '').toContain('--d-radius: 0.75rem')
   })
 })
 

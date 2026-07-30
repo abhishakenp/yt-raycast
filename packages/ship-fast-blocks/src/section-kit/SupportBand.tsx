@@ -26,6 +26,7 @@ const SupportBand = React.forwardRef<
   const Comp = asChild ? Slot : 'section'
   return (
     <Comp
+      data-d-role="section"
       data-slot="support-band"
       className={cn(SupportBandVariants({ variant }), className)}
       ref={ref}

@@ -37,6 +37,7 @@ const MapOverlay = React.forwardRef<
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
+      data-d-role="decor"
       aria-hidden="true"
       data-slot="map-overlay"
       className={cn(
@@ -67,6 +68,7 @@ const MapPin = React.forwardRef<
   const Comp = asChild ? Slot : 'span'
   return (
     <Comp
+      data-d-role="badge"
       aria-hidden="true"
       data-slot="map-pin"
       className={cn(

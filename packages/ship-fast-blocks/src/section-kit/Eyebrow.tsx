@@ -48,7 +48,7 @@ const Eyebrow = React.forwardRef<HTMLSpanElement, EyebrowProps>(
       <Comp
         ref={ref}
         data-slot="eyebrow"
-        className={cn(eyebrowVariants({ variant }), className)}
+        data-d-role="eyebrow"className={cn(eyebrowVariants({ variant }), className)}
         {...props}
       >
         {asChild ? (

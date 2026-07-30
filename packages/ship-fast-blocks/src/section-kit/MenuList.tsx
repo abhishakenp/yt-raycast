@@ -17,7 +17,7 @@ const MenuList = React.forwardRef<
   return (
     <Comp
       data-slot="menu-list"
-      className={cn('flex flex-col', className)}
+      data-d-role="list"className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />
@@ -49,7 +49,7 @@ const MenuItem = React.forwardRef<
   return (
     <Comp
       data-slot="menu-item"
-      className={cn('flex w-full items-start justify-between gap-4', className)}
+      data-d-role="card"className={cn('flex w-full items-start justify-between gap-4', className)}
       ref={ref}
       {...props}
     />
@@ -65,7 +65,7 @@ const MenuItemDescription = React.forwardRef<
   return (
     <Comp
       data-slot="menu-item-description"
-      className={cn('text-sm text-muted-foreground', className)}
+      data-d-role="body"className={cn('text-sm text-muted-foreground', className)}
       ref={ref}
       {...props}
     />

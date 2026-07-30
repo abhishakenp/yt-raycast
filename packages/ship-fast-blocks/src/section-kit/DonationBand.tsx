@@ -26,6 +26,7 @@ const DonationBand = React.forwardRef<
   const Comp = asChild ? Slot : 'section'
   return (
     <Comp
+      data-d-role="section"
       data-slot="donation-band"
       className={cn(DonationBandVariants({ variant }), className)}
       ref={ref}

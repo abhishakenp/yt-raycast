@@ -43,7 +43,7 @@ const SubscribeHeading = React.forwardRef<
   return (
     <Comp
       data-slot="subscribe-heading"
-      className={cn('text-2xl font-semibold tracking-tight', className)}
+      data-d-role="heading"className={cn('text-2xl font-semibold tracking-tight', className)}
       ref={ref}
       {...props}
     />
@@ -59,7 +59,7 @@ const SubscribeDescription = React.forwardRef<
   return (
     <Comp
       data-slot="subscribe-description"
-      className={cn('text-base text-muted-foreground', className)}
+      data-d-role="body"className={cn('text-base text-muted-foreground', className)}
       ref={ref}
       {...props}
     />
@@ -91,7 +91,7 @@ const SubscribeForm = React.forwardRef<
   return (
     <Comp
       data-slot="subscribe-form"
-      className={cn(
+      data-d-role="form"className={cn(
         'flex w-full flex-col items-stretch gap-3 sm:flex-row',
         className,
       )}
@@ -110,7 +110,7 @@ const SubscribeInput = React.forwardRef<
   return (
     <Comp
       data-slot="subscribe-input"
-      className={cn(
+      data-d-role="input"className={cn(
         'w-full flex-1 rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30',
         className,
       )}

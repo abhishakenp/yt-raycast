@@ -49,6 +49,7 @@ const StarRating = React.forwardRef<
 
     return (
       <Comp
+        data-d-role="badge"
         ref={ref}
         data-slot="star-rating"
         className={cn('inline-flex items-center gap-0.5', className)}

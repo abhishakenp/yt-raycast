@@ -27,7 +27,7 @@ const NewsletterCta = React.forwardRef<
   return (
     <Comp
       data-slot="newsletter-cta"
-      className={cn(newsletterCtaVariants({ variant }), className)}
+      data-d-role="btn"className={cn(newsletterCtaVariants({ variant }), className)}
       ref={ref}
       {...props}
     />
@@ -43,7 +43,7 @@ const NewsletterCtaHeading = React.forwardRef<
   return (
     <Comp
       data-slot="newsletter-cta-heading"
-      className={cn('mb-4 text-3xl font-semibold text-foreground', className)}
+      data-d-role="btn"className={cn('mb-4 text-3xl font-semibold text-foreground', className)}
       ref={ref}
       {...props}
     />
@@ -59,7 +59,7 @@ const NewsletterCtaDescription = React.forwardRef<
   return (
     <Comp
       data-slot="newsletter-cta-description"
-      className={cn('mx-auto mb-8 max-w-xl text-muted-foreground', className)}
+      data-d-role="btn"className={cn('mx-auto mb-8 max-w-xl text-muted-foreground', className)}
       ref={ref}
       {...props}
     />
@@ -75,7 +75,7 @@ const NewsletterCtaFineprint = React.forwardRef<
   return (
     <Comp
       data-slot="newsletter-cta-fineprint"
-      className={cn('mt-4 text-xs text-muted-foreground', className)}
+      data-d-role="btn"className={cn('mt-4 text-xs text-muted-foreground', className)}
       ref={ref}
       {...props}
     />

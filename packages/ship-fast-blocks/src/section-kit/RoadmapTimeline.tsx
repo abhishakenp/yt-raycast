@@ -10,6 +10,7 @@ const RoadmapTimeline = React.forwardRef<
   const Comp = asChild ? Slot : 'ol'
   return (
     <Comp
+      data-d-role="list"
       data-slot="roadmap-timeline"
       className={cn('relative flex flex-col', className)}
       ref={ref}

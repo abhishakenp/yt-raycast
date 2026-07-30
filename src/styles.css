@@ -5,6 +5,7 @@
 @import 'tw-animate-css';
 @plugin '@tailwindcss/typography';
 @source '../packages/ship-fast-blocks/src';
+@import '../packages/ship-fast-blocks/src/primitives/design-presets.css';
 
 @custom-variant dark (&:is(.dark *));
 
