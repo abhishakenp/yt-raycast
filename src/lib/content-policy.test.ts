@@ -33,10 +33,16 @@ describe('content policy prompt guard', () => {
     })
   })
 
-  it('returns the client-facing block message with an explicit do-not-repeat instruction', () => {
-    expect(CONTENT_POLICY_CLIENT_MESSAGE).toContain('Your request was blocked')
-    expect(CONTENT_POLICY_CLIENT_MESSAGE).toContain(
-      'Do not submit this type of content again.',
+  it('returns the concise client-facing block message', () => {
+    expect(CONTENT_POLICY_CLIENT_MESSAGE).toBe(
+      '🚫 Not shipping that. Ship Fast blocks harmful, hateful, explicit, or exploitative content. This request was flagged—try a safe idea instead.',
     )
+  })
+
+  it('uses the shared classifier for newly covered dangerous activity', () => {
+    expect(checkPromptContentPolicy('Create a how to bomb tutorial')).toEqual({
+      ok: false,
+      code: 'CONTENT_POLICY',
+    })
   })
 })
