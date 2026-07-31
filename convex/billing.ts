@@ -259,8 +259,9 @@ export const upsertSubscriptionForUser = internalMutation({
   },
 })
 
-export const confirmCheckoutSubscription = mutation({
+export const confirmCheckoutSubscription = internalMutation({
   args: {
+    userId: v.string(),
     provider: v.union(v.literal('stripe'), v.literal('razorpay')),
     status: v.union(
       v.literal('active'),
@@ -274,7 +275,7 @@ export const confirmCheckoutSubscription = mutation({
     providerCheckoutId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx)
+    const userId = args.userId
     const now = Date.now()
     const existing = await ctx.db
       .query('subscriptions')

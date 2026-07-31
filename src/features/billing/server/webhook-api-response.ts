@@ -111,17 +111,24 @@ async function verifyRazorpaySignature(
 }
 
 function normalizeStripeStatus(status: unknown): BillingStatus {
+  if (status === 'active') return 'active'
   if (status === 'trialing') return 'trialing'
   if (status === 'past_due') return 'past_due'
   if (status === 'canceled' || status === 'cancelled') return 'cancelled'
-  return 'active'
+  // Deny-by-default: unknown statuses must NOT grant active access.
+  return 'cancelled'
 }
 
 function normalizeRazorpayStatus(status: unknown): BillingStatus {
+  if (status === 'active') return 'active'
   if (status === 'authenticated') return 'authenticated'
-  if (status === 'cancelled' || status === 'canceled') return 'cancelled'
+  if (status === 'trialing') return 'trialing'
   if (status === 'past_due') return 'past_due'
-  return 'active'
+  if (status === 'cancelled' || status === 'canceled') return 'cancelled'
+  // Deny-by-default: unknown statuses (halted, pending, etc.) must NOT
+  // grant active access. Map to cancelled so the user loses entitlement
+  // until a recognized active status arrives.
+  return 'cancelled'
 }
 
 function creditsForPack(packId: string): number {
@@ -213,6 +220,11 @@ function razorpayPayloadToMutation(event: unknown) {
   const payload = asRecord(eventRecord?.payload)
   if (!eventRecord || !payload) return null
 
+  // Razorpay webhooks include a unique event ID. Without it we cannot
+  // deduplicate reliably — reject the payload rather than risk collisions.
+  const eventId = String(eventRecord.id || '')
+  if (!eventId) return null
+
   const subscriptionContainer = asRecord(payload.subscription)
   const subscription = asRecord(subscriptionContainer?.entity)
   if (subscription) {
@@ -221,10 +233,7 @@ function razorpayPayloadToMutation(event: unknown) {
     if (!userId) return null
     return {
       provider: 'razorpay' as const,
-      idempotencyKey:
-        String(eventRecord.event || 'subscription') +
-        ':' +
-        String(subscription.id),
+      idempotencyKey: eventId,
       userId: String(userId),
       subscription: {
         status: normalizeRazorpayStatus(subscription.status),
@@ -243,8 +252,7 @@ function razorpayPayloadToMutation(event: unknown) {
   return userId && credits > 0
     ? {
         provider: 'razorpay' as const,
-        idempotencyKey:
-          String(eventRecord.event || 'order') + ':' + String(order?.id),
+        idempotencyKey: eventId,
         userId: String(userId),
         credits,
       }

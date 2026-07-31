@@ -116,6 +116,7 @@ describe('billing webhook → Slack payment notification', () => {
     const calls = stubSlackFetch()
     const request = await signedRazorpayRequest({
       event: 'order.paid',
+      id: 'evt_order_slack_001',
       payload: {
         order: {
           entity: {

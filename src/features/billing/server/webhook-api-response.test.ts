@@ -125,6 +125,7 @@ describe('createWebhookApiResponse', () => {
   it('accepts signed Razorpay subscription events and writes billing state', async () => {
     const body = JSON.stringify({
       event: 'subscription.activated',
+      id: 'evt_sub_activated_001',
       payload: {
         subscription: {
           entity: {
@@ -157,7 +158,7 @@ describe('createWebhookApiResponse', () => {
     expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
       secret: 'mutation_secret',
       provider: 'razorpay',
-      idempotencyKey: 'subscription.activated:sub_razorpay_1',
+      idempotencyKey: 'evt_sub_activated_001',
       userId: 'user_razorpay',
       subscription: {
         status: 'authenticated',
@@ -170,6 +171,7 @@ describe('createWebhookApiResponse', () => {
   it('accepts signed Razorpay credit-pack order events', async () => {
     const body = JSON.stringify({
       event: 'order.paid',
+      id: 'evt_order_paid_001',
       payload: {
         order: {
           entity: {
@@ -200,7 +202,7 @@ describe('createWebhookApiResponse', () => {
     expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
       secret: 'mutation_secret',
       provider: 'razorpay',
-      idempotencyKey: 'order.paid:order_10credits',
+      idempotencyKey: 'evt_order_paid_001',
       userId: 'user_credit_pack',
       credits: 10,
     })

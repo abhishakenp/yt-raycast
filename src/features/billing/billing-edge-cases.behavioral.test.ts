@@ -134,6 +134,7 @@ function stripeCreditPackEvent(packId: string, userId = 'user_1') {
 function razorpaySubscriptionEvent(overrides: Record<string, unknown> = {}) {
   return {
     event: 'subscription.activated',
+    id: 'evt_rzp_001',
     payload: {
       subscription: {
         entity: {
@@ -454,11 +455,166 @@ describe('billing webhooks', () => {
       })
     }
   })
+
+  describe('Razorpay subscription status normalization (deny-by-default)', () => {
+    const cases: Array<{
+      raw: string
+      expectedStatus: string
+      isActive: boolean
+    }> = [
+      { raw: 'active', expectedStatus: 'active', isActive: true },
+      { raw: 'authenticated', expectedStatus: 'authenticated', isActive: true },
+      { raw: 'trialing', expectedStatus: 'trialing', isActive: true },
+      { raw: 'past_due', expectedStatus: 'past_due', isActive: false },
+      { raw: 'cancelled', expectedStatus: 'cancelled', isActive: false },
+      // halted must NOT default to active — deny-by-default
+      { raw: 'halted', expectedStatus: 'cancelled', isActive: false },
+      { raw: 'pending', expectedStatus: 'cancelled', isActive: false },
+      { raw: 'unknown_status', expectedStatus: 'cancelled', isActive: false },
+    ]
+
+    for (const { raw, expectedStatus, isActive } of cases) {
+      it(`Razorpay "${raw}" → normalized to "${expectedStatus}" (active=${isActive})`, async () => {
+        const request = await buildSignedRazorpayRequest(
+          razorpaySubscriptionEvent({ status: raw }),
+        )
+        const client = mockConvexClient(() => ({
+          processed: true,
+          duplicate: false,
+          referralUnlock: null,
+        }))
+
+        await createWebhookApiResponse(
+          request,
+          'razorpay',
+          razorpayEnv,
+          client,
+          noOpApplyDiscount,
+        )
+
+        const args = (client.mutation.mock.calls[0] as unknown[])[1] as {
+          subscription: { status: string }
+        }
+        expect(args.subscription.status).toBe(expectedStatus)
+        expect(
+          hasExportSubscriptionAccess(
+            args.subscription.status as SubscriptionStatus,
+          ),
+        ).toBe(isActive)
+      })
+    }
+  })
 })
 
-// ---------------------------------------------------------------------------
-// Razorpay idempotency key generation / validation
-// ---------------------------------------------------------------------------
+describe('Razorpay webhook idempotency key uses unique event ID', () => {
+  it('two recurring subscription.charged events for the same sub produce different keys', async () => {
+    // Blocker 3 regression: previously used event:subscriptionId which
+    // collided across recurring charges. Now uses the unique event ID.
+    const event1 = {
+      event: 'subscription.charged',
+      id: 'evt_charge_month_1',
+      payload: {
+        subscription: {
+          entity: {
+            id: 'sub_recurring',
+            status: 'active',
+            plan_id: 'plan_pro',
+            notes: { userId: 'user_recurring', tier: 'pro' },
+          },
+        },
+      },
+    }
+    const event2 = {
+      event: 'subscription.charged',
+      id: 'evt_charge_month_2',
+      payload: {
+        subscription: {
+          entity: {
+            id: 'sub_recurring',
+            status: 'active',
+            plan_id: 'plan_pro',
+            notes: { userId: 'user_recurring', tier: 'pro' },
+          },
+        },
+      },
+    }
+
+    const client1 = mockConvexClient(() => ({
+      processed: true,
+      duplicate: false,
+      referralUnlock: null,
+    }))
+    const client2 = mockConvexClient(() => ({
+      processed: true,
+      duplicate: false,
+      referralUnlock: null,
+    }))
+
+    const req1 = await buildSignedRazorpayRequest(event1)
+    const req2 = await buildSignedRazorpayRequest(event2)
+
+    await createWebhookApiResponse(
+      req1,
+      'razorpay',
+      razorpayEnv,
+      client1,
+      noOpApplyDiscount,
+    )
+    await createWebhookApiResponse(
+      req2,
+      'razorpay',
+      razorpayEnv,
+      client2,
+      noOpApplyDiscount,
+    )
+
+    const key1 = (client1.mutation.mock.calls[0] as unknown[])[1] as {
+      idempotencyKey: string
+    }
+    const key2 = (client2.mutation.mock.calls[0] as unknown[])[1] as {
+      idempotencyKey: string
+    }
+    expect(key1.idempotencyKey).toBe('evt_charge_month_1')
+    expect(key2.idempotencyKey).toBe('evt_charge_month_2')
+    expect(key1.idempotencyKey).not.toBe(key2.idempotencyKey)
+  })
+
+  it('rejects Razorpay webhook payloads without an event ID', async () => {
+    const event = {
+      event: 'subscription.activated',
+      // no id field
+      payload: {
+        subscription: {
+          entity: {
+            id: 'sub_no_evt_id',
+            status: 'active',
+            plan_id: 'plan_pro',
+            notes: { userId: 'user_no_evt', tier: 'pro' },
+          },
+        },
+      },
+    }
+
+    const client = mockConvexClient(() => ({
+      processed: true,
+      duplicate: false,
+      referralUnlock: null,
+    }))
+
+    const request = await buildSignedRazorpayRequest(event)
+    const response = await createWebhookApiResponse(
+      request,
+      'razorpay',
+      razorpayEnv,
+      client,
+      noOpApplyDiscount,
+    )
+
+    // Payload rejected — no mutation called
+    expect(client.mutation).not.toHaveBeenCalled()
+    expect(response.status).toBe(200) // webhook returns 200 even on skip
+  })
+})
 
 describe('Razorpay idempotency keys', () => {
   describe('key generation', () => {

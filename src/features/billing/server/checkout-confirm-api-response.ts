@@ -1,6 +1,6 @@
 import { ConvexHttpClient } from 'convex/browser'
 
-import { api } from '../../../../convex/_generated/api'
+import { api, internal } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { checkRateLimit, checkoutConfirmHits } from '@/lib/rate-limit'
 import {
@@ -75,11 +75,14 @@ const timingSafeEqual = (left: string, right: string): boolean => {
 }
 
 const normalizeRazorpayStatus = (status: unknown): BillingStatus => {
+  if (status === 'active') return 'active'
   if (status === 'trialing') return 'trialing'
   if (status === 'authenticated') return 'authenticated'
   if (status === 'past_due') return 'past_due'
   if (status === 'cancelled' || status === 'canceled') return 'cancelled'
-  return 'active'
+  // Deny-by-default: unknown statuses (halted, pending, etc.) must NOT
+  // grant active access.
+  return 'cancelled'
 }
 
 export const createCheckoutConfirmApiResponse = async (
@@ -193,7 +196,8 @@ export const createCheckoutConfirmApiResponse = async (
   const status = normalizeRazorpayStatus(subscription.status)
   const planId = normalizeString(subscription.plan_id) || 'pro'
   try {
-    await client.mutation(api.billing.confirmCheckoutSubscription, {
+    await client.mutation(internal.billing.confirmCheckoutSubscription, {
+      userId: overview.userId,
       provider: 'razorpay',
       status,
       planId,

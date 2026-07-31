@@ -140,4 +140,57 @@ describe('preview-homepage-html executable fragment rejection', () => {
 
     expect(response.status).toBe(422)
   })
+
+  // Blocker 4 regression: entity-encoded javascript: bypass
+  it('rejects decimal entity-encoded javascript: URLs', async () => {
+    const response = await createPreviewHtmlSaveResponse(
+      SESSION_ID,
+      jsonRequest({
+        anonymousOwnerSecret: OWNER_SECRET,
+        html: '<a href="&#106;avascript:alert(1)">click</a>',
+      }),
+      rejectingClient(),
+    )
+
+    expect(response.status).toBe(422)
+  })
+
+  it('rejects hex entity-encoded javascript: URLs', async () => {
+    const response = await createPreviewHtmlSaveResponse(
+      SESSION_ID,
+      jsonRequest({
+        anonymousOwnerSecret: OWNER_SECRET,
+        html: '<a href="&#x6a;avascript:alert(1)">click</a>',
+      }),
+      rejectingClient(),
+    )
+
+    expect(response.status).toBe(422)
+  })
+
+  it('rejects &colon; entity-encoded javascript: URLs', async () => {
+    const response = await createPreviewHtmlSaveResponse(
+      SESSION_ID,
+      jsonRequest({
+        anonymousOwnerSecret: OWNER_SECRET,
+        html: '<a href="javascript&colon;alert(1)">click</a>',
+      }),
+      rejectingClient(),
+    )
+
+    expect(response.status).toBe(422)
+  })
+
+  it('rejects entity-encoded script tags', async () => {
+    const response = await createPreviewHtmlSaveResponse(
+      SESSION_ID,
+      jsonRequest({
+        anonymousOwnerSecret: OWNER_SECRET,
+        html: '&lt;script&gt;alert(1)&lt;/script&gt;',
+      }),
+      rejectingClient(),
+    )
+
+    expect(response.status).toBe(422)
+  })
 })

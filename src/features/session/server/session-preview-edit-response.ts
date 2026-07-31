@@ -17,6 +17,30 @@ type JsonBody = Record<string, unknown>
 const EXECUTABLE_PREVIEW_FRAGMENT_PATTERN =
   /<\s*\/?\s*(?:script|iframe|object|embed|base|meta|link|foreignObject)\b|\s(?:on[a-z]+|srcdoc)\s*=|\s(?:href|src|action|formaction|xlink:href)\s*=\s*["']?\s*(?:(?:javascript|vbscript)\s*:|data\s*:\s*text\/html)/i
 
+// Decode HTML entities so that encoded payloads like &#106;avascript: are
+// caught by the regex. The browser decodes entities before executing URLs,
+// so we must decode before checking. Covers numeric (&#NN;, &#xNN;) and
+// named entities (&colon;, &Tab;, &NewLine;, etc.) that attackers use to
+// break up dangerous keywords.
+function decodeHtmlEntities(html: string): string {
+  return html
+    .replace(/&#x([0-9a-f]+);?/gi, (_, hex: string) =>
+      String.fromCodePoint(parseInt(hex, 16)),
+    )
+    .replace(/&#(\d+);?/g, (_, dec: string) =>
+      String.fromCodePoint(parseInt(dec, 10)),
+    )
+    .replace(/&colon;/gi, ':')
+    .replace(/&tab;/gi, '\t')
+    .replace(/&newline;/gi, '\n')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&apos;/gi, "'")
+}
+
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
     ...init,
@@ -77,7 +101,12 @@ function getOwnerSecret(request: Request, body: JsonBody): string | undefined {
 }
 
 function containsExecutablePreviewFragment(html: string): boolean {
-  return EXECUTABLE_PREVIEW_FRAGMENT_PATTERN.test(html)
+  // Decode entities first so encoded javascript: / script tags are caught.
+  const decoded = decodeHtmlEntities(html)
+  return (
+    EXECUTABLE_PREVIEW_FRAGMENT_PATTERN.test(html) ||
+    EXECUTABLE_PREVIEW_FRAGMENT_PATTERN.test(decoded)
+  )
 }
 
 function createClient(clientOverride?: PreviewEditClient): PreviewEditClient {
