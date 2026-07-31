@@ -60,6 +60,7 @@ export async function createSessionPreviewRawResponse(
         'Cache-Control': 'public, max-age=300',
         'X-Robots-Tag': 'noindex',
         'X-Frame-Options': 'SAMEORIGIN',
+        'X-Content-Type-Options': 'nosniff',
         'Content-Security-Policy':
           "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; frame-ancestors 'self'",
       },

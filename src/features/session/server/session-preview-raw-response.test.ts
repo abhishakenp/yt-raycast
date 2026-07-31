@@ -65,6 +65,8 @@ describe('createSessionPreviewRawResponse', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toContain('text/html')
     expect(response.headers.get('x-robots-tag')).toBe('noindex')
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+    expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN')
     expect(await response.text()).toContain('<h1>Preview</h1>')
     expect(query).toHaveBeenCalledWith('getPublicGallerySession', {
       sessionId: 'session-1',

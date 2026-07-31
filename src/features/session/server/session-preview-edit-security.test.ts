@@ -194,3 +194,36 @@ describe('preview-homepage-html executable fragment rejection', () => {
     expect(response.status).toBe(422)
   })
 })
+
+describe('preview HTML rate limiting (10 saves per 10 minutes)', () => {
+  beforeEach(() => {
+    previewHtmlHits.clear()
+  })
+
+  it('returns 429 on the 11th save within the window', async () => {
+    const html = '<main>Valid preview</main>'
+    // 10 saves should succeed
+    for (let i = 0; i < 10; i++) {
+      const response = await createPreviewHtmlSaveResponse(
+        SESSION_ID,
+        jsonRequest({
+          anonymousOwnerSecret: OWNER_SECRET,
+          html,
+        }),
+        rejectingClient(),
+      )
+      // Some may 500 due to rejectingClient, but not 429
+      expect(response.status).not.toBe(429)
+    }
+    // 11th save should be rate-limited
+    const response = await createPreviewHtmlSaveResponse(
+      SESSION_ID,
+      jsonRequest({
+        anonymousOwnerSecret: OWNER_SECRET,
+        html,
+      }),
+      rejectingClient(),
+    )
+    expect(response.status).toBe(429)
+  })
+})
