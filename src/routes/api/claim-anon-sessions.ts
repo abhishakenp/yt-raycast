@@ -11,6 +11,42 @@ import {
   userRegisteredEvent,
 } from '@/features/notifications/slack-business'
 
+// ConvexError carries structured data in .data (e.g. {code, message}). The
+// convex-browser client also throws plain Error/HTTPError for transport or
+// auth failures. Extract a {code, message} payload either way.
+function convexErrorPayload(
+  error: unknown,
+): { code?: string; message?: string } | null {
+  if (error && typeof error === 'object' && 'data' in error) {
+    const data = (error as { data: unknown }).data
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      const payload = data as Record<string, unknown>
+      return {
+        code: typeof payload.code === 'string' ? payload.code : undefined,
+        message:
+          typeof payload.message === 'string' ? payload.message : undefined,
+      }
+    }
+  }
+  const message = error instanceof Error ? error.message : String(error)
+  const match = message.match(/\{.*\}/)
+  if (!match) return null
+  try {
+    const parsed = JSON.parse(match[0]) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return null
+    }
+    const payload = parsed as Record<string, unknown>
+    return {
+      code: typeof payload.code === 'string' ? payload.code : undefined,
+      message:
+        typeof payload.message === 'string' ? payload.message : undefined,
+    }
+  } catch {
+    return null
+  }
+}
+
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
     ...init,
@@ -50,10 +86,45 @@ async function claimAnonymousSessions(request: Request) {
   const clientIpHash = hashClientIp(clientIp)
   const client = createRuntimeConvexHttpClient()
   client.setAuth(token)
-  const result = await client.mutation(
-    api.sessions.claimAnonymousSessionsByIpMutation,
-    { clientIpHash },
-  )
+  let result
+  try {
+    result = await client.mutation(
+      api.sessions.claimAnonymousSessionsByIpMutation,
+      { clientIpHash, secret: process.env.SHARE_BONUS_MUTATION_SECRET },
+    )
+  } catch (error) {
+    const payload = convexErrorPayload(error)
+    const code = payload?.code
+    const message =
+      payload?.message ?? (error instanceof Error ? error.message : undefined)
+
+    // AUTH_REQUIRED: convex rejected the bearer token (missing/invalid/
+    // expired Clerk JWT) or getUserId() returned undefined.
+    if (
+      code === 'AUTH_REQUIRED' ||
+      message?.includes('AuthenticationRequired') ||
+      message?.includes('Unauthenticated') ||
+      message?.includes('Invalid token')
+    ) {
+      return json(
+        { error: 'Authentication required to claim anonymous sessions.' },
+        { status: 401 },
+      )
+    }
+    // FORBIDDEN: server-secret mismatch — the mutation is server-only.
+    if (code === 'FORBIDDEN') {
+      return json(
+        { error: 'This operation can only be called from the server.' },
+        { status: 403 },
+      )
+    }
+    // Anything else is an upstream Convex failure — surface as 502, never
+    // an unhandled 500 (which signals the API itself crashed).
+    return json(
+      { error: 'Failed to claim anonymous sessions. Try again.' },
+      { status: 502 },
+    )
+  }
 
   // Best-effort Slack notification — never blocks the response.
   // Extract userId, name, email from the Clerk JWT payload.
