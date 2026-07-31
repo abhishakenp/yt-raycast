@@ -16,6 +16,7 @@ describe('PricingContent', () => {
       <PricingContent
         onCheckoutClick={() => {}}
         isCheckoutStarting={false}
+        onStartFreeClick={() => {}}
         onShareClick={() => {}}
       />,
     )
@@ -37,20 +38,24 @@ describe('PricingContent', () => {
     expect(answer.hidden).toBe(true)
   })
 
-  it('renders the Free plan with Most Popular badge', () => {
+  it('renders the Free plan without the Most Popular badge', () => {
+    // The badge belongs on the plan we want people to buy. Putting it on the
+    // ₹0 card advertises the free tier as the recommended choice.
     const { container, getByLabelText, getByText } = render(
       <PricingContent
         onCheckoutClick={() => {}}
         isCheckoutStarting={false}
+        onStartFreeClick={() => {}}
         onShareClick={() => {}}
       />,
     )
 
     const badge = getByLabelText('Most popular plan')
-    const freeCard = container.querySelector('.pricing-card.featured')
+    const freeCard = getByText('Free').closest('.pricing-card')
     expect(freeCard).not.toBeNull()
-    expect(freeCard?.contains(badge)).toBe(true)
-    expect(freeCard?.querySelector('.plan-label')?.textContent).toBe('Free')
+    expect(freeCard?.contains(badge)).toBe(false)
+    expect(freeCard?.classList.contains('featured')).toBe(false)
+    expect(container.querySelector('.pricing-card.featured')).not.toBeNull()
     expect(getByText('Free')).toBeDefined()
     expect(getByText('₹0')).toBeDefined()
     expect(getByText('2 generations/day without login')).toBeDefined()
@@ -58,20 +63,56 @@ describe('PricingContent', () => {
     expect(getByText('10 free generations/month')).toBeDefined()
   })
 
-  it('does not mark the Pro plan as featured', () => {
-    const { container, getByText } = render(
+  it('marks the Pro plan as the featured, most-popular plan', () => {
+    const { getByText } = render(
       <PricingContent
         onCheckoutClick={() => {}}
         isCheckoutStarting={false}
+        onStartFreeClick={() => {}}
         onShareClick={() => {}}
       />,
     )
 
-    const proLabel = getByText('Pro')
-    const proCard = proLabel.closest('.pricing-card')
+    const proCard = getByText('Pro').closest('.pricing-card')
     expect(proCard).not.toBeNull()
-    expect(proCard?.classList.contains('featured')).toBe(false)
-    expect(proCard?.querySelector('.popular-badge')).toBeNull()
+    expect(proCard?.classList.contains('featured')).toBe(true)
+    expect(proCard?.querySelector('.popular-badge')?.textContent).toBe(
+      'Most Popular',
+    )
+  })
+
+  it('calls the free-tier handler (not the share handler) from Start Free', () => {
+    const onStartFreeClick = vi.fn()
+    const onShareClick = vi.fn()
+    const { getByText } = render(
+      <PricingContent
+        onCheckoutClick={() => {}}
+        isCheckoutStarting={false}
+        onStartFreeClick={onStartFreeClick}
+        onShareClick={onShareClick}
+      />,
+    )
+
+    fireEvent.click(getByText('Start Free'))
+
+    expect(onStartFreeClick).toHaveBeenCalledTimes(1)
+    expect(onShareClick).not.toHaveBeenCalled()
+  })
+
+  it('keeps Start Free enabled while a Pro checkout is starting', () => {
+    const onStartFreeClick = vi.fn()
+    const { getByText } = render(
+      <PricingContent
+        onCheckoutClick={() => {}}
+        isCheckoutStarting
+        onStartFreeClick={onStartFreeClick}
+        onShareClick={() => {}}
+      />,
+    )
+
+    fireEvent.click(getByText('Start Free'))
+
+    expect(onStartFreeClick).toHaveBeenCalledTimes(1)
   })
 
   it('renders the Free FAQ item', () => {
@@ -79,6 +120,7 @@ describe('PricingContent', () => {
       <PricingContent
         onCheckoutClick={() => {}}
         isCheckoutStarting={false}
+        onStartFreeClick={() => {}}
         onShareClick={() => {}}
       />,
     )
@@ -97,6 +139,7 @@ describe('PricingContent', () => {
       <PricingContent
         onCheckoutClick={() => {}}
         isCheckoutStarting={false}
+        onStartFreeClick={() => {}}
         onShareClick={() => {}}
         referralCode="TEST123"
       />,
@@ -113,6 +156,7 @@ describe('PricingContent', () => {
       <PricingContent
         onCheckoutClick={() => {}}
         isCheckoutStarting={false}
+        onStartFreeClick={() => {}}
         onShareClick={() => {}}
       />,
     )
@@ -127,6 +171,7 @@ describe('PricingContent', () => {
       <PricingContent
         onCheckoutClick={onCheckoutClick}
         isCheckoutStarting={false}
+        onStartFreeClick={() => {}}
         onShareClick={() => {}}
       />,
     )

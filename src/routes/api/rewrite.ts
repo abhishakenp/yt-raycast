@@ -5,18 +5,47 @@ import {
   moderationErrorResponse,
 } from '@/features/moderation/server/enforce-user-input-moderation'
 import { CONTENT_MODERATION_UNAVAILABLE_MESSAGE } from '@/features/moderation/server/moderation-classifier'
+import { api } from '../../../convex/_generated/api'
+import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { rateLimitByIp, rewriteHits } from '@/lib/rate-limit'
+import { admitModelCall, modelSpendBlockedResponse } from '@/lib/spend-cap'
 
 const MAX_REWRITE_BODY_BYTES = 1_000_000
 const REWRITE_TIMEOUT_MS = 30_000
 
 function isAuthDisabled(): boolean {
+  // Never honoured in production — see convex/lib/session_export_helpers.ts.
+  const isProduction = process.env.NODE_ENV === 'production'
+  const isDev = (process.env.IS_DEV ?? '').trim().toLowerCase() === 'true'
+  if (isProduction && !isDev) return false
   return (process.env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
 }
 
-function isAuthenticated(request: Request): boolean {
+/**
+ * Verify the caller actually holds a valid session.
+ *
+ * The previous check was `/^Bearer\s+.+$/` — it accepted the literal string
+ * `Bearer x`. This is an LLM endpoint with no quota of its own, so "any
+ * non-empty token" meant anyone on the internet could spend model budget
+ * without limit. The token is now handed to Convex, which verifies the Clerk
+ * signature; an invalid one throws and we reject.
+ */
+async function isAuthenticated(request: Request): Promise<boolean> {
   if (isAuthDisabled()) return true
-  const auth = request.headers.get('authorization') ?? ''
-  return /^Bearer\s+.+$/i.test(auth)
+
+  const token = (request.headers.get('authorization') ?? '').match(
+    /^Bearer\s+(.+)$/i,
+  )?.[1]
+  if (!token?.trim()) return false
+
+  try {
+    const client = createRuntimeConvexHttpClient(10_000)
+    client.setAuth?.(token.trim())
+    await client.query(api.billing.getSubscriptionStatus, {})
+    return true
+  } catch {
+    return false
+  }
 }
 
 function json(body: unknown, init?: ResponseInit) {
@@ -80,9 +109,17 @@ export const Route = createFileRoute('/api/rewrite')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!isAuthenticated(request)) {
+        // Rate limit BEFORE the auth round-trip so an unauthenticated flood
+        // cannot turn into a Convex query flood.
+        const limited = rateLimitByIp(request, rewriteHits, 10)
+        if (limited) return limited
+
+        if (!(await isAuthenticated(request))) {
           return json({ error: 'Authentication required' }, { status: 401 })
         }
+
+        const spend = admitModelCall('rewrite')
+        if (!spend.allowed) return modelSpendBlockedResponse(spend)
 
         const rawBody = await readRewriteBody(request)
         if (rawBody === null) {

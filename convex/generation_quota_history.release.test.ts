@@ -90,6 +90,7 @@ async function seedAnonymousSessions(
 }
 
 function createPayload(workspace: string): {
+  serverSecret: string | undefined
   prompt: string
   preferredLanguage: string
   preferredExportTarget: 'html'
@@ -97,6 +98,7 @@ function createPayload(workspace: string): {
   workspace: string
 } {
   return {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: `Strict release quota verification for ${workspace}`,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',

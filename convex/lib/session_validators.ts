@@ -110,6 +110,7 @@ export const claimAnonymousArgs = {
 
 export const claimAnonymousByClientIdArgs = {
   anonymousClientId: v.string(),
+  secret: v.optional(v.string()),
 }
 
 export const claimAnonymousByIpArgs = {

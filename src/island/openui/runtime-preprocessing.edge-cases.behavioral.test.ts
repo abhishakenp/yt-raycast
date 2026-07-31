@@ -98,13 +98,27 @@ describe('runtime preprocessing edge cases', () => {
   })
 
   describe('repairObjectNullArgumentBoundaries', () => {
-    it('7. removes extra trailing null arguments from a call', () => {
-      // CORRECT: Foo(null, null) → Foo(null) — the redundant trailing null
-      // argument is removed. If the function leaves both nulls, that is a BUG
-      // and must fail.
+    it('7. preserves consecutive null placeholder arguments', () => {
+      // CORRECT: Foo(null, null) stays Foo(null, null). Consecutive nulls are
+      // positional placeholders, not redundancy — collapsing them shifts every
+      // later argument one slot left.
+      //
+      // This test previously asserted the opposite (Foo(null, null) → Foo(null))
+      // while the helper lived only on the dashboard runtime path, which renders
+      // the authored source directly and so never produced consecutive nulls.
+      // The export path re-serializes each parsed page through `jsonToOpenUI`,
+      // which DOES emit them for omitted leading arguments — collapsing them
+      // made `PricingTable(null, null, [tiers])` become
+      // `PricingTable(null, [tiers])`, so the exported page rendered the
+      // component's default tiers ("Starter / $0") instead of the authored ones.
       expect(repairObjectNullArgumentBoundaries('Foo(null, null)')).toBe(
-        'Foo(null)',
+        'Foo(null, null)',
       )
+      expect(
+        repairObjectNullArgumentBoundaries(
+          'PricingTable(null, null, [{name: "Hot Desk"}])',
+        ),
+      ).toBe('PricingTable(null, null, [{name: "Hot Desk"}])')
     })
 
     it('closes an open object literal before a trailing null argument', () => {

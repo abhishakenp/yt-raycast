@@ -1,5 +1,9 @@
 import { v, ConvexError } from 'convex/values'
 import { mutation, query } from './_generated/server'
+import {
+  SERVER_MUTATION_SECRET_ENV,
+  verifyServerSecret,
+} from './lib/server_secret'
 import type { Id } from './_generated/dataModel'
 import { isAuthDisabled } from './lib/session_export_helpers'
 
@@ -190,10 +194,16 @@ export const claimBatch = mutation({
   },
 })
 
+/**
+ * Server-only. The translation cache is shared across every session, so an
+ * unauthenticated writer could seed arbitrary "translations" that all future
+ * renders reuse.
+ */
 export const completeBatch = mutation({
   args: {
     locale: v.string(),
     owner: v.string(),
+    secret: v.optional(v.string()),
     entries: v.array(
       v.object({
         text: v.string(),
@@ -203,6 +213,7 @@ export const completeBatch = mutation({
   },
   returns: v.array(v.union(v.string(), v.null())),
   handler: async (ctx, args) => {
+    verifyServerSecret(SERVER_MUTATION_SECRET_ENV, args.secret)
     const locale = args.locale.trim().toLowerCase()
     const owner = args.owner.trim()
     if (!owner) throw new Error('Translation cache claim owner is required.')
@@ -259,9 +270,11 @@ export const releaseBatch = mutation({
     locale: v.string(),
     texts: v.array(v.string()),
     owner: v.string(),
+    secret: v.optional(v.string()),
   },
   returns: v.number(),
   handler: async (ctx, args) => {
+    verifyServerSecret(SERVER_MUTATION_SECRET_ENV, args.secret)
     const locale = args.locale.trim().toLowerCase()
     const owner = args.owner.trim()
     if (!owner) return 0

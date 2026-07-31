@@ -1,7 +1,6 @@
 import { renderAeoSectionHtml } from '@ship-fast/aeo'
 import { isMixedEnglishIndicCode } from '../config/languages'
 import { shouldUseSwiper } from '../lib/swiper-policy'
-import { sanitizeCloneHtml } from '../lib/sanitize-clone-html'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing'
 
 /**

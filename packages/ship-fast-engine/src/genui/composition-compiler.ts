@@ -345,8 +345,12 @@ export async function compileComposition(
         )
         const scriptPath = `scripts/svelte-home-${section.motif.toLowerCase()}.js`
         svelteScripts[scriptPath] = compiled.domJs
-      } catch {
-        // Svelte compilation failed — skip, the runner will validate and retry
+      } catch (error) {
+        // A failed XSS validation must never be silently skipped: dropping the
+        // block here would let the rest of the composition ship as if nothing
+        // happened. Only genuine compile errors are tolerated.
+        rethrowSvelteValidationFailure(error)
+        // Svelte compilation failed — skip this block.
       }
     }
   }
@@ -446,8 +450,9 @@ async function compileCompositionSection(
         const anchorId = `${id}_anchor`
         const anchorStmt = `${anchorId} = SectionAnchor("${id}", ${id}, "scroll-mt-28")`
         return { statements: [callStmt, anchorStmt], ref: anchorId }
-      } catch {
-        // Svelte compilation failed — skip
+      } catch (error) {
+        rethrowSvelteValidationFailure(error)
+        // Svelte compilation failed — skip this block.
         return { statements: [], ref: null }
       }
     }
@@ -720,3 +725,14 @@ function fixPlaceholderImageAlt(
 // maps named props to positional args in the correct order from the component
 // spec. The old buildMotifCall emitted named args which the OpenUI parser
 // doesn't understand — it treated them as positional and dropped "excess".)
+
+/**
+ * `compileSvelteBlock` throws for two very different reasons: the block failed
+ * XSS validation (a security decision that must propagate) or Svelte could not
+ * compile it (a quality problem the caller recovers from by dropping the
+ * block). Only the second is safe to swallow.
+ */
+function rethrowSvelteValidationFailure(error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error)
+  if (message.includes('failed XSS validation')) throw error
+}

@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@tanstack/ai-isolate-node', () => ({
-  createNodeIsolateDriver: () => ({}),
-}))
+// The isolate driver is deliberately NOT mocked. It used to be stubbed with
+// `{}`, which stopped satisfying the driver interface when
+// `@tanstack/ai-code-mode` began calling `driver.createContext` — every
+// code-mode edit then failed inside the sandbox and the route silently fell
+// back to whole-page HTML regeneration, which is exactly the behaviour these
+// tests exist to catch. Running the real driver keeps the double honest.
 
 vi.mock(
   '@/features/moderation/server/enforce-user-input-moderation',
@@ -1779,6 +1782,18 @@ home = Stack([home_hero_anchor, home_nav_anchor, home_pricing_anchor])`
     const body = await response.json()
     expect(response.ok, JSON.stringify(body)).toBe(true)
     expect(body).toMatchObject({ mode: 'html', previewVersion: 61 })
-    expect(warn).not.toHaveBeenCalled()
+    // The point of this test is that the DOM-based HTML path is a supported
+    // route, not a deprecated one. Operational logging (e.g. "code-mode
+    // produced no edits", which is exactly what happened here) is expected and
+    // must not be mistaken for a deprecation warning.
+    const warningMessages = warn.mock.calls.map(([first]) => {
+      try {
+        const parsed = JSON.parse(String(first)) as { message?: unknown }
+        return typeof parsed.message === 'string' ? parsed.message : String(first)
+      } catch {
+        return String(first)
+      }
+    })
+    expect(warningMessages.filter((line) => /deprecat/i.test(line))).toEqual([])
   })
 })

@@ -3,43 +3,21 @@ import type { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
+// Single source of truth, shared with the `sessions.createEdit` mutation so a
+// direct Convex call cannot bypass what the route enforces.
+import { containsExecutablePreviewFragment } from '../../../../convex/lib/preview_html_safety'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { checkRateLimit, previewHtmlHits } from '@/lib/rate-limit'
 import {
-  getClientIp,
-  hashClientIp,
-} from '@/features/session/server/session-create-response'
+  isOwnerSecretThrottledError,
+  ownerSecretThrottleResponse,
+  withOwnerSecretThrottle,
+} from '@/lib/owner-secret-throttle'
+import { getClientIp, hashClientIp } from '@/lib/client-ip'
 
 type PreviewEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 
 type JsonBody = Record<string, unknown>
-
-const EXECUTABLE_PREVIEW_FRAGMENT_PATTERN =
-  /<\s*\/?\s*(?:script|iframe|object|embed|base|meta|link|foreignObject)\b|\s(?:on[a-z]+|srcdoc)\s*=|\s(?:href|src|action|formaction|xlink:href)\s*=\s*["']?\s*(?:(?:javascript|vbscript)\s*:|data\s*:\s*text\/html)/i
-
-// Decode HTML entities so that encoded payloads like &#106;avascript: are
-// caught by the regex. The browser decodes entities before executing URLs,
-// so we must decode before checking. Covers numeric (&#NN;, &#xNN;) and
-// named entities (&colon;, &Tab;, &NewLine;, etc.) that attackers use to
-// break up dangerous keywords.
-function decodeHtmlEntities(html: string): string {
-  return html
-    .replace(/&#x([0-9a-f]+);?/gi, (_, hex: string) =>
-      String.fromCodePoint(parseInt(hex, 16)),
-    )
-    .replace(/&#(\d+);?/g, (_, dec: string) =>
-      String.fromCodePoint(parseInt(dec, 10)),
-    )
-    .replace(/&colon;/gi, ':')
-    .replace(/&tab;/gi, '\t')
-    .replace(/&newline;/gi, '\n')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&apos;/gi, "'")
-}
 
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -100,15 +78,6 @@ function getOwnerSecret(request: Request, body: JsonBody): string | undefined {
   return headerSecret || undefined
 }
 
-function containsExecutablePreviewFragment(html: string): boolean {
-  // Decode entities first so encoded javascript: / script tags are caught.
-  const decoded = decodeHtmlEntities(html)
-  return (
-    EXECUTABLE_PREVIEW_FRAGMENT_PATTERN.test(html) ||
-    EXECUTABLE_PREVIEW_FRAGMENT_PATTERN.test(decoded)
-  )
-}
-
 function createClient(clientOverride?: PreviewEditClient): PreviewEditClient {
   return clientOverride ?? createRuntimeConvexHttpClient()
 }
@@ -161,6 +130,10 @@ function isTextNotFoundError(error: unknown): boolean {
 }
 
 function errorResponse(error: unknown) {
+  if (isOwnerSecretThrottledError(error)) {
+    return ownerSecretThrottleResponse()
+  }
+
   if (isMalformedJsonError(error)) {
     return json({ error: error.message }, { status: 400 })
   }
@@ -256,16 +229,19 @@ export async function createPreviewHtmlSaveResponse(
       )
     }
 
-    const result = await createClient(clientOverride).mutation(
-      api.sessions.createEdit,
-      {
-        sessionId: asSessionId(sessionId),
-        editType: 'style',
-        targetLabel: getString(body, ['targetLabel']) ?? 'Preview HTML',
-        afterHtml: html,
-        instruction: getString(body, ['instruction']),
-        anonymousOwnerSecret: getOwnerSecret(request, body),
-      },
+    const anonymousOwnerSecret = getOwnerSecret(request, body)
+    const result = await withOwnerSecretThrottle(
+      sessionId,
+      anonymousOwnerSecret,
+      () =>
+        createClient(clientOverride).mutation(api.sessions.createEdit, {
+          sessionId: asSessionId(sessionId),
+          editType: 'style',
+          targetLabel: getString(body, ['targetLabel']) ?? 'Preview HTML',
+          afterHtml: html,
+          instruction: getString(body, ['instruction']),
+          anonymousOwnerSecret,
+        }),
     )
 
     return json(result)

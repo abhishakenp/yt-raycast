@@ -1,6 +1,6 @@
 import { ConvexHttpClient } from 'convex/browser'
 
-import { api, internal } from '../../../../convex/_generated/api'
+import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { checkRateLimit, checkoutConfirmHits } from '@/lib/rate-limit'
 import {
@@ -196,7 +196,10 @@ export const createCheckoutConfirmApiResponse = async (
   const status = normalizeRazorpayStatus(subscription.status)
   const planId = normalizeString(subscription.plan_id) || 'pro'
   try {
-    await client.mutation(internal.billing.confirmCheckoutSubscription, {
+    // Public + server-secret gated: ConvexHttpClient cannot call internal
+    // functions, so the internal reference would fail at runtime.
+    await client.mutation(api.billing.confirmCheckoutSubscriptionFromServer, {
+      secret: env.BILLING_WEBHOOK_MUTATION_SECRET ?? '',
       userId: overview.userId,
       provider: 'razorpay',
       status,

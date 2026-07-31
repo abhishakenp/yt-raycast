@@ -152,6 +152,10 @@ describe('billing webhook state mutation', () => {
 })
 
 describe('confirmCheckoutSubscription IDOR protection', () => {
+  beforeEach(() => {
+    vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', 'billing-secret')
+  })
+
   it('prevents a different user from updating another user subscription', async () => {
     const t = convexTest(schema, modules)
     const subscriptionId = 'sub_existing_abc'
@@ -177,5 +181,50 @@ describe('confirmCheckoutSubscription IDOR protection', () => {
         providerCheckoutId: 'pay_abc',
       }),
     ).rejects.toThrow(/does not belong/)
+  })
+
+  it('refuses the public confirmation entry point without the server secret', async () => {
+    const t = convexTest(schema, modules)
+
+    // A signed-in browser must not be able to mint an active Pro subscription
+    // by inventing a providerSubscriptionId.
+    await expect(
+      t.mutation(api.billing.confirmCheckoutSubscriptionFromServer, {
+        secret: 'wrong-secret',
+        userId: 'self-granting-user',
+        provider: 'razorpay',
+        status: 'active',
+        planId: 'pro',
+        providerSubscriptionId: 'sub_invented',
+      }),
+    ).rejects.toThrow(/FORBIDDEN/)
+
+    const subscriptions = await t.run(async (ctx) =>
+      ctx.db.query('subscriptions').collect(),
+    )
+    expect(subscriptions).toHaveLength(0)
+  })
+
+  it('accepts the public confirmation entry point from the server', async () => {
+    const t = convexTest(schema, modules)
+
+    await t.mutation(api.billing.confirmCheckoutSubscriptionFromServer, {
+      secret: 'billing-secret',
+      userId: 'paying-user',
+      provider: 'razorpay',
+      status: 'active',
+      planId: 'pro',
+      providerSubscriptionId: 'sub_real',
+      providerCheckoutId: 'pay_real',
+    })
+
+    const subscriptions = await t.run(async (ctx) =>
+      ctx.db.query('subscriptions').collect(),
+    )
+    expect(subscriptions).toHaveLength(1)
+    expect(subscriptions[0]).toMatchObject({
+      userId: 'paying-user',
+      status: 'active',
+    })
   })
 })

@@ -12,6 +12,11 @@ import {
   type QueryCtx,
 } from './_generated/server'
 import {
+  SERVER_MUTATION_SECRET_ENV,
+  matchesServerSecret,
+  verifyServerSecret,
+} from './lib/server_secret'
+import {
   canReadPrivateSession,
   claimAnonymousSession,
   claimAnonymousSessionsByClientId,
@@ -306,17 +311,15 @@ export const create = mutation({
     // env) should create sessions. Direct Convex API calls without the secret
     // are rejected — this prevents bypassing the API route's rate limiting,
     // content moderation, and IP hash validation.
-    const expectedSecret = process.env.SHARE_BONUS_MUTATION_SECRET
-    if (
-      expectedSecret === undefined ||
-      args.serverSecret === undefined ||
-      args.serverSecret !== expectedSecret
-    ) {
-      throw new ConvexError({
-        code: 'FORBIDDEN',
-        message: 'Session creation is only available via the API route.',
-      })
-    }
+    //
+    // Uses the shared helper rather than an inline `!==`: the comparison must
+    // be constant-time, and both sides must be non-empty (an empty configured
+    // secret would otherwise compare equal to an empty argument).
+    verifyServerSecret(
+      SERVER_MUTATION_SECRET_ENV,
+      args.serverSecret,
+      'Session creation is only available via the API route.',
+    )
     const result: CreateGenerationSessionResult = await createGenerationSession(
       ctx,
       args,
@@ -417,7 +420,10 @@ export const cleanupStuckSessions = internalMutation({
   args: {},
   handler: async (ctx) => {
     const cutoff = Date.now() - STUCK_SESSION_TIMEOUT_MS
-    const stuckStatuses = ['queued', 'running'] as const
+    // These are the in-flight statuses in the schema's generationStatus union.
+    // 'running' is not one of them, so the previous list silently matched only
+    // 'queued' and never cleaned up a session stuck mid-generation.
+    const stuckStatuses = ['queued', 'validating', 'streaming'] as const
     let cleaned = 0
 
     for (const status of stuckStatuses) {
@@ -507,14 +513,34 @@ export const setPreferredLanguageInternal = internalMutation({
 // Convex via these public functions. Each verifies session ownership via
 // anonymousOwnerSecret or admin auth.
 
+/**
+ * Returns the raw session document to the generation worker.
+ *
+ * The document carries credentials and PII — `anonOwnerSecretHash` (the
+ * anonymous owner's credential), `clientIpHash`, `anonymousClientIdHash` and
+ * `ownerEmail`. Only a caller holding the server secret gets those; everyone
+ * else gets the same document with them stripped, so a browser calling this
+ * query directly cannot harvest them.
+ */
 export const getGenerationSessionPublic = query({
-  args: sessionIdArgs,
+  args: { ...sessionIdArgs, secret: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId)
     if (session === null || session.deletedAt !== undefined) return null
     const canRead = await canReadPrivateSession(ctx, session)
     if (!canRead) return null
-    return session
+    if (matchesServerSecret(SERVER_MUTATION_SECRET_ENV, args.secret)) {
+      return session
+    }
+    const {
+      anonOwnerSecret: _anonOwnerSecret,
+      anonOwnerSecretHash: _anonOwnerSecretHash,
+      anonymousClientIdHash: _anonymousClientIdHash,
+      clientIpHash: _clientIpHash,
+      ownerEmail: _ownerEmail,
+      ...redacted
+    } = session
+    return redacted
   },
 })
 
@@ -1358,7 +1384,11 @@ export const assertLakebedDeploymentEntitlementByLookup = mutation({
     if (session === null) {
       throw new Error('Session not found')
     }
-    await assertLakebedDeploymentEntitlement(ctx, session)
+    await assertLakebedDeploymentEntitlement(
+      ctx,
+      session,
+      args.anonymousOwnerSecret,
+    )
     return { entitled: true }
   },
 })

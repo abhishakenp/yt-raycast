@@ -751,6 +751,7 @@ describe('session creation helpers', () => {
     const result = await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: '  Build a luxury ski chalet site  ',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -833,6 +834,7 @@ describe('session creation helpers', () => {
       createGenerationSession(
         ctx,
         {
+          serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
           prompt: 'Build a safe neighborhood bakery site',
           preferredLanguage: 'en',
           preferredExportTarget: 'html',
@@ -861,6 +863,7 @@ describe('session creation helpers', () => {
     await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Build a speculative draft site',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -894,6 +897,7 @@ describe('session creation helpers', () => {
     await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Build a real submitted site',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -927,6 +931,7 @@ describe('session creation helpers', () => {
     await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Build a publication',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -954,6 +959,7 @@ describe('session creation helpers', () => {
     const result = await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Build a launch microsite',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -1018,6 +1024,7 @@ describe('session creation helpers', () => {
     const result = await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Build a luxury ski chalet site',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -1060,6 +1067,7 @@ describe('session creation helpers', () => {
     const result = await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Build a luxury ski chalet site',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -1101,6 +1109,7 @@ describe('session creation helpers', () => {
     const result = await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Build a luxury ski chalet site',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -1507,6 +1516,7 @@ describe('session creation helpers', () => {
     await createGenerationSession(
       ctx,
       {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Build an authed site',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',

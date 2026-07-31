@@ -25,6 +25,7 @@ describe('lakebed_deploy action', () => {
 
     // Create a session so we have a valid session id to pass to the action.
     const { sessionId } = await t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       anonymousClientId: 'lakebed-deploy-test',
       anonymousOwnerSecret: ownerSecret,
       isPrivate: false,

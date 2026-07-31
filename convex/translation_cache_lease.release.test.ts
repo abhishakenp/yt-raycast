@@ -55,6 +55,7 @@ describe('translation cache lease ownership boundaries', () => {
 
     await Promise.allSettled([
       t.mutation(api.translationCache.completeBatch, {
+        secret: process.env.SHARE_BONUS_MUTATION_SECRET,
         locale: 'hi',
         owner: 'expired-worker',
         entries: [{ text: 'Checkout', translation: 'चेकआउट' }],
@@ -90,11 +91,13 @@ describe('translation cache lease ownership boundaries', () => {
       owner: 'replacement-worker',
     })
     const stale = await t.mutation(api.translationCache.completeBatch, {
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
       locale: 'fr',
       owner: 'stale-worker',
       entries: [{ text: 'Checkout', translation: 'Ancienne valeur' }],
     })
     const replacement = await t.mutation(api.translationCache.completeBatch, {
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
       locale: 'fr',
       owner: 'replacement-worker',
       entries: [{ text: 'Checkout', translation: 'Paiement' }],
@@ -129,6 +132,7 @@ describe('translation cache lease ownership boundaries', () => {
     })
 
     const released = await t.mutation(api.translationCache.releaseBatch, {
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
       locale: 'es',
       texts: ['Checkout'],
       owner: 'different-owner',
@@ -154,11 +158,13 @@ describe('translation cache lease ownership boundaries', () => {
     })
 
     const first = await t.mutation(api.translationCache.completeBatch, {
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
       locale: 'de',
       owner: 'live-owner',
       entries: [{ text: 'Checkout', translation: 'Kasse' }],
     })
     const replay = await t.mutation(api.translationCache.completeBatch, {
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
       locale: 'de',
       owner: 'live-owner',
       entries: [{ text: 'Checkout', translation: 'Different replay' }],

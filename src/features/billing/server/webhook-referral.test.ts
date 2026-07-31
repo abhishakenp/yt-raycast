@@ -45,6 +45,7 @@ describe('billing webhook → referral discount wiring', () => {
   it('applies the discount to BOTH the payer and the just-unlocked referrer', async () => {
     const event = {
       id: 'evt_1',
+      type: 'checkout.session.completed',
       data: {
         object: {
           id: 'cs_1',
@@ -87,6 +88,7 @@ describe('billing webhook → referral discount wiring', () => {
   it('only reconciles the payer when no referral unlock occurs', async () => {
     const event = {
       id: 'evt_2',
+      type: 'checkout.session.completed',
       data: {
         object: {
           id: 'cs_2',

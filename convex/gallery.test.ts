@@ -22,6 +22,7 @@ async function createGeneratedSession(
   },
 ) {
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -132,6 +133,7 @@ test("listOwnedSessions returns the caller's sessions (signed-in owner) and excl
     })
 
   const minePublic = await asUser(t, 'alice').mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Alice public analytics',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -152,6 +154,7 @@ test("listOwnedSessions returns the caller's sessions (signed-in owner) and excl
 
   // Bob's session — must not appear for Alice.
   const bobSession = await asUser(t, 'bob').mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Bob private dashboard',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -257,6 +260,7 @@ test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed
   // SAME anonymousClientId — this shouldn't happen in practice but the claim
   // must skip already-owned sessions.
   const bobSession = await asUser(t, 'bob').mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Bob already owns this',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -279,7 +283,10 @@ test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed
   // Alice signs in and claims all her anon sessions.
   const result = await asUser(t, 'alice').mutation(
     api.sessions.claimAnonymousSessionsByClientIdMutation,
-    { anonymousClientId: 'link-anon' },
+    {
+      anonymousClientId: 'link-anon',
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
+    },
   )
 
   expect(result.claimed).toBe(2)
@@ -310,7 +317,10 @@ test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed
   // Idempotent: claiming again claims 0 more.
   const result2 = await asUser(t, 'alice').mutation(
     api.sessions.claimAnonymousSessionsByClientIdMutation,
-    { anonymousClientId: 'link-anon' },
+    {
+      anonymousClientId: 'link-anon',
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
+    },
   )
   expect(result2.claimed).toBe(0)
 }, 15_000)
@@ -326,6 +336,15 @@ test('claimAnonymousSessionsByClientIdMutation throws AUTH_REQUIRED when not sig
   await expect(
     t.mutation(api.sessions.claimAnonymousSessionsByClientIdMutation, {
       anonymousClientId: 'auth-required-anon',
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
     }),
   ).rejects.toThrow(/Sign in to claim anonymous sessions/)
+
+  // Without the server secret the mutation is refused before it ever looks at
+  // the (forgeable, unproven) anonymous client id.
+  await expect(
+    t.mutation(api.sessions.claimAnonymousSessionsByClientIdMutation, {
+      anonymousClientId: 'auth-required-anon',
+    }),
+  ).rejects.toThrow(/FORBIDDEN/)
 }, 15_000)

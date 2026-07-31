@@ -48,11 +48,15 @@ const MUTATION_SECRET = 'billing-secret'
 const stripeEnv = {
   STRIPE_WEBHOOK_SECRET: STRIPE_SECRET,
   BILLING_WEBHOOK_MUTATION_SECRET: MUTATION_SECRET,
+  STRIPE_CREDITS_3_AMOUNT: '900',
+  STRIPE_CREDITS_10_AMOUNT: '2500',
 } as unknown as NodeJS.ProcessEnv
 
 const razorpayEnv = {
   RAZORPAY_WEBHOOK_SECRET: RAZORPAY_SECRET,
   BILLING_WEBHOOK_MUTATION_SECRET: MUTATION_SECRET,
+  RAZORPAY_CREDITS_3_PAISE: '90000',
+  RAZORPAY_CREDITS_10_PAISE: '250000',
 } as unknown as NodeJS.ProcessEnv
 
 const discountEnv = {
@@ -103,6 +107,7 @@ async function buildSignedRazorpayRequest(event: unknown) {
 function stripeSubscriptionEvent(overrides: Record<string, unknown> = {}) {
   return {
     id: 'evt_sub_1',
+    type: 'checkout.session.completed',
     data: {
       object: {
         id: 'cs_1',
@@ -117,13 +122,19 @@ function stripeSubscriptionEvent(overrides: Record<string, unknown> = {}) {
 }
 
 /** A Stripe checkout.session event for a credit pack. */
-function stripeCreditPackEvent(packId: string, userId = 'user_1') {
+function stripeCreditPackEvent(
+  packId: string,
+  userId = 'user_1',
+  amountTotal = packId === '10_credits' ? 2500 : 900,
+) {
   return {
     id: `evt_${packId}`,
+    type: 'checkout.session.completed',
     data: {
       object: {
         id: `cs_${packId}`,
         mode: 'payment',
+        amount_total: amountTotal,
         metadata: { userId, mode: 'credit_pack', packId },
       },
     },
@@ -907,6 +918,7 @@ describe('referrals', () => {
     it('webhook reconciles the discount for BOTH the payer and the just-unlocked referrer', async () => {
       const event = {
         id: 'evt_payer',
+        type: 'checkout.session.completed',
         data: {
           object: {
             id: 'cs_payer',

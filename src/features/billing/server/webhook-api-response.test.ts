@@ -79,6 +79,7 @@ describe('createWebhookApiResponse', () => {
   it('accepts signed Stripe checkout events and writes billing state', async () => {
     const body = JSON.stringify({
       id: 'evt_1',
+      type: 'checkout.session.completed',
       data: {
         object: {
           id: 'cs_1',
@@ -176,6 +177,7 @@ describe('createWebhookApiResponse', () => {
         order: {
           entity: {
             id: 'order_10credits',
+            amount_paid: 250000,
             notes: { packId: '10_credits', user_id: 'user_credit_pack' },
           },
         },
@@ -194,6 +196,7 @@ describe('createWebhookApiResponse', () => {
       {
         RAZORPAY_WEBHOOK_SECRET: 'rzp_secret',
         BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+        RAZORPAY_CREDITS_10_PAISE: '250000',
       },
       client,
     )
@@ -465,6 +468,7 @@ describe('createWebhookApiResponse', () => {
   it('returns a stable non-leaking error when a signed webhook cannot be written to Convex', async () => {
     const body = JSON.stringify({
       id: 'evt_write_failure',
+      type: 'checkout.session.completed',
       data: {
         object: {
           id: 'cs_write_failure',
@@ -507,5 +511,258 @@ describe('createWebhookApiResponse', () => {
     expect(JSON.stringify(result)).not.toContain('mutation_secret')
     expect(JSON.stringify(result)).not.toContain('user_123')
     expect(JSON.stringify(result)).not.toContain('Convex billing mutation')
+  })
+
+  it('accepts an event signed by any active secret during a rotation', async () => {
+    // Stripe signs with EVERY active endpoint secret while a rotation is in
+    // flight, producing `t=..,v1=<old>,v1=<new>`. Parsing the header into an
+    // object kept only the last v1, so half the events were rejected.
+    const body = JSON.stringify({
+      id: 'evt_rotation',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: 'cs_rotation',
+          subscription: 'sub_rotation',
+          mode: 'subscription',
+          status: 'active',
+          metadata: { userId: 'user_rotation', tier: 'pro' },
+        },
+      },
+    })
+    const timestamp = currentTimestamp()
+    const activeSignature = await sign('whsec_active', `${timestamp}.${body}`)
+    const retiredSignature = await sign('whsec_retired', `${timestamp}.${body}`)
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/stripe/webhook', {
+        method: 'POST',
+        headers: {
+          // The matching signature is NOT last in the header.
+          'stripe-signature': `t=${timestamp},v1=${activeSignature},v1=${retiredSignature}`,
+        },
+        body,
+      }),
+      'stripe',
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_active',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledOnce()
+  })
+
+  it('ignores Stripe events that are not on the handled list', async () => {
+    const body = JSON.stringify({
+      id: 'evt_unknown',
+      type: 'customer.subscription.trial_will_end',
+      data: {
+        object: {
+          id: 'cs_unknown',
+          subscription: 'sub_unknown',
+          mode: 'subscription',
+          status: 'active',
+          metadata: { userId: 'user_unknown', tier: 'pro' },
+        },
+      },
+    })
+    const signature = await stripeSignature('whsec_test', body)
+    const client = { mutation: vi.fn() }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': signature },
+        body,
+      }),
+      'stripe',
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_test',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      received: true,
+      ignored: true,
+    })
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('refuses credit-pack grants when the amount paid is below the pack price', async () => {
+    const body = JSON.stringify({
+      event: 'order.paid',
+      id: 'evt_underpaid',
+      payload: {
+        order: {
+          entity: {
+            id: 'order_underpaid',
+            amount_paid: 100,
+            notes: { packId: '10_credits', user_id: 'user_cheap' },
+          },
+        },
+      },
+    })
+    const signature = await sign('rzp_secret', body)
+    const client = { mutation: vi.fn() }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/razorpay/webhook', {
+        method: 'POST',
+        headers: { 'x-razorpay-signature': signature },
+        body,
+      }),
+      'razorpay',
+      {
+        RAZORPAY_WEBHOOK_SECRET: 'rzp_secret',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+        RAZORPAY_CREDITS_10_PAISE: '250000',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      received: true,
+      ignored: true,
+    })
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('revokes access on a Stripe refund instead of ignoring it', async () => {
+    const body = JSON.stringify({
+      id: 'evt_refund',
+      type: 'charge.refunded',
+      data: {
+        object: {
+          id: 'ch_1',
+          subscription: 'sub_refunded',
+          metadata: { userId: 'user_refunded' },
+        },
+      },
+    })
+    const signature = await stripeSignature('whsec_test', body)
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': signature },
+        body,
+      }),
+      'stripe',
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_test',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      received: true,
+      revoked: true,
+    })
+    expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
+      secret: 'mutation_secret',
+      provider: 'stripe',
+      idempotencyKey: 'revoke:evt_refund',
+      providerSubscriptionId: 'sub_refunded',
+      userId: 'user_refunded',
+      reason: 'charge.refunded',
+    })
+  })
+
+  it('revokes access when a Razorpay subscription is halted', async () => {
+    const body = JSON.stringify({
+      event: 'subscription.halted',
+      id: 'evt_halted',
+      payload: {
+        subscription: {
+          entity: {
+            id: 'sub_halted',
+            status: 'halted',
+            notes: { userId: 'user_halted' },
+          },
+        },
+      },
+    })
+    const signature = await sign('rzp_secret', body)
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/razorpay/webhook', {
+        method: 'POST',
+        headers: { 'x-razorpay-signature': signature },
+        body,
+      }),
+      'razorpay',
+      {
+        RAZORPAY_WEBHOOK_SECRET: 'rzp_secret',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
+      secret: 'mutation_secret',
+      provider: 'razorpay',
+      idempotencyKey: 'revoke:evt_halted',
+      providerSubscriptionId: 'sub_halted',
+      userId: 'user_halted',
+      reason: 'subscription.halted',
+    })
+  })
+
+  it('still applies billing state when the Dub partner path also matches', async () => {
+    // The partner mutation used to `return` early, so with partner attribution
+    // enabled an invoice.paid never reached applyBillingWebhook and the
+    // customer's own subscription was never written.
+    const body = JSON.stringify({
+      id: 'evt_partner_and_billing',
+      type: 'invoice.paid',
+      data: {
+        object: {
+          id: 'in_1',
+          subscription: 'sub_partner',
+          amount_paid: 99900,
+          currency: 'usd',
+          payment_intent: 'pi_1',
+          status: 'active',
+          metadata: { userId: 'user_partner', tier: 'pro' },
+        },
+      },
+    })
+    const signature = await stripeSignature('whsec_test', body)
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': signature },
+        body,
+      }),
+      'stripe',
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_test',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+        DUB_PARTNERS_ENABLED: 'true',
+      },
+      client,
+      async () => ({ applied: false, reason: 'noop' }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledTimes(2)
+    const mutatedArgs = client.mutation.mock.calls.map((call) => call[1])
+    expect(mutatedArgs.some((args) => 'partnerEvent' in args)).toBe(true)
+    expect(mutatedArgs.some((args) => 'subscription' in args)).toBe(true)
   })
 })

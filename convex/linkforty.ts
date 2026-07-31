@@ -9,7 +9,7 @@ import {
   query,
 } from './_generated/server'
 import type { QueryCtx } from './_generated/server'
-import { timingSafeEqual } from './lib/timingSafeEqual'
+import { verifyServerSecret } from './lib/server_secret'
 import { createLinkFortyShortLink } from '../src/features/linkforty/lib/linkforty-client'
 
 /**
@@ -51,14 +51,11 @@ export const recordClickEvent = mutation({
     referrer: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const expectedLinkfortySecret =
-      process.env.LINKFORTY_WEBHOOK_MUTATION_SECRET
-    if (
-      !expectedLinkfortySecret ||
-      !timingSafeEqual(args.secret, expectedLinkfortySecret)
-    ) {
-      throw new Error('Unauthorized.')
-    }
+    verifyServerSecret(
+      'LINKFORTY_WEBHOOK_MUTATION_SECRET',
+      args.secret,
+      'Unauthorized.',
+    )
 
     // Idempotency: skip if we already recorded this clickId.
     const existing = await ctx.db

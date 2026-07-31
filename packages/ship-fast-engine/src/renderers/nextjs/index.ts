@@ -17,7 +17,6 @@ import {
 import { renderGeneratedSiteLlmsTxt } from '../llms-txt'
 import { shouldUseSwiper } from '../../lib/swiper-policy'
 import { SHIP_FAST_SITE_URL } from '../../marketing'
-import { sanitizeSvg } from '../../lib/sanitize-svg'
 import type { SiteSpecLike, SitePageLike } from '@ship-fast/aeo'
 
 type SiteSpec = SiteSpecLike & {

@@ -2,6 +2,7 @@ import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
+import { containsExecutablePreviewFragment } from './preview_html_safety'
 import { assertCanMutateSession } from './session_access_helpers'
 import { applyPreviewTextEdit } from './session_edit_helpers'
 import { extractOpenUISourceStrings } from './session_translation_cache_helpers'
@@ -781,7 +782,21 @@ export async function createSessionEdit(
 
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
+  // Validate here, not only in the HTTP route: `createEdit` is a public
+  // mutation, so a browser can post `afterHtml` straight to Convex and skip
+  // every route-level check.
+  assertPreviewHtmlIsInert(args.afterHtml)
+
   return await applySessionEdit(ctx, session, args, now)
+}
+
+function assertPreviewHtmlIsInert(html: string | undefined): void {
+  if (html === undefined) return
+  if (!containsExecutablePreviewFragment(html)) return
+  throw new ConvexError({
+    code: 'UNSAFE_EDIT_HTML',
+    message: 'Executable preview fragments are not allowed',
+  })
 }
 
 export async function applySessionEdit(

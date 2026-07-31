@@ -23,6 +23,8 @@ export type ModerationSurface =
 export type ModerationField =
   | 'prompt'
   | 'designReferenceNotes'
+  | 'designReferenceUrls'
+  | 'cloneUrl'
   | 'cloneBrief'
   | 'cloneRegeneration'
   | 'sectionEdit'
@@ -208,6 +210,11 @@ const replaceHomoglyphs = (text: string): string =>
 
 const FIELD_ORDER: ModerationField[] = [
   'prompt',
+  // URLs are user-authored text too: the path and query of a reference or
+  // clone target carry the same policy-violating content as a prompt, and
+  // they were previously never inspected at all.
+  'designReferenceUrls',
+  'cloneUrl',
   'designReferenceNotes',
   'cloneBrief',
   'cloneRegeneration',
@@ -655,9 +662,18 @@ export const classifyDeterministicModeration = (
   fields: ModerationFields,
 ): ModerationDecision => {
   for (const matchedField of FIELD_ORDER) {
-    const prompt = fields[matchedField]
+    // `designReferenceUrls` arrives as an array; join it so every entry is
+    // inspected in one pass rather than being skipped for not being a string.
+    const raw = fields[matchedField]
+    const prompt = Array.isArray(raw)
+      ? raw.filter((entry): entry is string => typeof entry === 'string').join(' ')
+      : raw
     if (typeof prompt !== 'string' || !prompt.trim()) continue
-    const normalized = normalizePolicyText(prompt)
+    // A URL hides its words in the path and query: `/child-porn?x=1` has no
+    // spaces or word breaks until the separators are turned into them.
+    const normalized = normalizePolicyText(
+      isUrlField(matchedField) ? urlToInspectableText(prompt) : prompt,
+    )
     const rule = RULES.find(
       (candidate) =>
         candidate.matches(normalized) &&
@@ -674,6 +690,30 @@ export const classifyDeterministicModeration = (
       }
   }
   return { decision: 'safe' }
+}
+
+const URL_FIELDS = new Set<ModerationField>(['cloneUrl', 'designReferenceUrls'])
+
+function isUrlField(field: ModerationField): boolean {
+  return URL_FIELDS.has(field)
+}
+
+/**
+ * Turn a URL into text the phrase rules can actually match: percent-decode it
+ * and replace the separators that would otherwise glue words together.
+ */
+function urlToInspectableText(value: string): string {
+  let decoded = value
+  for (let pass = 0; pass < 2; pass += 1) {
+    try {
+      const next = decodeURIComponent(decoded)
+      if (next === decoded) break
+      decoded = next
+    } catch {
+      break
+    }
+  }
+  return decoded.replace(/[/?&=+._~#:-]+/g, ' ')
 }
 
 export const CONTENT_POLICY_CLIENT_MESSAGE =

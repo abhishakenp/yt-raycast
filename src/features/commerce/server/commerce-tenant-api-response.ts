@@ -733,7 +733,7 @@ export async function createDeploymentMedusaWebhookResponse(
 
   if (
     expectedSecret !== undefined &&
-    !timingSafeEqual(receivedSecret, expectedSecret)
+    !timingSafeEqual(receivedSecret ?? '', expectedSecret)
   ) {
     return json({ error: 'Invalid commerce webhook secret.' }, { status: 401 })
   }

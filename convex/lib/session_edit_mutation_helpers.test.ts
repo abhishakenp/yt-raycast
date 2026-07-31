@@ -40,6 +40,7 @@ async function createReadySession(
   prompt = 'Original headline',
 ) {
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -270,6 +271,7 @@ describe('session edit mutation helpers', () => {
   it('patches only the selected repeated occurrence when translated text maps back to canonical source', async () => {
     const t = sessionEditConvexTest()
     const { sessionId } = await t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       prompt: 'Repeated glass page',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',
@@ -391,6 +393,7 @@ describe('session edit mutation helpers', () => {
   it('patches AI capsule compiled source when the edited text is rendered by a custom capsule', async () => {
     const t = sessionEditConvexTest()
     const { sessionId } = await t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       prompt: 'AI capsule boutique page',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',
@@ -572,6 +575,7 @@ describe('session edit mutation helpers', () => {
   it('accepts a text edit found in preview.html and sessionData but absent from the generated source (second gate)', async () => {
     const t = sessionEditConvexTest()
     const { sessionId } = await t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       prompt: 'Gate two page',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',

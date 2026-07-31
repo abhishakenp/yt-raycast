@@ -3456,7 +3456,10 @@ export function parseOpenUIForExport(
   source: string,
   siteSpecJson?: string,
 ): ParsedOpenUIProgram {
-  const cleaned = preprocessOpenUIResponse(source, { resolveRefs: false })
+  const cleaned = preprocessOpenUIResponse(source, {
+    resolveRefs: false,
+    fixNavLinks: false,
+  })
   const parser = createParser(library.toJSONSchema(), 'root')
   const result = parser.parse(cleaned)
 

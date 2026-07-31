@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import { convexTest } from 'convex-test'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 import { api } from './_generated/api'
 import type { Id } from './_generated/dataModel'
@@ -11,6 +11,7 @@ import schema from './schema'
 const modules = import.meta.glob('./**/*.ts')
 
 const ownerSecret = 'gallery-thumbnail-owner-secret'
+const serverSecret = 'gallery-preview-server-secret'
 
 const insertPublicSession = async (
   t: ReturnType<typeof convexTest>,
@@ -48,19 +49,61 @@ const readStorageExists = async (
   })
 
 describe('gallery preview image storage', () => {
-  it('allows thumbnail generation for public sessions without owner secret (gallery generate-on-miss)', async () => {
+  beforeEach(() => {
+    process.env.GALLERY_PREVIEW_MUTATION_SECRET = serverSecret
+  })
+
+  it('rejects an upload URL request without the server secret', async () => {
     const t = convexTest(schema, modules)
     const sessionId = await insertPublicSession(t, 111)
 
-    // No anonymousOwnerSecret — gallery visitors are not the session owner.
-    // Public sessions allow thumbnail generation so the generate-on-miss
-    // fallback works for any visitor.
+    // Generate-on-miss means ownership cannot gate this path, so the write
+    // path is server-only. A browser caller has no secret and must be refused
+    // — otherwise it can overwrite any public session's gallery image.
     await expect(
       t.mutation(api.gallery_preview_images.generateUploadUrl, {
         cacheVersion: '111',
+        secret: 'wrong-secret',
+        sessionId,
+      }),
+    ).rejects.toThrow('FORBIDDEN')
+  })
+
+  it('issues an upload URL to a server caller holding the secret', async () => {
+    const t = convexTest(schema, modules)
+    const sessionId = await insertPublicSession(t, 111)
+
+    await expect(
+      t.mutation(api.gallery_preview_images.generateUploadUrl, {
+        cacheVersion: '111',
+        secret: serverSecret,
         sessionId,
       }),
     ).resolves.toEqual(expect.any(String))
+  })
+
+  it('rejects clearCache without the server secret', async () => {
+    const t = convexTest(schema, modules)
+    const sessionId = await insertPublicSession(t, 111)
+    const storageId = await storePng(t, 'cached')
+    await t.mutation(api.gallery_preview_images.commit, {
+      cacheVersion: '111',
+      contentType: 'image/png',
+      secret: serverSecret,
+      sessionId,
+      size: 6,
+      storageId,
+    })
+
+    await expect(
+      t.mutation(api.gallery_preview_images.clearCache, { secret: '' }),
+    ).rejects.toThrow('FORBIDDEN')
+    expect(await readRows(t)).toHaveLength(1)
+
+    await t.mutation(api.gallery_preview_images.clearCache, {
+      secret: serverSecret,
+    })
+    expect(await readRows(t)).toHaveLength(0)
   })
 
   it('replaces the session-keyed storage blob when cache version changes', async () => {
@@ -69,7 +112,7 @@ describe('gallery preview image storage', () => {
     const firstStorageId = await storePng(t, 'first')
 
     const first = await t.mutation(api.gallery_preview_images.commit, {
-      anonymousOwnerSecret: ownerSecret,
+      secret: serverSecret,
       cacheVersion: '111',
       contentType: 'image/png',
       sessionId,
@@ -82,7 +125,7 @@ describe('gallery preview image storage', () => {
     })
     const secondStorageId = await storePng(t, 'second')
     const second = await t.mutation(api.gallery_preview_images.commit, {
-      anonymousOwnerSecret: ownerSecret,
+      secret: serverSecret,
       cacheVersion: '222',
       contentType: 'image/png',
       sessionId,
@@ -109,7 +152,7 @@ describe('gallery preview image storage', () => {
     const sessionId = await insertPublicSession(t, 333)
     const currentStorageId = await storePng(t, 'current')
     await t.mutation(api.gallery_preview_images.commit, {
-      anonymousOwnerSecret: ownerSecret,
+      secret: serverSecret,
       cacheVersion: '333',
       contentType: 'image/png',
       sessionId,
@@ -122,7 +165,7 @@ describe('gallery preview image storage', () => {
     })
     const staleStorageId = await storePng(t, 'stale')
     const stale = await t.mutation(api.gallery_preview_images.commit, {
-      anonymousOwnerSecret: ownerSecret,
+      secret: serverSecret,
       cacheVersion: '333',
       contentType: 'image/png',
       sessionId,

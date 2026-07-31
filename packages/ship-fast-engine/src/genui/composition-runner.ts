@@ -182,36 +182,9 @@ export async function runComposition(
     })
   }
 
-  // ── Validate svelte blocks BEFORE compiling (fatal) ───────────────
-  // Security: LLM-generated Svelte code is compiled and executed on both
-  // server (SSR) and client (DOM JS). XSS pattern validation must run
-  // before compilation and reject the composition if any block fails —
-  // a non-fatal warning would allow bypassable malicious code to execute.
-  const svelteSections = parsed.sections.filter((s) => s.svelte?.source)
-  if (svelteSections.length > 0) {
-    const { validateSvelteSource } = await import('./svelte-compiler.ts')
-    const failing = svelteSections
-      .map((s) => ({
-        motif: s.motif,
-        result: validateSvelteSource(s.svelte!.source),
-      }))
-      .filter((r) => !r.result.valid)
-
-    if (failing.length > 0) {
-      const errorLines = failing
-        .map((f) => `Block "${f.motif}": ${f.result.errors.join('; ')}`)
-        .join('\n')
-      opts.sessionCtx?.broadcast?.({
-        type: 'log',
-        message: `Svelte validation errors (fatal — rejecting composition):\n${errorLines}`,
-      })
-      throw new Error(
-        `Composition rejected: Svelte XSS validation failed.\n${errorLines}`,
-      )
-    }
-  }
-
   // ── Compile ───────────────────────────────────────────────────────
+  await assertSvelteBlocksAreSafe(parsed, opts)
+
   const compiled = await compileComposition(parsed, {
     brand: parsed.brand,
     title: parsed.title,
@@ -371,6 +344,43 @@ export async function runComposition(
 }
 
 /**
+ * Reject the whole composition if ANY svelte block fails XSS validation.
+ *
+ * LLM-generated Svelte is compiled and then executed on both the server (SSR)
+ * and the client (DOM JS), so this has to run *before* `compileComposition`
+ * and it has to throw: a warning would let bypassable malicious code compile
+ * and run. Both entry points — `runComposition` and `streamComposition` —
+ * must call it; the streaming path previously went straight to compilation.
+ */
+async function assertSvelteBlocksAreSafe(
+  parsed: { sections: Array<{ motif: string; svelte?: { source: string } }> },
+  opts: CompositionRunnerOptions,
+): Promise<void> {
+  const svelteSections = parsed.sections.filter((s) => s.svelte?.source)
+  if (svelteSections.length === 0) return
+
+  const { validateSvelteSource } = await import('./svelte-compiler.ts')
+  const failing = svelteSections
+    .map((s) => ({
+      motif: s.motif,
+      result: validateSvelteSource(s.svelte!.source),
+    }))
+    .filter((r) => !r.result.valid)
+  if (failing.length === 0) return
+
+  const errorLines = failing
+    .map((f) => `Block "${f.motif}": ${f.result.errors.join('; ')}`)
+    .join('\n')
+  opts.sessionCtx?.broadcast?.({
+    type: 'log',
+    message: `Svelte validation errors (fatal — rejecting composition):\n${errorLines}`,
+  })
+  throw new Error(
+    `Composition rejected: Svelte XSS validation failed.\n${errorLines}`,
+  )
+}
+
+/**
  * Stream the composition pipeline with incremental source updates.
  *
  * As the LLM streams tokens, we parse incrementally and broadcast partial
@@ -469,6 +479,8 @@ export async function streamComposition(
       message: `Page structure repair: ${pageViolations.map((v) => v.message).join('; ')}`,
     })
   }
+
+  await assertSvelteBlocksAreSafe(parsed, opts)
 
   const compiled = await compileComposition(parsed, {
     brand: parsed.brand,

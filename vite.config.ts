@@ -8,6 +8,7 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
+import { assertNoClientExposedSecrets } from './scripts/assert-no-secret-vite-vars'
 
 // `bun run dev` spawns vite under node, which does NOT inherit bun's auto-loaded
 // .env vars. Read the env files directly so the dev image proxy actually has the
@@ -675,6 +676,21 @@ function subdomainRewriteDevMiddleware(): Plugin {
   }
 }
 
+/**
+ * `envPrefix` inlines every VITE_/NEXT_PUBLIC_ variable into the public
+ * bundle. Fail the build rather than silently publish a credential that was
+ * given the wrong prefix.
+ */
+function clientSecretExposureGuard(): Plugin {
+  return {
+    name: 'ship-fast-client-secret-exposure-guard',
+    enforce: 'pre',
+    config() {
+      assertNoClientExposedSecrets()
+    },
+  }
+}
+
 const config = defineConfig({
   define: {
     'import.meta.env.MEDUSA_BACKEND_URL': JSON.stringify(
@@ -733,6 +749,7 @@ const config = defineConfig({
     },
   },
   plugins: [
+    clientSecretExposureGuard(),
     devtools(),
     pexelsDevApi(),
     logrocketDevProxy(),
@@ -745,6 +762,12 @@ const config = defineConfig({
       },
       preset: 'nodeServer',
       serverDir: './server',
+      // Nitro scans `server/**/*.{ts,tsx,...}` and imports every match as a
+      // middleware/route handler. Co-located `*.test.*` files call `vi.mock()`
+      // at module top level, which explodes outside a vitest runner
+      // ("Vitest mocker was not initialized"). Exclude test files from the
+      // scan so they never enter the app bundle.
+      ignore: ['**/*.test.{ts,tsx,js,jsx}', '**/*.spec.{ts,tsx,js,jsx}'],
     }),
     tailwindcss(),
     tanstackStart(),

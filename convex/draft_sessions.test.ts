@@ -26,6 +26,7 @@ test('speculative sessions are stored as drafts until the same workspace is subm
   const t = convexTest(schema, modules)
 
   const draft = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     ...createArgs,
     isDraft: true,
   })
@@ -34,6 +35,7 @@ test('speculative sessions are stored as drafts until the same workspace is subm
   expect(storedDraft?.isDraft).toBe(true)
 
   const published = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     ...createArgs,
     isDraft: false,
   })
@@ -88,6 +90,7 @@ test('creating a draft session schedules a one-shot cleanup that hard-deletes it
   const t = convexTest(schema, modules)
 
   const draft = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     ...createArgs,
     isDraft: true,
   })
@@ -127,12 +130,14 @@ test('the scheduled draft cleanup is a no-op once the draft has been promoted to
   const t = convexTest(schema, modules)
 
   const draft = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     ...createArgs,
     isDraft: true,
   })
 
   // Promote the draft by submitting a real generation for the same workspace.
   await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     ...createArgs,
     isDraft: false,
   })

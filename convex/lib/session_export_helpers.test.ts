@@ -15,6 +15,7 @@ import {
   loadSessionExportTargets,
   markExportArtifactBuilding,
   prepareExportArtifactBuild,
+  recordExportArtifactFailure,
   recordGitHubExportRepository,
   recordExportArtifactStalled,
   updateExportArtifactBuildProgress,
@@ -435,6 +436,8 @@ function workflowCtxFor(input: {
         return subscriptions
       case 'customerCredits':
         return customerCredits
+      case 'creditLedger':
+        return creditLedger
       default:
         return []
     }
@@ -483,8 +486,8 @@ function workflowCtxFor(input: {
           unique: async () => matchingRows()[0] ?? null,
           take: async (limit: number) => matchingRows().slice(0, limit),
           collect: async () => matchingRows(),
-          order: (direction: 'asc' | 'desc') => ({
-            first: async () => {
+          order: (direction: 'asc' | 'desc') => {
+            const ordered = () => {
               const rows = [...matchingRows()]
               rows.sort((left, right) => {
                 const leftVersion = orderValue(
@@ -497,9 +500,14 @@ function workflowCtxFor(input: {
                   ? rightVersion - leftVersion
                   : leftVersion - rightVersion
               })
-              return rows[0] ?? null
-            },
-          }),
+              return rows
+            }
+            return {
+              first: async () => ordered()[0] ?? null,
+              take: async (limit: number) => ordered().slice(0, limit),
+              collect: async () => ordered(),
+            }
+          },
         }
 
         return queryResult
@@ -1372,6 +1380,83 @@ describe('ensureExportArtifactBuild', () => {
       }),
     ).resolves.toMatchObject({ status: 'queued' })
     expect(handoffPreview.scheduledBuilds).toHaveLength(1)
+  })
+})
+
+describe('export credit refund on failed builds', () => {
+  it('returns the debited credit when the artifact build fails', async () => {
+    const { ctx, customerCredits, creditLedger } = workflowCtxFor({
+      identityUserId: userId,
+      customerCredits: [
+        {
+          _id: 'credits_1' as Id<'customerCredits'>,
+          _creationTime: 1,
+          userId,
+          remaining: 0,
+          updatedAt: 1,
+        } as CustomerCreditsRecord,
+      ],
+      exportArtifacts: [exportArtifactDoc({ status: 'building' })],
+    })
+    // The debit that `getExportEntitlement` writes before the build starts.
+    await ctx.db.insert('creditLedger', {
+      userId,
+      sessionId,
+      amount: -1,
+      balanceAfter: 0,
+      reason: 'export',
+      createdAt: 1,
+    })
+
+    await recordExportArtifactFailure(ctx, {
+      sessionId,
+      target: 'html',
+      previewVersion: 2,
+      errorMessage: 'renderer crashed',
+    })
+
+    expect(customerCredits[0]?.remaining).toBe(1)
+    expect(
+      creditLedger.filter((entry) => entry.reason === 'export_refund'),
+    ).toHaveLength(1)
+  })
+
+  it('refunds at most once per debit', async () => {
+    const { ctx, customerCredits, creditLedger } = workflowCtxFor({
+      identityUserId: userId,
+      customerCredits: [
+        {
+          _id: 'credits_1' as Id<'customerCredits'>,
+          _creationTime: 1,
+          userId,
+          remaining: 0,
+          updatedAt: 1,
+        } as CustomerCreditsRecord,
+      ],
+      exportArtifacts: [exportArtifactDoc({ status: 'building' })],
+    })
+    await ctx.db.insert('creditLedger', {
+      userId,
+      sessionId,
+      amount: -1,
+      balanceAfter: 0,
+      reason: 'export',
+      createdAt: 1,
+    })
+
+    for (const target of ['html', 'nextjs'] as const) {
+      await recordExportArtifactFailure(ctx, {
+        sessionId,
+        target,
+        previewVersion: 2,
+        errorMessage: 'renderer crashed',
+      })
+    }
+
+    expect(customerCredits[0]?.remaining).toBe(1)
+    expect(
+      creditLedger.filter((entry) => entry.reason === 'export_refund'),
+    ).toHaveLength(1)
   })
 })
 

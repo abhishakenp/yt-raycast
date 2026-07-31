@@ -46,6 +46,7 @@ async function createSession(
   },
 ) {
   const args = {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     anonymousClientId,
     anonymousOwnerSecret: ownerSecret,
     isPrivate,

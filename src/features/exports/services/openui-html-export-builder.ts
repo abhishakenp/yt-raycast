@@ -251,12 +251,18 @@ function includesNonAscii(value: string): boolean {
   )
 }
 
-function prepareGeneratedMarkup(html: string, locale: string): string {
+function prepareGeneratedMarkup(
+  html: string,
+  locale: string,
+  options: { convertNavLinksToButtons?: boolean } = {},
+): string {
+  const { convertNavLinksToButtons = true } = options
   const messages = staticUiMessages(locale)
-  return decorateAccountTrigger(html)
+  return (convertNavLinksToButtons ? decorateAccountTrigger(html) : html)
     .replace(
       /(<nav\b[^>]*>)([\s\S]*?)(<\/nav>)/gi,
       (_match, open, body, close) => {
+        if (!convertNavLinksToButtons) return `${open}${body}${close}`
         const upgraded = String(body).replace(
           /<a\b([^>]*)>([\s\S]*?)<\/a>/gi,
           (anchor, attributes, children) => {
@@ -1220,7 +1226,10 @@ export async function parseOpenUIForHtmlExport(
   source: string,
   siteSpecJson?: string,
 ): Promise<ParsedOpenUIProgram> {
-  const cleaned = preprocessOpenUIResponse(source, { resolveRefs: false })
+  const cleaned = preprocessOpenUIResponse(source, {
+    resolveRefs: false,
+    fixNavLinks: false,
+  })
   const library = await loadOpenUIRuntimeLibrary(cleaned)
   const schema = library.toJSONSchema()
   const parser = createParser(schema, 'root')
@@ -1472,7 +1481,7 @@ async function buildStandaloneHtmlDocument(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; object-src 'none'; base-uri 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: https:; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; object-src 'none'; base-uri 'none'; form-action 'none'" />
   <title>${escapeHtml(seoBundle?.homeSeo?.seo.title ?? parsed.projectName)}</title>
   ${seoHeadMarkup}
   ${themeFontLinks}
@@ -1628,15 +1637,26 @@ export async function buildOpenUIHtmlThumbnail(
   const imageContext = buildExportImageContext(input)
   const designIntent = parseSiteSpecDesignIntent(input.siteSpecJson)
 
-  const pagesMarkup = await rewritePreviewImageUrls(
-    await buildFirstPageMarkup(
-      parsed,
-      locale,
-      imageContext,
-      input.selectedBrandLogo,
-      designIntent,
-    ),
+  // Render the full preprocessed source directly instead of extracting the
+  // first page, re-serializing via jsonToOpenUI, and rendering that. The
+  // re-serialization loses source nuances that control component variants
+  // (e.g. Navbar renders <button> instead of <a>, SplitHero loses its graph
+  // paper decor). PageSwitch shows the first page by default, so rendering
+  // the full source produces the same visible output as the dashboard.
+  const preprocessed = preprocessOpenUIResponse(input.source, {
+    resolveRefs: false,
+    fixNavLinks: false,
+  })
+  const { html: rawHtml } = await renderOpenUIToHTMLWithTheme(
+    preprocessed,
+    undefined,
+    locale,
+    undefined,
+    imageContext,
+    input.selectedBrandLogo,
+    designIntent,
   )
+  const pagesMarkup = await rewritePreviewImageUrls(rawHtml)
 
   const bodyMarkup = prepareGeneratedMarkup(
     stripPreviewSourceMetadata(pagesMarkup).replace(
@@ -1644,9 +1664,10 @@ export async function buildOpenUIHtmlThumbnail(
       '',
     ),
     locale,
+    { convertNavLinksToButtons: false },
   )
 
-  const rootMarkup = `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</main>`
+  const rootMarkup = `<main id="openui-root" class="genui-preview size-full${isDark ? ' dark' : ''}">${bodyMarkup}</main>`
 
   const css = await readPreviewCss(rootMarkup)
   const rootId = 'openui-root'
@@ -1674,16 +1695,17 @@ export async function buildOpenUIHtmlThumbnail(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; object-src 'none'; base-uri 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: https:; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; object-src 'none'; base-uri 'none'; form-action 'none'" />
   ${themeFontLinks}
   <style>
 ${css}
-    #${rootId} { ${themeStyle} }
-    html, body { min-height: 100%; margin: 0; background: var(--background); color: var(--foreground); }
+    :root { ${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}; }
+    html, body { min-height: 100%; margin: 0; background: ${isDark ? '#070710' : '#ffffff'}; color: var(--foreground); }
+    .dark { color-scheme: dark; }
 ${appLocalCss}
   </style>
 </head>
-<body class="min-h-screen bg-background text-foreground">
+<body class="min-h-screen text-foreground">
   ${rootMarkup}
   <script>
     window.__STATIC_SITE__ = ${stringifyJs({ routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};

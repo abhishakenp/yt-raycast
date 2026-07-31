@@ -9,7 +9,7 @@ import {
   getGenerationQuotaForUser,
 } from './lib/billing_generation_quota'
 import { qualifyReferralOnPayment } from './lib/referral_qualification'
-import { timingSafeEqual } from './lib/timingSafeEqual'
+import { matchesServerSecret, verifyServerSecret } from './lib/server_secret'
 
 /**
  * Normalize a userId to include the Clerk issuer prefix.
@@ -68,12 +68,10 @@ async function requireBillingReadAccess(
   // Server-side callers pass the BILLING_WEBHOOK_MUTATION_SECRET. This allows
   // the Node.js server (which uses ConvexHttpClient without Clerk auth) to
   // query billing info for any userId, including opaque non-Clerk ids.
-  const expectedSecret = process.env.BILLING_WEBHOOK_MUTATION_SECRET
-  if (
-    expectedSecret !== undefined &&
-    serverSecret !== undefined &&
-    timingSafeEqual(serverSecret, expectedSecret)
-  ) {
+  // matchesServerSecret requires both sides to be non-empty — an empty
+  // configured secret would otherwise compare equal to an empty argument and
+  // make every user's billing world-readable.
+  if (matchesServerSecret('BILLING_WEBHOOK_MUTATION_SECRET', serverSecret)) {
     return
   }
 
@@ -281,22 +279,49 @@ export const upsertSubscriptionForUser = internalMutation({
   },
 })
 
-export const confirmCheckoutSubscription = internalMutation({
-  args: {
-    userId: v.string(),
-    provider: v.union(v.literal('stripe'), v.literal('razorpay')),
-    status: v.union(
-      v.literal('active'),
-      v.literal('trialing'),
-      v.literal('authenticated'),
-      v.literal('past_due'),
-      v.literal('cancelled'),
-    ),
-    planId: v.string(),
-    providerSubscriptionId: v.string(),
-    providerCheckoutId: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
+/**
+ * Shared argument shape for checkout confirmation.
+ *
+ * Confirmation must NOT be callable from a browser (the insert branch would
+ * let any signed-in user mint an active Pro subscription out of thin air), so
+ * it is exposed two ways:
+ *   - `confirmCheckoutSubscription` (internal) for Convex-side callers, and
+ *   - `confirmCheckoutSubscriptionFromServer`, gated on the server secret,
+ *     for the HTTP route.
+ *
+ * The route needs the second one: `ConvexHttpClient` can only call PUBLIC
+ * functions, so pointing it at the internal reference type-errors and would
+ * fail at runtime — Razorpay confirmations would silently never land.
+ */
+const confirmCheckoutSubscriptionArgs = {
+  userId: v.string(),
+  provider: v.union(v.literal('stripe'), v.literal('razorpay')),
+  status: v.union(
+    v.literal('active'),
+    v.literal('trialing'),
+    v.literal('authenticated'),
+    v.literal('past_due'),
+    v.literal('cancelled'),
+  ),
+  planId: v.string(),
+  providerSubscriptionId: v.string(),
+  providerCheckoutId: v.optional(v.string()),
+}
+
+type ConfirmCheckoutSubscriptionArgs = {
+  userId: string
+  provider: 'stripe' | 'razorpay'
+  status: 'active' | 'trialing' | 'authenticated' | 'past_due' | 'cancelled'
+  planId: string
+  providerSubscriptionId: string
+  providerCheckoutId?: string
+}
+
+async function applyCheckoutSubscription(
+  ctx: MutationCtx,
+  args: ConfirmCheckoutSubscriptionArgs,
+) {
+  {
     const userId = normalizeUserId(args.userId)
     const now = Date.now()
     const existing = await ctx.db
@@ -341,6 +366,24 @@ export const confirmCheckoutSubscription = internalMutation({
     })
 
     return { subscriptionId }
+  }
+}
+
+export const confirmCheckoutSubscription = internalMutation({
+  args: confirmCheckoutSubscriptionArgs,
+  handler: (ctx, args) => applyCheckoutSubscription(ctx, args),
+})
+
+export const confirmCheckoutSubscriptionFromServer = mutation({
+  args: { ...confirmCheckoutSubscriptionArgs, secret: v.string() },
+  handler: async (ctx, args) => {
+    verifyServerSecret(
+      'BILLING_WEBHOOK_MUTATION_SECRET',
+      args.secret,
+      'Checkout confirmation is not authorized.',
+    )
+    const { secret: _secret, ...rest } = args
+    return await applyCheckoutSubscription(ctx, rest)
   },
 })
 
@@ -439,6 +482,125 @@ export const getCreditLedger = query({
   },
 })
 
+/**
+ * Revoke access after a refund, chargeback, failed renewal or cancellation.
+ *
+ * Payments used to be strictly additive: `applyBillingWebhook` granted
+ * subscriptions and credits, and nothing ever took them back, so a customer
+ * who refunded or won a dispute kept Pro (and their credits) indefinitely.
+ *
+ * Resolution order: an explicit `providerSubscriptionId` wins; otherwise every
+ * active subscription for `userId` on that provider is cancelled. Credits are
+ * clawed back only when `creditsToRevoke` is given (refunded credit packs);
+ * the balance floors at zero so a partially-spent pack cannot go negative.
+ */
+export const revokeBillingAccess = mutation({
+  args: {
+    secret: v.string(),
+    provider: v.union(v.literal('stripe'), v.literal('razorpay')),
+    idempotencyKey: v.string(),
+    providerSubscriptionId: v.optional(v.string()),
+    userId: v.optional(v.string()),
+    creditsToRevoke: v.optional(v.number()),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    verifyServerSecret(
+      'BILLING_WEBHOOK_MUTATION_SECRET',
+      args.secret,
+      'Webhook mutation is not authorized.',
+    )
+
+    const idempotencyKey = args.idempotencyKey.trim()
+    if (!idempotencyKey) {
+      throw new ConvexError({
+        code: 'INVALID_BILLING_EVENT',
+        message: 'Billing event identifiers must not be blank.',
+      })
+    }
+
+    const existingWebhook = await ctx.db
+      .query('webhookEvents')
+      .withIndex('by_provider_idempotencyKey', (index) =>
+        index
+          .eq('provider', args.provider)
+          .eq('idempotencyKey', idempotencyKey),
+      )
+      .first()
+    if (existingWebhook !== null) {
+      return { processed: false, duplicate: true, revokedSubscriptions: 0 }
+    }
+
+    const now = Date.now()
+    await ctx.db.insert('webhookEvents', {
+      provider: args.provider,
+      idempotencyKey,
+      processedAt: now,
+    })
+
+    const targeted = await findProviderSubscription(
+      ctx,
+      args.provider,
+      args.providerSubscriptionId?.trim() || undefined,
+    )
+    const userId = args.userId?.trim()
+    const subscriptions =
+      targeted !== null
+        ? [targeted]
+        : userId
+          ? (await getActiveSubscriptionsForUser(ctx, userId)).filter(
+              (subscription) => subscription.provider === args.provider,
+            )
+          : []
+
+    for (const subscription of subscriptions) {
+      if (subscription.status === 'cancelled') continue
+      await ctx.db.patch(subscription._id, {
+        status: 'cancelled',
+        canceledAt: now,
+        updatedAt: now,
+      })
+    }
+
+    const ownerUserId = userId ?? subscriptions[0]?.userId
+    const creditsToRevoke = args.creditsToRevoke
+    if (
+      ownerUserId !== undefined &&
+      creditsToRevoke !== undefined &&
+      Number.isSafeInteger(creditsToRevoke) &&
+      creditsToRevoke > 0
+    ) {
+      const existingCredits = await ctx.db
+        .query('customerCredits')
+        .withIndex('by_userId', (index) => index.eq('userId', ownerUserId))
+        .first()
+      const balanceAfter = Math.max(
+        0,
+        (existingCredits?.remaining ?? 0) - creditsToRevoke,
+      )
+      if (existingCredits !== null) {
+        await ctx.db.patch(existingCredits._id, {
+          remaining: balanceAfter,
+          updatedAt: now,
+        })
+        await ctx.db.insert('creditLedger', {
+          userId: ownerUserId,
+          amount: balanceAfter - existingCredits.remaining,
+          balanceAfter,
+          reason: `revoked:${args.reason}`,
+          createdAt: now,
+        })
+      }
+    }
+
+    return {
+      processed: true,
+      duplicate: false,
+      revokedSubscriptions: subscriptions.length,
+    }
+  },
+})
+
 export const applyBillingWebhook = mutation({
   args: {
     secret: v.string(),
@@ -462,13 +624,11 @@ export const applyBillingWebhook = mutation({
     credits: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const expectedSecret = process.env.BILLING_WEBHOOK_MUTATION_SECRET
-    if (!expectedSecret || !timingSafeEqual(args.secret, expectedSecret)) {
-      throw new ConvexError({
-        code: 'FORBIDDEN',
-        message: 'Webhook mutation is not authorized.',
-      })
-    }
+    verifyServerSecret(
+      'BILLING_WEBHOOK_MUTATION_SECRET',
+      args.secret,
+      'Webhook mutation is not authorized.',
+    )
 
     const idempotencyKey = args.idempotencyKey.trim()
     const userId = normalizeUserId(args.userId.trim())

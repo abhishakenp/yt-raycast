@@ -22,6 +22,7 @@ async function createOwnedSession(
   t: ReturnType<typeof deploymentArtifactTest>,
 ) {
   return await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Lakebed artifact revision contract',
     preferredLanguage: 'en',
     preferredExportTarget: 'lakebed',

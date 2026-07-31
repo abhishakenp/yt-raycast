@@ -29,6 +29,7 @@ async function createReadySession(
   options: { isPrivate?: boolean } = {},
 ) {
   const createArgs = {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: `Export entitlement verifier ${identity?.subject ?? 'anonymous'}`,
     preferredLanguage: 'en',
     preferredExportTarget: 'html' as const,

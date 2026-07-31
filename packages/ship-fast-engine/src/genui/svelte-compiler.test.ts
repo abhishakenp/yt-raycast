@@ -85,3 +85,34 @@ describe('validateSvelteSource XSS blocking', () => {
     expect(xssErrors).toHaveLength(0)
   })
 })
+
+describe('SSR evaluation containment', () => {
+  it('terminates a model-authored module that never finishes', async () => {
+    const { compileSvelteBlock } = await import('./svelte-compiler.ts')
+    // A component whose module-scope work never returns. Before the SSR
+    // evaluation moved into a bounded worker this hung the server process
+    // with no way to interrupt it.
+    await expect(
+      compileSvelteBlock(
+        '<script>let n = 0; while (true) { n += 1 }</script><p>{n}</p>',
+        'HangingBlock',
+      ),
+    ).rejects.toThrow(/terminated|exceeded|exited/i)
+  }, 30_000)
+
+  it('does not leave scratch modules in the project source root', async () => {
+    const { readdirSync } = await import('node:fs')
+    const { compileSvelteBlock } = await import('./svelte-compiler.ts')
+
+    await compileSvelteBlock(
+      '<script>const label = "hi"</script><p>{label}</p>',
+      'CleanBlock',
+    )
+
+    expect(
+      readdirSync(process.cwd()).filter((name) =>
+        name.startsWith('.svelte-ssr-'),
+      ),
+    ).toEqual([])
+  }, 30_000)
+})

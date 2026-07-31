@@ -317,12 +317,21 @@ export const PricingPage = () => {
     void handleShareClick(platform, async () => {}, referralCode)
   }
 
+  // The free tier has nothing to purchase — "Start Free" sends the visitor to
+  // the generator. It must NOT reuse the share-bonus handler: that is typed
+  // `(platform: string) => void`, so wiring it to onClick fired the share flow
+  // with a React MouseEvent as the platform name.
+  const onStartFreeClick = () => {
+    window.location.assign('/')
+  }
+
   return (
     <MarketingShell footer>
       <div ref={pricingContentRef} onClickCapture={handlePricingContentClick}>
         <PricingContent
           onCheckoutClick={startCheckout}
           isCheckoutStarting={isCheckoutStarting}
+          onStartFreeClick={onStartFreeClick}
           onShareClick={onShareClick}
           referralCode={referralCode}
         />

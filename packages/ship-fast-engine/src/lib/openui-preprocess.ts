@@ -116,77 +116,99 @@ function stripTopLevelSectionArgLabels(code: string): string {
     .join('\n')
 }
 
-function repairMalformedQuotedObjectKeys(code: string): string {
+export function repairMalformedQuotedObjectKeys(code: string): string {
   let result = ''
   const stack: string[] = []
   let inString = false
-  let quote = ''
+  let stringChar = ''
   let escaped = false
-  // Last non-whitespace char emitted — used to tell a KEY position (`{`/`,`
-  // before the quote) from a VALUE position (`:` before the quote). Without this
-  // a string VALUE like "https://x" or "time:3pm" gets its opening quote stripped
-  // because `https:` / `time:` look like a quoted key.
-  let prevSig = ''
-  const emit = (ch: string): void => {
-    result += ch
-    if (!/\s/.test(ch)) prevSig = ch
-  }
+  let expectKey = false
 
   for (let index = 0; index < code.length; index++) {
     const char = code[index]
 
     if (inString) {
-      emit(char)
+      result += char
       if (escaped) {
         escaped = false
       } else if (char === '\\') {
         escaped = true
-      } else if (char === quote) {
+      } else if (char === stringChar) {
         inString = false
-        quote = ''
+        stringChar = ''
       }
       continue
     }
 
-    if (
-      char === '"' &&
-      stack[stack.length - 1] === '{' &&
-      (prevSig === '{' || prevSig === ',')
-    ) {
-      const rest = code.slice(index + 1)
-      const malformedKey = rest.match(/^([A-Za-z_$][\w$]*):/)
-      // Guard: do not strip the quote if the `:` is followed by `//` — that's a
-      // URL scheme (e.g. "https://..."), not a malformed key-value separator.
-      // The prevSig check above cannot distinguish a comma before an array
-      // value (where the next token is a URL string) from a comma before an
-      // object property (where the next token could be a key).
-      if (
-        malformedKey &&
-        !rest.slice(malformedKey[0].length).startsWith('//')
-      ) {
-        result += `${malformedKey[1]}:`
-        prevSig = ':'
-        index += malformedKey[0].length
+    if (expectKey) {
+      if (char === ' ' || char === '\t' || char === '\n' || char === '\r') {
+        result += char
         continue
       }
+      // Quoted key (well-formed or stray-opening-quote): either a proper
+      // "key": or a malformed "key: (no closing quote). Detect the identifier
+      // that follows and (re)quote it properly.
+      if (char === '"' || /[A-Za-z_$]/.test(char)) {
+        const offset = char === '"' ? 1 : 0
+        const rest = code.slice(index + offset)
+        const keyMatch = rest.match(/^([A-Za-z_$][\w$]*)\s*:/)
+        if (keyMatch) {
+          // Guard: do not treat the key as a malformed key-value pair if the
+          // `:` is followed by `//` — that's a URL scheme (e.g.
+          // "https://..."), not a key-value separator. Hand off to normal
+          // string handling so the quoted value is preserved intact.
+          if (rest.slice(keyMatch[0].length).startsWith('//')) {
+            if (char === '"') {
+              expectKey = false
+              inString = true
+              stringChar = '"'
+              result += char
+              continue
+            }
+          } else {
+            result += `"${keyMatch[1]}":`
+            index += offset + keyMatch[0].length - 1
+            expectKey = false
+            continue
+          }
+        }
+        // Already-quoted, well-formed key — hand off to normal string handling.
+        if (char === '"') {
+          expectKey = false
+          inString = true
+          stringChar = '"'
+          result += char
+          continue
+        }
+      }
+      expectKey = false
     }
 
-    emit(char)
+    result += char
 
     if (char === '"' || char === "'") {
       inString = true
-      quote = char
-    } else if (char === '(' || char === '[' || char === '{') {
+      stringChar = char
+    } else if (char === '{') {
       stack.push(char)
-    } else if (char === ')' || char === ']' || char === '}') {
+      expectKey = true
+    } else if (char === '(' || char === '[') {
+      stack.push(char)
+      expectKey = false
+    } else if ((char === ')' || char === ']' || char === '}') && stack.length) {
       stack.pop()
+      expectKey = false
+    } else if (char === ',' && stack[stack.length - 1] === '{') {
+      expectKey = true
+    } else if (char === ':') {
+      expectKey = false
     }
   }
 
   return result
 }
 
-function repairObjectNullArgumentBoundaries(code: string): string {
+export function repairObjectNullArgumentBoundaries(code: string): string {
   let result = ''
   const stack: string[] = []
   let inString = false
@@ -209,6 +231,10 @@ function repairObjectNullArgumentBoundaries(code: string): string {
       continue
     }
 
+    // NOTE: consecutive `null` arguments are NOT deduplicated. They are
+    // positional placeholders — `PricingTable(null, null, [tiers])` puts the
+    // tiers in the third slot, and dropping one null silently shifts every
+    // later argument left (the component then renders its defaults).
     if (char === ',' && stack[stack.length - 1] === '{') {
       const nullArgument = code.slice(index).match(/^,\s*null(?=\s*\))/)
       if (nullArgument) {
@@ -308,7 +334,7 @@ function resolveVariables(code: string): string {
   return `root = ${result}`
 }
 
-function sanitizePartialImages(code: string): string {
+export function sanitizePartialImages(code: string): string {
   const replaced = code.replace(/Image\("https:\/\/[^"]*$/, 'null')
   if (replaced === code) return code
   // Strip null elements from array literals so components iterating with
@@ -316,7 +342,7 @@ function sanitizePartialImages(code: string): string {
   return stripNullsFromArrays(replaced)
 }
 
-function transformOutsideQuotedStrings(
+export function transformOutsideQuotedStrings(
   source: string,
   transform: (segment: string) => string,
 ): string {
@@ -366,7 +392,7 @@ function transformOutsideQuotedStrings(
   )
 }
 
-function stripActionCalls(source: string): string {
+export function stripActionCalls(source: string): string {
   return transformOutsideQuotedStrings(source, (masked) => {
     const actionPattern = /\bAction\s*\(/g
     let result = ''
@@ -399,34 +425,20 @@ function stripActionCalls(source: string): string {
   })
 }
 
-function stripNullsFromArrays(code: string): string {
-  // Aggressive null stripping for streaming: remove all null values from arrays
-  // to prevent "Cannot read properties of null" errors when components map over
-  // incomplete arrays during progressive rendering.
-  // Also removes objects with only null/empty properties that came from incomplete Image() calls.
-  return transformOutsideQuotedStrings(code, (source) => {
-    let result = source
-
-    // First pass: simple null removal in arrays
-    result = result
-      .replace(/,\s*null\s*(?=[,\]])/g, '') // null followed by comma or ]
-      .replace(/(?<=[,\[])\s*null\s*,/g, ',') // null preceded by comma or [
-      .replace(/^\s*null\s*$/gm, '') // standalone null on a line
-
-    // Second pass: remove empty objects and arrays that might have resulted from null replacements
-    result = result.replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '') // empty {}
-    result = result.replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',') // empty {} with comma
-    result = result.replace(/,\s*\[\s*\]\s*(?=[,\]])/g, '') // empty []
-    result = result.replace(/(?<=[,\[])\s*\[\s*\]\s*,/g, ',') // empty [] with comma
-
-    // Third pass: clean up resulting double commas and edge cases
-    result = result
-      .replace(/,\s*,/g, ',') // Fix double commas
-      .replace(/^\s*,\s*/gm, '') // Remove leading comma
-      .replace(/,\s*$/gm, '') // Remove trailing comma
-
-    return result
-  })
+export function stripNullsFromArrays(code: string): string {
+  return transformOutsideQuotedStrings(code, (segment) =>
+    segment
+      .replace(/,\s*null\s*(?=[,\]])/g, '')
+      .replace(/(?<=\[)\s*null\s*,\s*/g, '')
+      .replace(/^\s*null\s*$/gm, '')
+      .replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '')
+      .replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',')
+      .replace(/,\s*\[\s*\]\s*(?=[,\]])/g, '')
+      .replace(/(?<=[,\[])\s*\[\s*\]\s*,/g, ',')
+      .replace(/,\s*,/g, ',')
+      .replace(/^\s*,\s*/gm, '')
+      .replace(/,\s*$/gm, ''),
+  )
 }
 
 function nextNonWhitespaceChar(code: string, start: number): string {
@@ -439,7 +451,7 @@ function nextNonWhitespaceChar(code: string, start: number): string {
   return ''
 }
 
-function repairObjectParenthesisArgumentBoundaries(code: string): string {
+export function repairObjectParenthesisArgumentBoundaries(code: string): string {
   let result = ''
   const stack: string[] = []
   let inString = false
@@ -501,131 +513,107 @@ function repairObjectParenthesisArgumentBoundaries(code: string): string {
   return result
 }
 
-/**
- * Repair a single top-level statement segment whose delimiters never closed
- * (truncated mid-program LLM output, e.g. `p3 = Faq(... , {tag` followed by a
- * fresh `p1 = ...` line). Strips the dangling partial token, then closes any
- * still-open ( [ { in correct nesting order so the broken statement can't
- * swallow the statements that follow it (which would otherwise leak as raw
- * text in the rendered output).
- */
-function balanceSegment(seg: string): string {
-  const trail = seg.match(/\s*$/)?.[0] || ''
-  let s = seg.slice(0, seg.length - trail.length)
+export function balanceSegment(segment: string): string {
+  const trailingWhitespace = segment.match(/\s*$/)?.[0] || ''
+  let source = segment.slice(0, segment.length - trailingWhitespace.length)
+  let previous = ''
 
-  // Strip trailing incomplete tokens (order matters; loop until stable).
-  let prev = ''
-  while (s !== prev) {
-    prev = s
-    s = s.replace(/,\s*$/, '') // dangling comma
-    s = s.replace(/,?\s*\{\s*[A-Za-z_$][\w]*\s*$/, '') // dangling "{tag" (open obj + bare key)
-    s = s.replace(/[,(]\s*[A-Za-z_$][\w]*\s*$/, (m) => m[0]) // partial ident arg → keep delimiter
+  while (source !== previous) {
+    previous = source
+    source = source.replace(/,\s*$/, '')
+    source = source.replace(/,?\s*\{\s*[A-Za-z_$][\w]*\s*$/, '')
   }
 
-  // Walk delimiters with a stack so we close in the right order.
   const stack: string[] = []
   let inString = false
   let stringChar = ''
-  let escape = false
-  for (const c of s) {
-    if (escape) {
-      escape = false
+  let escaped = false
+
+  for (const char of source) {
+    if (escaped) {
+      escaped = false
       continue
     }
     if (inString) {
-      if (c === '\\') escape = true
-      else if (c === stringChar) inString = false
+      if (char === '\\') escaped = true
+      else if (char === stringChar) inString = false
       continue
     }
-    if (c === '"' || c === "'") {
+    if (char === '"' || char === "'") {
       inString = true
-      stringChar = c
+      stringChar = char
       continue
     }
-    if (c === '(' || c === '[' || c === '{') stack.push(c)
-    else if (c === ')' || c === ']' || c === '}') {
-      if (stack.length) stack.pop()
+    if (char === '(' || char === '[' || char === '{') stack.push(char)
+    else if ((char === ')' || char === ']' || char === '}') && stack.length) {
+      stack.pop()
     }
   }
-  if (inString) s += stringChar
-  const closer: Record<string, string> = { '(': ')', '[': ']', '{': '}' }
-  for (let i = stack.length - 1; i >= 0; i--) s += closer[stack[i]]
 
-  return s + (trail.includes('\n') ? '\n' : '')
+  if (inString) source += stringChar
+  const closers: Record<string, string> = { '(': ')', '[': ']', '{': '}' }
+  for (let index = stack.length - 1; index >= 0; index--) {
+    source += closers[stack[index]]
+  }
+
+  return source + (trailingWhitespace.includes('\n') ? '\n' : '')
 }
 
-/**
- * Segment the program at top-level `name =` boundaries and balance each segment
- * independently. This prevents one truncated statement from consuming later
- * statements (a mid-program truncation that balancePartial — which only repairs
- * the tail of the whole string — cannot fix). No-op for well-formed input.
- */
-function balanceStatements(code: string): string {
-  const re = /^[$A-Za-z_][\w]*\s*=/gm
+export function balanceStatements(code: string): string {
+  const pattern = /^[$A-Za-z_][\w]*\s*=/gm
   const starts: number[] = []
-  let m: RegExpExecArray | null
-  while ((m = re.exec(code))) starts.push(m.index)
+  let match: RegExpExecArray | null
+
+  while ((match = pattern.exec(code))) starts.push(match.index)
   if (starts.length <= 1) return code
 
   const segments: string[] = []
   if (starts[0] > 0) segments.push(code.slice(0, starts[0]))
-  for (let i = 0; i < starts.length; i++) {
-    const end = i + 1 < starts.length ? starts[i + 1] : code.length
-    segments.push(balanceSegment(code.slice(starts[i], end)))
+
+  for (let index = 0; index < starts.length; index++) {
+    const end = index + 1 < starts.length ? starts[index + 1] : code.length
+    segments.push(balanceSegment(code.slice(starts[index], end)))
   }
+
   return segments.join('')
 }
 
-function balancePartial(code: string): string {
+export function balancePartial(code: string): string {
+  const stack: string[] = []
   let inString = false
   let stringChar = ''
-  let escape = false
-  let parens = 0
+  let escaped = false
 
-  for (const c of code) {
-    if (escape) {
-      escape = false
+  for (const char of code) {
+    if (escaped) {
+      escaped = false
       continue
     }
     if (inString) {
-      if (c === '\\') {
-        escape = true
-        continue
-      }
-      if (c === stringChar) {
+      if (char === '\\') {
+        escaped = true
+      } else if (char === stringChar) {
         inString = false
       }
       continue
     }
-    if (c === '"' || c === "'") {
+    if (char === '"' || char === "'") {
       inString = true
-      stringChar = c
+      stringChar = char
       continue
     }
-    if (c === '(') {
-      parens++
-    } else if (c === ')') {
-      parens--
+    if (char === '(' || char === '[' || char === '{') stack.push(char)
+    else if ((char === ')' || char === ']' || char === '}') && stack.length) {
+      stack.pop()
     }
   }
 
   let result = code
-  if (inString) {
-    result += stringChar
-  }
-  if (parens > 0) {
-    const tail = result.slice(result.length - 1).match(/[A-Za-z0-9_]/)
-    if (tail) {
-      const trimmed = result.replace(
-        /[,(]\s*[A-Za-z_][A-Za-z0-9_]*\s*$/,
-        (match) => match[0],
-      )
-      result = trimmed
-    }
-    result = result.replace(/,\s*$/, '')
-  }
-  for (let i = 0; i < parens; i++) {
-    result += ')'
+  if (inString) result += stringChar
+  result = result.replace(/,\s*$/, '')
+  const closers: Record<string, string> = { '(': ')', '[': ']', '{': '}' }
+  for (let index = stack.length - 1; index >= 0; index--) {
+    result += closers[stack[index]]
   }
   return result
 }
@@ -645,7 +633,7 @@ function balancePartial(code: string): string {
  * Applied at render time on the named form (before ref resolution), so every
  * existing persisted program is fixed on its next render without regeneration.
  */
-function forceGaplessSectionBandStack(code: string): string {
+export function forceGaplessSectionBandStack(code: string): string {
   const anchors = new Set(
     [...code.matchAll(/^\s*([A-Za-z_$][\w$]*)\s*=\s*SectionAnchor\s*\(/gm)].map(
       (m) => m[1],
@@ -892,7 +880,7 @@ export function fixSubPageHeroStacks(code: string): string {
 
 export function preprocessOpenUIResponse(
   s: string,
-  options: { resolveRefs?: boolean } = {},
+  options: { resolveRefs?: boolean; fixNavLinks?: boolean } = {},
 ): string {
   // resolveRefs inlines named assignments into one root expression. The client
   // streaming preview needs this (progressive render of a partial program), but
@@ -900,7 +888,14 @@ export function preprocessOpenUIResponse(
   // arguments on deeply-nested inline calls (e.g. "EditorialHero takes 10 args,
   // got 66"), so well-formed named-reference output is rejected. Keep the named
   // form server-side — it both validates and renders correctly.
-  const { resolveRefs = true } = options
+  //
+  // fixNavLinks flattens every Navbar link array to the PageSwitch route names.
+  // The dashboard runtime needs that because its `resolveRouteTarget` only does
+  // exact matching, so a semantic label ("Explore Full Lookbook") would be
+  // unroutable. The static export must NOT do it: its inlined route script has
+  // fuzzy `findRoute` matching, so flattening there only destroys the generated
+  // copy (nav items come out as bare route names).
+  const { resolveRefs = true, fixNavLinks = true } = options
   let result = stripActionCalls(
     String(s || '')
       .replace(/^```[a-z-]*\n?/i, '')
@@ -919,7 +914,7 @@ export function preprocessOpenUIResponse(
   // routes and replace sub-page heroes with home-page content sections.
   // Without these, SSR renders different HTML than the dashboard (e.g.
   // <button> instead of <a> for nav, blur circles instead of graph paper).
-  result = fixNavbarLinksToMatchRoutes(result)
+  if (fixNavLinks) result = fixNavbarLinksToMatchRoutes(result)
   result = fixSubPageHeroStacks(result)
 
   if (resolveRefs) result = resolveVariables(result)

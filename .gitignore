@@ -6,6 +6,11 @@ dist
 dist-ssr
 *.local
 .env
+# `*.local` does NOT cover these — a plain-text secret file one `git add .`
+# away from permanent history.
+.env.*.bak
+.env.local.bak
+.env.*.local
 .nitro
 .tanstack
 .wrangler
@@ -31,3 +36,9 @@ tsconfig.tsbuildinfo
 
 # Rust build artifacts
 wasm-particles/target/
+
+# Local scratch / tooling output that must never be committed
+output.txt
+.interview/
+node_modules/.cache/ship-fast-svelte-ssr/
+specs/architecture/dev-staging-setup.md

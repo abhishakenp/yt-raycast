@@ -69,6 +69,7 @@ test('getGenerationView accepts lookup-only session ids', async () => {
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Build a concise product site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -117,6 +118,7 @@ test('create fails fast when model configuration is missing', async () => {
     const t = generationConvexTest()
 
     const { sessionId } = await t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       prompt: 'Build a fast failure site',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',
@@ -163,6 +165,7 @@ test('public prompt cache is scoped by preferred language', async () => {
   const prompt = 'Build a bakery homepage with catering menus'
 
   const english = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -174,6 +177,7 @@ test('public prompt cache is scoped by preferred language', async () => {
   await persistGeneratedPreview(t, english.sessionId, prompt)
 
   const hindi = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'hi',
     preferredExportTarget: 'html',
@@ -183,6 +187,7 @@ test('public prompt cache is scoped by preferred language', async () => {
   })
 
   const englishAgain = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -204,6 +209,7 @@ test('public prompt cache can replay a ready session without creating an owned c
   const prompt = 'Build a replayable public prompt site'
 
   const ready = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -214,6 +220,7 @@ test('public prompt cache can replay a ready session without creating an owned c
   await persistGeneratedPreview(t, ready.sessionId, prompt)
 
   const replay = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -244,6 +251,7 @@ test('public prompt cache can replay a ready session without creating an owned c
 test('workspace idempotency returns the same queued session for a retried create', async () => {
   const t = generationConvexTest()
   const request = {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Build an idempotent retry site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html' as const,
@@ -273,6 +281,7 @@ test('workspace idempotency rejects conflicting reuse of a workspace key', async
   const t = generationConvexTest()
 
   await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Build the original workspace site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -285,6 +294,7 @@ test('workspace idempotency rejects conflicting reuse of a workspace key', async
 
   await expect(
     t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       prompt: 'Build a different workspace site',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',
@@ -302,6 +312,7 @@ test('public prompt cache is reused across engine versions', async () => {
   const prompt = 'Build a v2 isolated cache prompt site'
 
   const defaultEngine = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -312,6 +323,7 @@ test('public prompt cache is reused across engine versions', async () => {
   await persistGeneratedPreview(t, defaultEngine.sessionId, prompt)
 
   const v2 = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -332,6 +344,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
   const prompt = 'Build a durable cached prompt site'
 
   const ready = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -342,6 +355,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
   await persistGeneratedPreview(t, ready.sessionId, prompt)
 
   const incomplete = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -355,6 +369,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
   expect(incomplete.sessionId).not.toBe(ready.sessionId)
 
   const cachedAgain = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -373,6 +388,7 @@ test('inline preview edits patch canonical source artifacts and history restore 
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Dashboard artifact alignment site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -464,6 +480,7 @@ test('inline preview edits patch canonical artifacts even when rendered text nor
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Build a rental homepage',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -525,6 +542,7 @@ test('inline preview edits use one sliding debounce entry for export rebuild aut
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Build an editable homepage',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -587,6 +605,7 @@ test('inline preview edits reject missing text without creating edit history', a
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Build a simple homepage',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -623,6 +642,7 @@ test('late generation jobs cannot clobber an existing preview', async () => {
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: 'Already ready generated site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -702,6 +722,7 @@ test('duplicate generation actions cannot start the same queued session twice', 
 
   try {
     const { sessionId } = await t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       prompt: 'Duplicate generation action guard',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',

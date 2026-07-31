@@ -1,3 +1,5 @@
+import { getClientIp, hashClientIp } from '@/lib/client-ip'
+
 export const userHits: Map<string, number[]> = new Map()
 export const ipHits: Map<string, number[]> = new Map()
 export const userMonthlyHits: Map<string, number[]> = new Map()
@@ -15,6 +17,13 @@ export const sessionCreateHits: Map<string, number[]> = new Map()
 export const githubConnectHits: Map<string, number[]> = new Map()
 export const referralHits: Map<string, number[]> = new Map()
 export const previewHtmlHits: Map<string, number[]> = new Map()
+export const stockImageHits: Map<string, number[]> = new Map()
+export const rewriteHits: Map<string, number[]> = new Map()
+// Rejected anonymous owner-secret attempts, keyed by session.
+export const ownerSecretFailureHits: Map<string, number[]> = new Map()
+// Checkout start needs its own budget: it previously shared `exportHits`, so
+// starting checkouts silently consumed the caller's export allowance.
+export const checkoutStartHits: Map<string, number[]> = new Map()
 
 export function checkRateLimit(
   key: string,
@@ -65,12 +74,6 @@ export function rateLimitByIp(
   max: number,
   windowMs = TEN_MINUTES,
 ): Response | null {
-  // Lazy import to avoid circular dependency in environments where
-  // session-create-response imports from rate-limit.
-  const {
-    getClientIp,
-    hashClientIp,
-  } = require('@/features/session/server/session-create-response')
   const ipHash = hashClientIp(getClientIp(request))
   if (!checkRateLimit(ipHash, hitsMap, max, windowMs)) {
     return new Response(

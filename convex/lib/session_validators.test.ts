@@ -211,6 +211,7 @@ describe('session validators boundary', () => {
     const t = sessionValidatorsConvexTest()
     await expect(
       t.mutation(api.sessions.create, {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'A simple landing page',
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -227,6 +228,7 @@ describe('session validators boundary', () => {
     const t = sessionValidatorsConvexTest()
     await expect(
       t.mutation(api.sessions.create, {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
         isPrivate: false,
@@ -240,6 +242,7 @@ describe('session validators boundary', () => {
     const t = sessionValidatorsConvexTest()
     await expect(
       t.mutation(api.sessions.create, {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 'Bad target',
         preferredLanguage: 'en',
         preferredExportTarget: 'not-a-real-target',

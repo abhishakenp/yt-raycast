@@ -24,6 +24,7 @@ async function createReadySession(
   options: { isPrivate?: boolean } = {},
 ) {
   const createArgs = {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: `Translation entitlement ${identity?.subject ?? 'anonymous'}`,
     preferredLanguage: 'en',
     preferredExportTarget: 'html' as const,

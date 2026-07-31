@@ -18,6 +18,18 @@ vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
   moderationErrorResponse: vi.fn(() => null),
 }))
 
+// The route verifies the bearer token against Convex. These tests exercise
+// body handling, moderation and timeouts, so a valid identity is stubbed;
+// token verification itself is covered in `-rewrite.auth.test.ts`.
+const convexQueryMock = vi.hoisted(() => vi.fn(async () => ({ active: true })))
+vi.mock('@/shared/convex/http-client', () => ({
+  createRuntimeConvexHttpClient: () => ({
+    setAuth: vi.fn(),
+    query: convexQueryMock,
+    mutation: vi.fn(),
+  }),
+}))
+
 import { Route } from './rewrite'
 import { callRouteHandler } from './-route-handler.test-helper'
 

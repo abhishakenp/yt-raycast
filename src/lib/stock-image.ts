@@ -364,6 +364,32 @@ export async function resolveStockImage({
   const cached = cache.get(key)
   if (cached) return cached
 
+  // In the browser there are no API keys and `process` is not defined, so
+  // reading `process.env` below would throw a ReferenceError. Client callers
+  // (e.g. inline-edit tooling) go through the same server proxy that
+  // `searchStockImages` uses.
+  if (typeof window !== 'undefined') {
+    const [proxied] = await searchStockImages({
+      query: resolvedQuery,
+      w,
+      h,
+      perPage: 1,
+    })
+    const result: ResolveResult = proxied
+      ? {
+          imageUrl: proxied.imageUrl,
+          source: proxied.source,
+          query: resolvedQuery,
+        }
+      : {
+          imageUrl: picsumUrl(slugifyAlt(seed), w, h),
+          source: 'picsum',
+          query: resolvedQuery,
+        }
+    cache.set(key, result)
+    return result
+  }
+
   // Server-only env vars — never expose API keys in the client bundle.
   const pexelsKey = process.env.PEXELS_API_KEY
   const unsplashKey = process.env.UNSPLASH_ACCESS_KEY

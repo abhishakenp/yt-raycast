@@ -114,6 +114,8 @@ const moderationSurface = v.union(
 const moderationField = v.union(
   v.literal('prompt'),
   v.literal('designReferenceNotes'),
+  v.literal('designReferenceUrls'),
+  v.literal('cloneUrl'),
   v.literal('cloneBrief'),
   v.literal('cloneRegeneration'),
   v.literal('sectionEdit'),

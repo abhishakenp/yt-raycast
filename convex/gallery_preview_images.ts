@@ -3,6 +3,18 @@ import { ConvexError, v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
 import { mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
+import { verifyServerSecret } from './lib/server_secret'
+
+/**
+ * Gallery preview images are rendered and uploaded by the server route
+ * (`gallery-preview-image-generation.ts`) on a cache miss — never by the
+ * browser. The generate-on-miss flow means we cannot require session
+ * ownership (any gallery visitor can trigger a render of a public session),
+ * so the write path is gated on a server secret instead: without it any
+ * anonymous caller could mint an upload URL and overwrite the preview image
+ * of any public session, or wipe the whole cache.
+ */
+const GALLERY_PREVIEW_SECRET_ENV = 'GALLERY_PREVIEW_MUTATION_SECRET'
 
 const assertPublicSession = async (
   ctx: Pick<QueryCtx, 'db'> | Pick<MutationCtx, 'db'>,
@@ -58,9 +70,11 @@ export const get = query({
  */
 export const clearCache = mutation({
   args: {
+    secret: v.string(),
     sessionId: v.optional(v.id('sessions')),
   },
   handler: async (ctx, args) => {
+    verifyServerSecret(GALLERY_PREVIEW_SECRET_ENV, args.secret)
     if (args.sessionId !== undefined) {
       const row = await ctx.db
         .query('galleryPreviewImages')
@@ -86,11 +100,12 @@ export const clearCache = mutation({
 
 export const generateUploadUrl = mutation({
   args: {
-    anonymousOwnerSecret: v.optional(v.string()),
     cacheVersion: v.string(),
+    secret: v.string(),
     sessionId: v.id('sessions'),
   },
   handler: async (ctx, args) => {
+    verifyServerSecret(GALLERY_PREVIEW_SECRET_ENV, args.secret)
     const session = await assertPublicSession(ctx, args.sessionId)
     const currentVersion = String(session.updatedAt ?? session.createdAt)
     if (currentVersion !== args.cacheVersion) {
@@ -106,14 +121,15 @@ export const generateUploadUrl = mutation({
 
 export const commit = mutation({
   args: {
-    anonymousOwnerSecret: v.optional(v.string()),
     cacheVersion: v.string(),
     contentType: v.string(),
+    secret: v.string(),
     sessionId: v.id('sessions'),
     size: v.number(),
     storageId: v.id('_storage'),
   },
   handler: async (ctx, args) => {
+    verifyServerSecret(GALLERY_PREVIEW_SECRET_ENV, args.secret)
     const session = await assertPublicSession(ctx, args.sessionId)
     const currentVersion = String(session.updatedAt ?? session.createdAt)
     if (currentVersion !== args.cacheVersion) {

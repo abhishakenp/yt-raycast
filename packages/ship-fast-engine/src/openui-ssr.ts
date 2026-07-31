@@ -150,6 +150,9 @@ export async function renderOpenUIToHTML(
   try {
     preprocessed = preprocessOpenUIResponse(source, {
       resolveRefs: false,
+      // Static exports keep semantic nav labels — the export route script
+      // resolves them fuzzily. Flattening them to route names is dashboard-only.
+      fixNavLinks: false,
     })
     const library = await loadOpenUIRuntimeLibrary(preprocessed)
 

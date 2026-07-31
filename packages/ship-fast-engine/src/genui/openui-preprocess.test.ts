@@ -23,14 +23,45 @@ describe('preprocessOpenUIResponse', () => {
     expect(result).toContain('{"title":"Darius K."')
   })
 
+  it('preserves consecutive null placeholder arguments', () => {
+    // `jsonToOpenUI` re-serializes parsed pages with positional nulls for
+    // omitted leading arguments. Collapsing `null, null` shifts every later
+    // argument one slot left, so the component silently renders its defaults
+    // (e.g. PricingTable showed "Starter/$0" instead of the authored tiers).
+    const source =
+      'root = PricingTable(null, null, [{name: "Hot Desk", price: "$199"}])'
+
+    const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+
+    expect(result).toContain('PricingTable(null, null, [')
+    expect(result).toContain('Hot Desk')
+  })
+
+  it('keeps semantic navbar labels on the export path', () => {
+    const source =
+      'root = PageSwitch(["Home", "Lookbook"], [home, lookbook])\nhome = Stack([Navbar("Atelier", ["Explore Full Lookbook"])])\nlookbook = Stack([Text("Lookbook")])'
+
+    const exported = preprocessOpenUIResponse(source, {
+      resolveRefs: false,
+      fixNavLinks: false,
+    })
+    const dashboard = preprocessOpenUIResponse(source, { resolveRefs: false })
+
+    expect(exported).toContain('"Explore Full Lookbook"')
+    // The dashboard runtime resolves nav targets by exact route match only, so
+    // it still flattens labels to route names.
+    expect(dashboard).not.toContain('"Explore Full Lookbook"')
+    expect(dashboard).toContain('["Home","Lookbook"]')
+  })
+
   it('repairs object boundaries before trailing null arguments', () => {
     const source =
       'root = CardGrid("StrideFit", ["Home"], ["Home"], {}, {}, {}, {}, {footer:{note:"Done"}, null)'
 
     const result = preprocessOpenUIResponse(source, { resolveRefs: false })
 
-    expect(result).toContain('{footer:{note:"Done"}}, null)')
-    expect(result).not.toContain('{footer:{note:"Done"}, null)')
+    expect(result).toContain('{"footer":{"note":"Done"}}, null)')
+    expect(result).not.toContain('{"footer":{"note":"Done"}, null)')
   })
 
   it('repairs object boundaries accidentally closed by a parenthesis before the next argument', () => {
@@ -40,10 +71,10 @@ describe('preprocessOpenUIResponse', () => {
     const result = preprocessOpenUIResponse(source, { resolveRefs: false })
 
     expect(result).toContain(
-      'imageAlt:"Storefront"}, "Trusted by Leading Brands"',
+      '"imageAlt":"Storefront"}, "Trusted by Leading Brands"',
     )
     expect(result).not.toContain(
-      'imageAlt:"Storefront"), "Trusted by Leading Brands"',
+      '"imageAlt":"Storefront"), "Trusted by Leading Brands"',
     )
   })
 
@@ -51,7 +82,12 @@ describe('preprocessOpenUIResponse', () => {
     const source =
       'root = PageSwitch(["Home"], [home], "", {"Contact":"Home#hero","https://facebook.com/blog":"Home#hero"})\nhome = Text("Home")'
 
-    const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+    // The export/SSR path (fixNavLinks: false) keeps the targetMap — only the
+    // dashboard runtime strips it via fixNavbarLinksToMatchRoutes.
+    const result = preprocessOpenUIResponse(source, {
+      resolveRefs: false,
+      fixNavLinks: false,
+    })
 
     expect(result).toContain('"https://facebook.com/blog"')
     expect(result).not.toContain(',https://facebook.com/blog"')

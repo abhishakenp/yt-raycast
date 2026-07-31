@@ -80,6 +80,7 @@ const FaqItem = ({ question, answer, controlsId }: FaqItemProps) => {
 type PricingContentProps = {
   onCheckoutClick: () => void
   isCheckoutStarting: boolean
+  onStartFreeClick: () => void
   onShareClick: (platform: string) => void
   referralCode?: string | null
 }
@@ -87,6 +88,7 @@ type PricingContentProps = {
 export const PricingContent = ({
   onCheckoutClick,
   isCheckoutStarting,
+  onStartFreeClick,
   onShareClick,
   referralCode,
 }: PricingContentProps) => {
@@ -113,10 +115,7 @@ export const PricingContent = ({
           Plans
         </h2>
         <div className="pricing-grid">
-          <div className="pricing-card featured">
-            <div className="popular-badge" aria-label="Most popular plan">
-              Most Popular
-            </div>
+          <div className="pricing-card">
             <p className="plan-label">Free</p>
             <div className="plan-price-row">
               <span className="plan-price">₹0</span>
@@ -138,16 +137,15 @@ export const PricingContent = ({
                 <CheckIcon /> 10 free generations/month
               </li>
             </ul>
-            <GlassPillButton
-              className="plan-btn"
-              onClick={onShareClick}
-              disabled={isCheckoutStarting}
-            >
+            <GlassPillButton className="plan-btn" onClick={onStartFreeClick}>
               Start Free
             </GlassPillButton>
             <p className="seats-note">No credit card required.</p>
           </div>
-          <div className="pricing-card">
+          <div className="pricing-card featured">
+            <div className="popular-badge" aria-label="Most popular plan">
+              Most Popular
+            </div>
             <p className="plan-label">Pro</p>
             <div className="plan-price-row">
               <span className="plan-price">₹999</span>

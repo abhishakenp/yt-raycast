@@ -8,6 +8,7 @@ const SLACK_WEBHOOK_URL = 'https://hooks.slack.test/services/T/B/X'
 
 const env: NodeJS.ProcessEnv = {
   BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+  RAZORPAY_CREDITS_10_PAISE: '250000',
   RAZORPAY_WEBHOOK_SECRET: RAZORPAY_SECRET,
   SLACK_WEBHOOK_URL,
   STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET,
@@ -82,6 +83,7 @@ describe('billing webhook → Slack payment notification', () => {
     const calls = stubSlackFetch()
     const request = await signedStripeRequest({
       id: 'evt_sub',
+      type: 'checkout.session.completed',
       data: {
         object: {
           id: 'cs_sub',
@@ -121,6 +123,7 @@ describe('billing webhook → Slack payment notification', () => {
         order: {
           entity: {
             id: 'order_10credits',
+            amount_paid: 250000,
             notes: { packId: '10_credits', user_id: 'user_pack' },
           },
         },

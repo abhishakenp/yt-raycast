@@ -149,19 +149,20 @@ const generatePreviewImage = async (
   const client = deps.client ?? createRuntimeConvexHttpClient(30_000)
   if (input.bearerToken) client.setAuth?.(input.bearerToken)
   const sessionId = input.sessionId as Id<'sessions'>
+  const secret = process.env.GALLERY_PREVIEW_MUTATION_SECRET
+  if (typeof secret !== 'string' || secret.length === 0) {
+    return { status: 'forbidden' }
+  }
   const mutationArgs = {
     cacheVersion: input.cacheVersion,
+    secret,
     sessionId,
-    ...(input.anonymousOwnerSecret
-      ? { anonymousOwnerSecret: input.anonymousOwnerSecret }
-      : {}),
   }
 
   try {
-    // Authorize and prove the version is current before spending renderer time.
-    // In dev mode (auth disabled), this works without owner secrets.
-    // In production, the dashboard POST provides auth; the GET path relies on
-    // the session being public and auth being disabled for gallery reads.
+    // Prove the version is current before spending renderer time. The write
+    // path is server-only (secret above): generate-on-miss must work for any
+    // gallery visitor, so ownership cannot be the gate here.
     const uploadUrl = await client.mutation(
       api.gallery_preview_images.generateUploadUrl,
       mutationArgs,

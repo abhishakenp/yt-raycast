@@ -5,6 +5,10 @@ import {
   mutation,
   query,
 } from './_generated/server'
+import {
+  SERVER_MUTATION_SECRET_ENV,
+  verifyServerSecret,
+} from './lib/server_secret'
 
 // Per-prompt cache of the AI-authored composition content. The generator reuses
 // this content across sessions for the same prompt (zero model cost) while the
@@ -60,9 +64,19 @@ export const getPublic = query({
   },
 })
 
+/**
+ * Server-only. This is a SHARED cache keyed by prompt: an unauthenticated
+ * writer could poison the cached section content that every future generation
+ * for that prompt reuses.
+ */
 export const setPublic = mutation({
-  args: { promptCacheKey: v.string(), contentJson: v.string() },
-  handler: async (ctx, { promptCacheKey, contentJson }) => {
+  args: {
+    promptCacheKey: v.string(),
+    contentJson: v.string(),
+    secret: v.optional(v.string()),
+  },
+  handler: async (ctx, { promptCacheKey, contentJson, secret }) => {
+    verifyServerSecret(SERVER_MUTATION_SECRET_ENV, secret)
     const existing = await ctx.db
       .query('sectionContentCache')
       .withIndex('by_promptCacheKey', (q) =>

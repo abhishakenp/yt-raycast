@@ -10,7 +10,22 @@ const TERMS_EFFECTIVE_DATE = '2026-06-04'
 const LEGAL_INCORPORATION_JURISDICTION = ''
 const LEGAL_COMPANY_REGISTRATION_NUMBER = ''
 const LEGAL_CONTROLLER_ADDRESS = ''
-const LEGAL_REFUND_POLICY = ''
+/**
+ * A concrete refund policy is a payment-provider requirement (Stripe and
+ * Razorpay both require published refund terms) and the fallback sentence
+ * below is not one — it defers to "the checkout terms", which do not exist.
+ */
+const LEGAL_REFUND_POLICY = [
+  'Subscriptions renew automatically and can be cancelled at any time from the',
+  'billing panel; cancellation stops the next renewal and access continues to',
+  'the end of the paid period. Refunds are available within 14 days of a',
+  'subscription charge if fewer than three generations have been used in that',
+  'billing period. Export credit packs are refundable within 14 days for any',
+  'credits that remain unspent. Refunds are issued to the original payment',
+  'method, normally within 5-10 business days. To request one, email',
+  'privacy@ship-fast.devliv.io with the payment reference. Statutory rights,',
+  'including any local cooling-off period, are not limited by this policy.',
+].join(' ')
 
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
 const legalAddressLines =

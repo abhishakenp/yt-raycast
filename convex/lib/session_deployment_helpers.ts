@@ -455,12 +455,17 @@ export async function loadDeploymentStatus(
 export async function assertLakebedDeploymentEntitlement(
   ctx: Pick<QueryCtx, 'db' | 'auth'>,
   session: Doc<'sessions'>,
+  anonymousOwnerSecret?: string,
 ) {
   // Verify the caller owns or can read this session before checking entitlement.
   // Without this check, any authenticated user could probe whether another
   // user's session owner has an active subscription by calling this mutation
   // with arbitrary session IDs.
-  await assertCanReadPrivateSession(ctx, session, undefined)
+  //
+  // The owner secret must be threaded through: hardcoding `undefined` locked
+  // anonymous owners out of their own *private* sessions, since that is the
+  // only credential they have.
+  await assertCanReadPrivateSession(ctx, session, anonymousOwnerSecret)
 
   const isAdmin = await isUserAdmin(ctx)
   const userId = session.userId ?? undefined

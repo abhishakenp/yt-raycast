@@ -36,6 +36,7 @@ async function createReadySession(
   prompt = 'Boundary test session',
 ) {
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -114,6 +115,7 @@ describe('session decomposition boundary', () => {
 
     await expect(
       t.mutation(api.sessions.create, {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
         prompt: 12 as unknown as string,
         preferredLanguage: 'en',
         preferredExportTarget: 'html',

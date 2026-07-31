@@ -20,6 +20,11 @@ process.env.VITE_DISABLE_CLERK = 'false'
 // Tests that exercise quota enforcement explicitly override this per-test.
 process.env.DISABLE_LIMIT = 'true'
 
+// `sessions.create` is a server-only mutation (the LLM content classifier runs
+// in the API route, which a Convex mutation cannot call). Tests that drive the
+// mutation directly stand in for that route, so they need the same secret.
+process.env.SHARE_BONUS_MUTATION_SECRET ||= 'test-server-mutation-secret'
+
 type CrossRealmHTMLElement = {
   readonly nodeType: number
   readonly tagName: string

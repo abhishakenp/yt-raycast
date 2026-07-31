@@ -23,6 +23,7 @@ function createTestSession(
   prompt = 'Test site',
 ) {
   return t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -208,6 +209,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
   const prompt = 'Reusable public cache prompt'
 
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -224,6 +226,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
   })
 
   const cached = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',

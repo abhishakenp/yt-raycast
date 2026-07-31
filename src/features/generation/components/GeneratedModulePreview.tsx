@@ -241,7 +241,11 @@ export function GeneratedModulePreview({
           <iframe
             title="Generated website preview"
             className="size-full border-0 bg-white"
-            sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts"
+            // `allow-popups-to-escape-sandbox` lets a popup opened by the
+            // generated page run UNSANDBOXED, which defeats the sandbox for
+            // anything the page can trigger a window.open on. The preview
+            // never needs an unsandboxed child.
+            sandbox="allow-forms allow-popups allow-scripts"
             src={sourceUrl}
           />
         ) : source && source.trim().length > 0 ? (

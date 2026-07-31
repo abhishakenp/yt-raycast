@@ -121,7 +121,7 @@ function buildStaticFrameworkFiles(
       'index.html':
         '<!doctype html><html><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n',
       'src/main.tsx': `import { createRoot } from 'react-dom/client'\nimport { ArtifactPage } from './page'\n\ncreateRoot(document.getElementById('root')!).render(<ArtifactPage />)\n`,
-      'src/page.tsx': `const artifactHtml = ${html}\n\nexport const ArtifactPage = () => <iframe title=${JSON.stringify(projectName)} srcDoc={artifactHtml} style={{ border: 0, height: '100vh', width: '100%' }} />\n`,
+      'src/page.tsx': `const artifactHtml = ${html}\n\nexport const ArtifactPage = () => <iframe title=${JSON.stringify(projectName)} srcDoc={artifactHtml} sandbox="allow-forms allow-popups allow-scripts" style={{ border: 0, height: '100vh', width: '100%' }} />\n`,
       'README.md': `# ${projectName}\n\nFinal-HTML React export. Run \`bun install && bun run dev\`.\n`,
     }
   }
@@ -146,7 +146,7 @@ function buildStaticFrameworkFiles(
         null,
         2,
       ) + '\n',
-    'app/page.tsx': `const artifactHtml = ${html}\n\nexport default function Page() { return <iframe title=${JSON.stringify(projectName)} srcDoc={artifactHtml} style={{ border: 0, height: '100vh', width: '100%' }} /> }\n`,
+    'app/page.tsx': `const artifactHtml = ${html}\n\nexport default function Page() { return <iframe title=${JSON.stringify(projectName)} srcDoc={artifactHtml} sandbox="allow-forms allow-popups allow-scripts" style={{ border: 0, height: '100vh', width: '100%' }} /> }\n`,
     'app/layout.tsx': `import type { ReactNode } from 'react'\n\nexport default function Layout({ children }: { children: ReactNode }) { return <html><body>{children}</body></html> }\n`,
     'README.md': `# ${projectName}\n\nFinal-HTML Next.js export. Run \`bun install && bun run dev\`.\n`,
   }

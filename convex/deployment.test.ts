@@ -32,6 +32,7 @@ function createTestSession(
   prompt = 'Test site',
 ) {
   return t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -150,6 +151,7 @@ test('owner-secret sessions clone cached public previews without reusing another
   const prompt = 'Cache-safe deployment preview'
 
   const first = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -162,6 +164,7 @@ test('owner-secret sessions clone cached public previews without reusing another
   await persistGeneratedPreview(t, first.sessionId, prompt)
 
   const second = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',

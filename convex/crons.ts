@@ -1,12 +1,13 @@
-import { cronJobs } from './_generated/server'
+import { cronJobs } from 'convex/server'
 
 import { internal } from './_generated/api'
 
 /**
  * Periodic cleanup jobs for session lifecycle.
  *
- * - `cleanupStuckSessions`: marks sessions stuck in `queued` or `running`
- *   status for more than 1 hour as `failed`. Runs every 15 minutes.
+ * - `cleanupStuckSessions`: marks sessions stuck mid-generation (`queued`,
+ *   `validating` or `streaming`) for more than 1 hour as `failed`. Runs every
+ *   15 minutes.
  */
 const crons = cronJobs()
 

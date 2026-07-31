@@ -1,6 +1,21 @@
 import type { ComponentType, Context, ReactNode } from 'react'
 
 declare module '@ship-fast/blocks' {
+  // Design-system surface. Declared here because the real package is excluded
+  // from the typecheck project; without these the modules that consume the
+  // design intent fail to resolve their imports.
+  export type DesignIntent = {
+    radius?: string
+    shadow?: string
+    density?: string
+    gradient?: string
+    motion?: string
+    typography?: string
+  }
+  export const DEFAULT_DESIGN: DesignIntent
+  export const DesignSystemProvider: ComponentType<any>
+  export function parseDesignLine(line: string): DesignIntent | null
+
   export const allCapsules: any[]
   export const library: any
   export const componentNames: string[]

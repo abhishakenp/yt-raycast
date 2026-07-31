@@ -238,6 +238,8 @@ const variantSelectorSuffix = (variant: string): string => {
   if (variant === 'focus') return ':focus'
   if (variant === 'focus-visible') return ':focus-visible'
   if (variant === 'disabled') return ':disabled'
+  if (variant === 'after') return '::after'
+  if (variant === 'before') return '::before'
   return ''
 }
 
@@ -260,7 +262,14 @@ const renderFallbackThemeUtilityRule = (
 
   const selectorSuffix = variants.map(variantSelectorSuffix).join('')
   const selector = `.${cssClassEscape(candidate)}${selectorSuffix}`
-  const rule = `${selector} { ${declaration} }`
+  // Pseudo-elements (::after, ::before) need `content: ""` to render.
+  const hasPseudoElement = variants.some(
+    (v) => v === 'after' || v === 'before',
+  )
+  const fullDeclaration = hasPseudoElement
+    ? `content: var(--tw-content, ""); ${declaration}`
+    : declaration
+  const rule = `${selector} { ${fullDeclaration} }`
   return variants
     .map(responsiveVariantMediaQuery)
     .filter((query): query is string => query !== undefined)

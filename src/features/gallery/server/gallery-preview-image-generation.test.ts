@@ -1,10 +1,16 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { generateGalleryPreviewImage } from './gallery-preview-image-generation'
 
 const sessionId = 'a'.repeat(32)
 
+const serverSecret = 'gallery-preview-server-secret'
+
 describe('generateGalleryPreviewImage', () => {
+  beforeEach(() => {
+    process.env.GALLERY_PREVIEW_MUTATION_SECRET = serverSecret
+  })
+
   it('authorizes before rendering, captures once, uploads, and commits the requested revision', async () => {
     const mutation = vi
       .fn()
@@ -21,7 +27,6 @@ describe('generateGalleryPreviewImage', () => {
 
     const result = await generateGalleryPreviewImage(
       {
-        anonymousOwnerSecret: 'owner-secret',
         cacheVersion: 'revision-1',
         sessionId,
       },
@@ -37,12 +42,12 @@ describe('generateGalleryPreviewImage', () => {
     expect(capturePng).toHaveBeenCalledWith('<main>saved page</main>')
     expect(mutation).toHaveBeenCalledTimes(2)
     expect(mutation.mock.calls[0]?.[1]).toEqual({
-      anonymousOwnerSecret: 'owner-secret',
+      secret: serverSecret,
       cacheVersion: 'revision-1',
       sessionId,
     })
     expect(mutation.mock.calls[1]?.[1]).toMatchObject({
-      anonymousOwnerSecret: 'owner-secret',
+      secret: serverSecret,
       cacheVersion: 'revision-1',
       contentType: 'image/png',
       sessionId,
@@ -101,7 +106,6 @@ describe('generateGalleryPreviewImage', () => {
       resolveHtml: async () => '<main>saved page</main>',
     }
     const input = {
-      anonymousOwnerSecret: 'owner-secret',
       cacheVersion: 'revision-coalesced',
       sessionId: `${sessionId}c`.slice(0, 32),
     }
@@ -114,5 +118,23 @@ describe('generateGalleryPreviewImage', () => {
       { status: 'stored' },
       { status: 'stored' },
     ])
+  })
+
+  it('refuses to call the write mutations when the server secret is unset', async () => {
+    process.env.GALLERY_PREVIEW_MUTATION_SECRET = ''
+    const mutation = vi.fn()
+
+    const result = await generateGalleryPreviewImage(
+      { cacheVersion: 'revision-1', sessionId },
+      {
+        capturePng: vi.fn(),
+        client: { mutation },
+        fetch: vi.fn(),
+        resolveHtml: async () => '<main>saved page</main>',
+      },
+    )
+
+    expect(result).toEqual({ status: 'forbidden' })
+    expect(mutation).not.toHaveBeenCalled()
   })
 })

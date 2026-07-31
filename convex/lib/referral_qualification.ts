@@ -70,8 +70,8 @@ export async function refreshReferralReward(
 
 /**
  * Called when `payerUserId` becomes a paying customer. If they were referred,
- * qualify that referral and refresh the referrer's reward state. Idempotent:
- * a referral only qualifies once.
+ * qualify (or disqualify, for disposable emails) that referral and refresh the
+ * referrer's reward state. Idempotent: a referral only qualifies once.
  *
  * Returns the referrer's qualification result only when the referrer's reward
  * just transitioned to unlocked (so the caller can apply the provider discount);
@@ -93,6 +93,16 @@ export async function qualifyReferralOnPayment(
   if (referral.status !== 'pending') return null
 
   const now = Date.now()
+
+  // Disposable-email accounts never count toward the reward — otherwise a
+  // referrer can mint burner signups to unlock their own referral rewards.
+  if (referral.emailDisposable === true) {
+    await ctx.db.patch(referral._id, {
+      status: 'disqualified',
+      updatedAt: now,
+    })
+    return null
+  }
 
   await ctx.db.patch(referral._id, {
     status: 'qualified',

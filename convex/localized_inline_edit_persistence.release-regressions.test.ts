@@ -46,6 +46,7 @@ async function createReadySession(
   options: ReadySessionOptions,
 ) {
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: options.requestPrompt ?? SOURCE_TEXT,
     preferredLanguage: options.preferredLanguage,
     preferredExportTarget: 'html',

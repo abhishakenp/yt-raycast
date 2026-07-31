@@ -29,6 +29,8 @@ import {
 } from '@/features/editing/lib/inline-edit-commands'
 import { INLINE_EDIT_TOOL_DEFINITIONS } from '@/features/editing/lib/inline-edit-tool-definitions'
 import { checkRateLimit, aiEditHits } from '@/lib/rate-limit'
+import { admitModelCall, modelSpendBlockedResponse } from '@/lib/spend-cap'
+import { createLogger } from '@/lib/logger'
 import {
   getClientIp,
   hashClientIp,
@@ -203,6 +205,8 @@ type ResolveInlineStockImage = (input: {
   source: 'pexels' | 'unsplash' | 'picsum'
   query: string
 }>
+
+const sectionEditLogger = createLogger('section-edit')
 
 const INLINE_EDIT_CODE_MODE_TOOL_DEFINITIONS = INLINE_EDIT_TOOL_DEFINITIONS
 
@@ -845,7 +849,7 @@ async function runInlineEditsWithCodeMode({
     timeout: 30_000,
   })
 
-  await generateWithTools(
+  const toolRun = await generateWithTools(
     model,
     [prompt.system, codeMode.systemPrompt].filter(Boolean).join('\n\n'),
     prompt.user,
@@ -853,6 +857,15 @@ async function runInlineEditsWithCodeMode({
     signal,
     1,
   )
+  // A sandbox failure used to be invisible: `results` stayed empty and the
+  // caller silently fell back to regenerating the whole page. That is how a
+  // driver-interface break shipped unnoticed.
+  if (results.length === 0) {
+    sectionEditLogger.warn('code-mode produced no edits', {
+      sessionId,
+      toolRun,
+    })
+  }
 
   return results
 }
@@ -888,7 +901,9 @@ async function compileTsx(tsxSource: string): Promise<CompileResult> {
       external: [
         'react',
         'react/jsx-runtime',
-        /^node:/,
+        // esbuild's `external` takes strings (with `*` wildcards), not
+        // RegExp — a RegExp here is a type error and would not have matched.
+        'node:*',
         'fs',
         'path',
         'os',
@@ -910,7 +925,7 @@ async function compileTsx(tsxSource: string): Promise<CompileResult> {
         'process',
       ],
     })
-    const output = result.outputFiles[0]
+    const output = result.outputFiles?.[0]
     if (!output) {
       return { ok: false, error: 'esbuild produced no output' }
     }
@@ -1131,6 +1146,9 @@ export async function createSectionEditResponse(
       { status: 429 },
     )
   }
+
+  const spend = admitModelCall('section-edit')
+  if (!spend.allowed) return modelSpendBlockedResponse(spend)
 
   let body: JsonBody
   try {

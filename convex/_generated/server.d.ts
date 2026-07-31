@@ -31,6 +31,9 @@ type Env = {
   readonly DUB_API_URL: string | undefined;
   readonly DUB_PARTNERS_ENABLED: string | undefined;
   readonly DUB_PARTNER_GROUP_ID: string | undefined;
+  readonly GALLERY_PREVIEW_MUTATION_SECRET: string | undefined;
+  readonly LINKFORTY_WEBHOOK_MUTATION_SECRET: string | undefined;
+  readonly SHARE_BONUS_MUTATION_SECRET: string | undefined;
 };
 
 /**

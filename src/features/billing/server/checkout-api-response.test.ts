@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { exportHits } from '@/lib/rate-limit'
+import { checkoutStartHits } from '@/lib/rate-limit'
 import { createCheckoutApiResponse } from './checkout-api-response'
 
 const env = {
@@ -29,7 +29,7 @@ describe('createCheckoutApiResponse', () => {
     client.query.mockReset().mockResolvedValue({ userId: 'user_123' })
     client.setAuth.mockReset()
     vi.restoreAllMocks()
-    exportHits.clear()
+    checkoutStartHits.clear()
   })
 
   it('requires authentication', async () => {

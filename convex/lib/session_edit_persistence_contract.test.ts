@@ -74,6 +74,7 @@ async function createReadySessionWithFixture(
 ) {
   const source = loadFixture(fixtureName)
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: language,
     preferredExportTarget: 'html',

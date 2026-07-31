@@ -26,7 +26,7 @@ import { isAuthDisabled } from './session_export_helpers'
 import { cloneCachedGeneratedArtifacts } from './session_artifact_helpers'
 import { reserveDefaultDeploymentSlug } from './session_deployment_helpers'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
-import { timingSafeEqual } from './timingSafeEqual'
+import { matchesServerSecret, verifyServerSecret } from './server_secret'
 import {
   assertPrompt,
   assertContentPolicyFields,
@@ -151,11 +151,10 @@ export async function loadGenerationAdmission(
   // Validate server secret: if the caller is a direct Convex client (not the
   // API route), clientIpHash is client-supplied and forgeable. Ignore it so
   // quota can't be bypassed by rotating fake IP hashes.
-  const expectedSecret = process.env.SHARE_BONUS_MUTATION_SECRET
-  const isServerCaller =
-    expectedSecret !== undefined &&
-    args.serverSecret !== undefined &&
-    timingSafeEqual(args.serverSecret, expectedSecret)
+  const isServerCaller = matchesServerSecret(
+    'SHARE_BONUS_MUTATION_SECRET',
+    args.serverSecret,
+  )
   const trustedClientIpHash = isServerCaller ? args.clientIpHash : undefined
 
   if (
@@ -379,11 +378,24 @@ export async function createGenerationSession(
   args: CreateGenerationSessionInput,
   references: CreateGenerationSessionReferences,
 ): Promise<CreateGenerationSessionResult> {
+  // Server-only. The LLM content classifier runs in the HTTP route
+  // (`/api/sessions/create`) — a Convex mutation cannot make an outbound
+  // model call — so leaving this mutation public meant any signed-in user
+  // could call it directly and get generation with nothing but the
+  // deterministic regex between them and the model.
+  verifyServerSecret(
+    'SHARE_BONUS_MUTATION_SECRET',
+    args.serverSecret,
+    'Sessions must be created through the API route.',
+  )
+
   const disableLimits = areGenerationLimitsDisabled()
   const prompt = args.prompt.trim()
   assertContentPolicyFields({
     prompt,
     designReferenceNotes: args.designReferenceNotes,
+    designReferenceUrls: args.designReferenceUrls,
+    cloneUrl: args.cloneUrl,
   })
   const isDraft = args.isDraft === true
   const userId = await getUserId(ctx)
@@ -403,8 +415,15 @@ export async function createGenerationSession(
   // it on auth sessions lets loadGenerationAdmission count the union of IP +
   // userId buckets, which blocks both the multi-account-on-same-IP bypass and
   // the multi-device-same-account bypass.
-  const clientIpHash =
-    args.clientIpHash !== undefined ? args.clientIpHash : undefined
+  // Only persist the IP hash when it came from the API route. An untrusted
+  // caller could otherwise stamp a victim network's hash onto its own
+  // sessions and burn that network's monthly quota.
+  const clientIpHash = matchesServerSecret(
+    'SHARE_BONUS_MUTATION_SECRET',
+    args.serverSecret,
+  )
+    ? args.clientIpHash
+    : undefined
   const now = Date.now()
 
   assertPrompt(prompt)

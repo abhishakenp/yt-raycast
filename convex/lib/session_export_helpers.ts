@@ -61,16 +61,37 @@ export type ExportEntitlement =
 
 type ExportPaywallEnv = {
   DISABLE_PAYWALL?: string
+  IS_DEV?: string
+  NODE_ENV?: string
+}
+
+/**
+ * Development escape hatches. `DISABLE_PAYWALL` and `VITE_DISABLE_CLERK` do
+ * not merely relax billing — they turn OFF every ownership check and make
+ * `isUserAdmin` return true for every caller. A single stray env var on a
+ * production deployment therefore opens the entire dataset.
+ *
+ * They are now inert unless the runtime is explicitly non-production, so the
+ * blast radius of that mistake is a dev box instead of the live site.
+ */
+function isNonProductionRuntime(
+  env: ExportPaywallEnv & AuthDisabledEnv = process.env,
+): boolean {
+  if ((env.IS_DEV ?? '').trim().toLowerCase() === 'true') return true
+  return (env.NODE_ENV ?? '').trim().toLowerCase() !== 'production'
 }
 
 export function areExportPaywallsDisabled(
   env: ExportPaywallEnv = process.env,
 ): boolean {
+  if (!isNonProductionRuntime(env)) return false
   return (env.DISABLE_PAYWALL ?? '').trim().toLowerCase() === 'true'
 }
 
 type AuthDisabledEnv = {
   VITE_DISABLE_CLERK?: string
+  IS_DEV?: string
+  NODE_ENV?: string
 }
 
 /**
@@ -80,6 +101,7 @@ type AuthDisabledEnv = {
  * Mirrors the client-side `isClerkDisabled` check in `clerk-runtime.ts`.
  */
 export function isAuthDisabled(env: AuthDisabledEnv = process.env): boolean {
+  if (!isNonProductionRuntime(env)) return false
   return (env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
 }
 
@@ -1017,7 +1039,60 @@ export async function recordExportArtifactFailure(
     createdAt: now,
   })
 
+  await refundExportCreditForFailedBuild(ctx, args.sessionId, now)
+
   return { target: args.target, status }
+}
+
+/**
+ * Return the export credit when the artifact build fails.
+ *
+ * The credit is debited up front (in `getExportEntitlement`) so a build cannot
+ * start without payment. Without this refund, every failed build silently
+ * charged the user for an artifact they never received.
+ *
+ * Idempotent: a session is refunded at most once per debit, so repeated
+ * failures across targets/locales cannot mint credits.
+ */
+async function refundExportCreditForFailedBuild(
+  ctx: MutationCtx,
+  sessionId: Id<'sessions'>,
+  now: number,
+): Promise<void> {
+  const session = await ctx.db.get(sessionId)
+  const userId = session?.userId
+  if (!userId) return
+
+  const ledger = await ctx.db
+    .query('creditLedger')
+    .withIndex('by_userId_createdAt', (index) => index.eq('userId', userId))
+    .order('desc')
+    .take(100)
+  const sessionEntries = ledger.filter((entry) => entry.sessionId === sessionId)
+  const debits = sessionEntries.filter(
+    (entry) => entry.reason === 'export',
+  ).length
+  const refunds = sessionEntries.filter(
+    (entry) => entry.reason === 'export_refund',
+  ).length
+  if (debits <= refunds) return
+
+  const credits = await ctx.db
+    .query('customerCredits')
+    .withIndex('by_userId', (index) => index.eq('userId', userId))
+    .first()
+  if (credits === null) return
+
+  const balanceAfter = credits.remaining + 1
+  await ctx.db.patch(credits._id, { remaining: balanceAfter, updatedAt: now })
+  await ctx.db.insert('creditLedger', {
+    userId,
+    sessionId,
+    amount: 1,
+    balanceAfter,
+    reason: 'export_refund',
+    createdAt: now,
+  })
 }
 
 export async function getExportEntitlement(

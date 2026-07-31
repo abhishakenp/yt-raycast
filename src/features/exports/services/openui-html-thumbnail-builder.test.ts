@@ -35,8 +35,9 @@ describe('buildOpenUIHtmlThumbnail', () => {
     const html = String(thumbnail.body)
 
     expect(renderOpenUIToHTMLWithThemeMock).toHaveBeenCalledTimes(1)
-    expect(html.match(/data-sf-export-page=/g)).toHaveLength(1)
-    expect(html).toContain('data-sf-export-page="Home"')
+    // The thumbnail renders the full preprocessed source directly (like the
+    // dashboard) instead of extracting/re-serializing the first page. This
+    // preserves component variants that the re-serialization would lose.
     expect(html).toContain('data-rendered-page="true"')
     // JS runtime is included for visual parity (nav scroll effects, etc.)
     expect(html).toContain('<script')

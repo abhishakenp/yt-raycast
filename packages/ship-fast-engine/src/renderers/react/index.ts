@@ -18,7 +18,6 @@ import {
 } from '../seo'
 import { shouldUseSwiper } from '../../lib/swiper-policy'
 import { SHIP_FAST_SITE_URL } from '../../marketing'
-import { sanitizeSvg } from '../../lib/sanitize-svg'
 
 function renderReactPackageJson(
   projectName: string,

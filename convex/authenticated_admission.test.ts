@@ -21,6 +21,7 @@ function identityFor(userId: string) {
 
 function createPayload(stamp: string) {
   return {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt: `Authenticated quota verifier site ${stamp}`,
     preferredLanguage: 'en',
     preferredExportTarget: 'html' as const,
@@ -134,6 +135,7 @@ test('Convex dev mode bypasses anonymous daily quota at the live mutation bounda
 
   await expect(
     t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       ...createPayload('anonymous-dev-mode-allowed'),
       clientIpHash,
       anonymousOwnerSecret: 'owner-secret',

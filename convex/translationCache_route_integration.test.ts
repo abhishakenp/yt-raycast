@@ -42,9 +42,16 @@ function createCacheClient(t: ReturnType<typeof convexTest>) {
       locale: string
       owner: string
       entries: Array<{ text: string; translation: string }>
-    }) => t.mutation(api.translationCache.completeBatch, input),
+    }) =>
+      t.mutation(api.translationCache.completeBatch, {
+        ...input,
+        secret: process.env.SHARE_BONUS_MUTATION_SECRET,
+      }),
     releaseBatch: (input: { locale: string; texts: string[]; owner: string }) =>
-      t.mutation(api.translationCache.releaseBatch, input),
+      t.mutation(api.translationCache.releaseBatch, {
+        ...input,
+        secret: process.env.SHARE_BONUS_MUTATION_SECRET,
+      }),
   }
 }
 

@@ -1,6 +1,7 @@
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { startVpsGeneration } from '@/features/generation/server/vps-generation-handler'
 import { checkRateLimit, generationHits } from '@/lib/rate-limit'
+import { admitModelCall, modelSpendBlockedResponse } from '@/lib/spend-cap'
 import {
   getClientIp,
   hashClientIp,
@@ -43,6 +44,11 @@ export async function createStartGenerationResponse(
       { status: 429 },
     )
   }
+
+  // Global backstop across every model-spending route — per-route limits
+  // multiply, this one does not.
+  const spend = admitModelCall('generation')
+  if (!spend.allowed) return modelSpendBlockedResponse(spend)
 
   const sessionId = sessionIdParam as Id<'sessions'>
 

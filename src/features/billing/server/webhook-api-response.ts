@@ -82,23 +82,38 @@ async function verifyStripeSignature(
   signatureHeader: string,
   secret: string,
 ): Promise<boolean> {
-  const parts = Object.fromEntries(
-    signatureHeader
-      .split(',')
-      .map((part) => part.split('='))
-      .filter(([key, value]) => key && value),
-  )
-  if (!parts.t || !parts.v1) return false
+  // A Stripe-Signature header carries ONE `t` and one `v1` per active signing
+  // secret: during a secret rotation both the old and new endpoint secrets sign
+  // the payload, producing `t=...,v1=<old>,v1=<new>`. `Object.fromEntries` keeps
+  // only the last, so every event signed by the other secret was rejected for
+  // the whole rotation window. Collect all v1 schemes and accept any match.
+  let timestampPart = ''
+  const signatures: string[] = []
+  for (const part of signatureHeader.split(',')) {
+    const separator = part.indexOf('=')
+    if (separator < 0) continue
+    const key = part.slice(0, separator).trim()
+    const value = part.slice(separator + 1).trim()
+    if (!key || !value) continue
+    if (key === 't' && !timestampPart) timestampPart = value
+    else if (key === 'v1') signatures.push(value)
+  }
+  if (!timestampPart || signatures.length === 0) return false
 
   // Replay attack protection: reject timestamps older than 5 minutes
-  const timestamp = Number.parseInt(parts.t, 10)
+  const timestamp = Number.parseInt(timestampPart, 10)
   if (!Number.isFinite(timestamp)) return false
   const TOLERANCE_SECONDS = 300
   const nowSeconds = Math.floor(Date.now() / 1000)
   if (Math.abs(nowSeconds - timestamp) > TOLERANCE_SECONDS) return false
 
-  const expected = await hmacSha256(secret, `${parts.t}.${rawBody}`)
-  return timingSafeEqual(expected, parts.v1)
+  const expected = await hmacSha256(secret, `${timestampPart}.${rawBody}`)
+  // Compare against every candidate — no early return, so the number of
+  // signatures offered does not change how long the check takes.
+  return signatures.reduce(
+    (matched, signature) => timingSafeEqual(expected, signature) || matched,
+    false,
+  )
 }
 
 async function verifyRazorpaySignature(
@@ -133,6 +148,119 @@ function normalizeRazorpayStatus(status: unknown): BillingStatus {
 
 function creditsForPack(packId: string): number {
   return packId === '10_credits' ? 10 : packId === '3_credits' ? 3 : 0
+}
+
+/**
+ * Event names we act on. Anything else is acknowledged and ignored.
+ *
+ * Without this, `stripePayloadToMutation` / `razorpayPayloadToMutation` read
+ * only `data.object` and never looked at the event type, so a
+ * `customer.subscription.deleted` or `subscription.halted` payload was
+ * processed exactly like a successful one.
+ */
+const STRIPE_HANDLED_EVENTS = new Set([
+  'checkout.session.completed',
+  'checkout.session.async_payment_succeeded',
+  'customer.subscription.created',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
+  'customer.subscription.paused',
+  'customer.subscription.resumed',
+  'invoice.paid',
+  'invoice.payment_succeeded',
+  'invoice.payment_failed',
+])
+
+const RAZORPAY_HANDLED_EVENTS = new Set([
+  'order.paid',
+  'payment.captured',
+  'subscription.activated',
+  'subscription.authenticated',
+  'subscription.charged',
+  'subscription.completed',
+  'subscription.cancelled',
+  'subscription.halted',
+  'subscription.paused',
+  'subscription.pending',
+  'subscription.resumed',
+  'subscription.updated',
+])
+
+/**
+ * Events that revoke access rather than grant it. A refund or a won dispute
+ * must claw back the entitlement that the original payment granted.
+ */
+const STRIPE_REVOCATION_EVENTS = new Set([
+  'charge.refunded',
+  'charge.dispute.created',
+  'charge.dispute.closed',
+  'customer.subscription.deleted',
+  'invoice.payment_failed',
+])
+
+const RAZORPAY_REVOCATION_EVENTS = new Set([
+  'payment.failed',
+  'refund.processed',
+  'refund.created',
+  'subscription.halted',
+  'subscription.cancelled',
+])
+
+function stripeEventName(event: unknown): string {
+  const record = asRecord(event)
+  return typeof record?.type === 'string' ? record.type : ''
+}
+
+function razorpayEventName(event: unknown): string {
+  const record = asRecord(event)
+  return typeof record?.event === 'string' ? record.event : ''
+}
+
+/**
+ * Expected paid amount for a credit pack, in the provider's minor unit.
+ * Returns null when the deployment has not configured a price for the pack —
+ * in that case we cannot validate and must not grant credits.
+ */
+function expectedPackAmount(
+  provider: Provider,
+  packId: string,
+  env: BillingWebhookEnv,
+): number | null {
+  const key =
+    provider === 'razorpay'
+      ? packId === '10_credits'
+        ? 'RAZORPAY_CREDITS_10_PAISE'
+        : packId === '3_credits'
+          ? 'RAZORPAY_CREDITS_3_PAISE'
+          : ''
+      : packId === '10_credits'
+        ? 'STRIPE_CREDITS_10_AMOUNT'
+        : packId === '3_credits'
+          ? 'STRIPE_CREDITS_3_AMOUNT'
+          : ''
+  if (!key) return null
+  const configured = Number.parseInt(env[key] ?? '', 10)
+  return Number.isSafeInteger(configured) && configured > 0 ? configured : null
+}
+
+/**
+ * Grant credits only when the amount actually paid matches the configured
+ * price for the pack. Otherwise a caller who can influence the checkout amount
+ * (or a replayed low-value payment carrying `packId` metadata) buys 10 credits
+ * for the price of nothing.
+ */
+function creditsForVerifiedPack(
+  provider: Provider,
+  packId: string,
+  amountPaid: unknown,
+  env: BillingWebhookEnv,
+): number {
+  const credits = creditsForPack(packId)
+  if (credits === 0) return 0
+  const expected = expectedPackAmount(provider, packId, env)
+  if (expected === null) return 0
+  const paid = positiveInteger(amountPaid)
+  return paid !== null && paid >= expected ? credits : 0
 }
 
 function asRecord(value: unknown): JsonRecord | null {
@@ -175,11 +303,12 @@ async function readWebhookBody(request: Request): Promise<string | null> {
   }
 }
 
-function stripePayloadToMutation(event: unknown) {
+function stripePayloadToMutation(event: unknown, env: BillingWebhookEnv) {
   const eventRecord = asRecord(event)
   const data = asRecord(eventRecord?.data)
   const object = asRecord(data?.object)
   if (!eventRecord || !object) return null
+  if (!STRIPE_HANDLED_EVENTS.has(stripeEventName(event))) return null
 
   const metadata = asRecord(object.metadata) ?? {}
   const plan = asRecord(object.plan)
@@ -190,7 +319,12 @@ function stripePayloadToMutation(event: unknown) {
 
   if (!userId) return null
   if (mode === 'credit_pack') {
-    const credits = creditsForPack(packId)
+    const credits = creditsForVerifiedPack(
+      'stripe',
+      packId,
+      object.amount_total ?? object.amount_paid ?? object.amount_received,
+      env,
+    )
     return credits > 0
       ? {
           provider: 'stripe' as const,
@@ -215,10 +349,11 @@ function stripePayloadToMutation(event: unknown) {
   }
 }
 
-function razorpayPayloadToMutation(event: unknown) {
+function razorpayPayloadToMutation(event: unknown, env: BillingWebhookEnv) {
   const eventRecord = asRecord(event)
   const payload = asRecord(eventRecord?.payload)
   if (!eventRecord || !payload) return null
+  if (!RAZORPAY_HANDLED_EVENTS.has(razorpayEventName(event))) return null
 
   // Razorpay webhooks include a unique event ID. Without it we cannot
   // deduplicate reliably — reject the payload rather than risk collisions.
@@ -248,7 +383,12 @@ function razorpayPayloadToMutation(event: unknown) {
   const notes = asRecord(order?.notes) ?? {}
   const userId = notes.userId ?? notes.user_id
   const packId = String(notes.packId ?? notes.pack_id ?? '')
-  const credits = creditsForPack(packId)
+  const credits = creditsForVerifiedPack(
+    'razorpay',
+    packId,
+    order?.amount_paid ?? order?.amount,
+    env,
+  )
   return userId && credits > 0
     ? {
         provider: 'razorpay' as const,
@@ -406,6 +546,77 @@ function stripePartnerPayloadToMutation(
   }
 }
 
+type RevocationMutation = {
+  provider: Provider
+  idempotencyKey: string
+  providerSubscriptionId?: string
+  userId?: string
+  creditsToRevoke?: number
+  reason: string
+}
+
+/**
+ * Map a refund / dispute / failed-renewal event onto a `revokeBillingAccess`
+ * call. Returns null for every other event.
+ */
+function revocationPayload(
+  event: unknown,
+  provider: Provider,
+): RevocationMutation | null {
+  const eventRecord = asRecord(event)
+  if (!eventRecord) return null
+
+  if (provider === 'stripe') {
+    const eventName = stripeEventName(event)
+    if (!STRIPE_REVOCATION_EVENTS.has(eventName)) return null
+    // A closed dispute only revokes when the customer won it.
+    if (eventName === 'charge.dispute.closed') {
+      const disputeStatus = asRecord(asRecord(eventRecord.data)?.object)?.status
+      if (disputeStatus !== 'lost') return null
+    }
+    const object = asRecord(asRecord(eventRecord.data)?.object)
+    if (!object) return null
+    const metadata = asRecord(object.metadata) ?? {}
+    const eventId = String(eventRecord.id ?? '')
+    if (!eventId) return null
+    const packId = String(metadata.packId ?? '')
+    return {
+      provider,
+      idempotencyKey: `revoke:${eventId}`,
+      providerSubscriptionId:
+        String(object.subscription ?? object.id ?? '') || undefined,
+      userId:
+        String(metadata.userId ?? object.client_reference_id ?? '') ||
+        undefined,
+      creditsToRevoke: creditsForPack(packId) || undefined,
+      reason: eventName,
+    }
+  }
+
+  const eventName = razorpayEventName(event)
+  if (!RAZORPAY_REVOCATION_EVENTS.has(eventName)) return null
+  const eventId = String(eventRecord.id ?? '')
+  if (!eventId) return null
+  const payload = asRecord(eventRecord.payload)
+  const subscription = asRecord(asRecord(payload?.subscription)?.entity)
+  const payment = asRecord(asRecord(payload?.payment)?.entity)
+  const order = asRecord(asRecord(payload?.order)?.entity)
+  const notes =
+    asRecord(subscription?.notes) ??
+    asRecord(order?.notes) ??
+    asRecord(payment?.notes) ??
+    {}
+  const packId = String(notes.packId ?? notes.pack_id ?? '')
+  return {
+    provider,
+    idempotencyKey: `revoke:${eventId}`,
+    providerSubscriptionId: String(subscription?.id ?? '') || undefined,
+    userId: String(notes.userId ?? notes.user_id ?? '') || undefined,
+    creditsToRevoke: creditsForPack(packId) || undefined,
+    reason: eventName,
+  }
+}
+
 export async function createWebhookApiResponse(
   request: Request,
   provider: Provider,
@@ -453,8 +664,10 @@ export async function createWebhookApiResponse(
         ? razorpayPartnerPayloadToMutation(event)
         : stripePartnerPayloadToMutation(event)
       : null
+
+  const client = clientOverride ?? createRuntimeConvexHttpClient()
+
   if (partnerMutationPayload !== null) {
-    const client = clientOverride ?? createRuntimeConvexHttpClient()
     try {
       await client.mutation(api.partners.applyPartnerBillingWebhook, {
         secret: mutationSecret,
@@ -463,16 +676,31 @@ export async function createWebhookApiResponse(
     } catch {
       return json({ error: 'Webhook processing failed.' }, { status: 502 })
     }
-    return json({ received: true })
+    // Deliberately NOT returning here. Partner attribution and the customer's
+    // own entitlement are independent concerns; short-circuiting meant that
+    // with DUB_PARTNERS_ENABLED=true an `invoice.paid` never reached
+    // applyBillingWebhook, so paying customers silently kept no subscription.
+  }
+
+  const revocation = revocationPayload(event, provider)
+  if (revocation !== null) {
+    try {
+      await client.mutation(api.billing.revokeBillingAccess, {
+        secret: mutationSecret,
+        ...revocation,
+      })
+    } catch {
+      return json({ error: 'Webhook processing failed.' }, { status: 502 })
+    }
+    return json({ received: true, revoked: true })
   }
 
   const mutationPayload =
     provider === 'stripe'
-      ? stripePayloadToMutation(event)
-      : razorpayPayloadToMutation(event)
+      ? stripePayloadToMutation(event, env)
+      : razorpayPayloadToMutation(event, env)
   if (mutationPayload === null) return json({ received: true, ignored: true })
 
-  const client = clientOverride ?? createRuntimeConvexHttpClient()
   let result: { referralUnlock?: { referrerUserId: string } | null }
   try {
     result = (await client.mutation(api.billing.applyBillingWebhook, {

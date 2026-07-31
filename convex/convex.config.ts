@@ -6,6 +6,13 @@ const app = defineApp({
   env: {
     BILLING_WEBHOOK_MUTATION_SECRET: v.optional(v.string()),
     CONTENT_MODERATION_MUTATION_SECRET: v.optional(v.string()),
+    // Server-only write gates. Every one of these must be declared here or it
+    // resolves to `undefined` on the deployment and the mutation it guards
+    // fails closed — for SHARE_BONUS_MUTATION_SECRET that means *all*
+    // anonymous generation stops (CLIENT_IP_REQUIRED).
+    GALLERY_PREVIEW_MUTATION_SECRET: v.optional(v.string()),
+    LINKFORTY_WEBHOOK_MUTATION_SECRET: v.optional(v.string()),
+    SHARE_BONUS_MUTATION_SECRET: v.optional(v.string()),
     DUB_API_KEY: v.optional(v.string()),
     DUB_PARTNERS_ENABLED: v.optional(v.string()),
     DUB_PARTNER_GROUP_ID: v.optional(v.string()),

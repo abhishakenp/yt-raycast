@@ -37,6 +37,7 @@ async function createReadySession(
   prompt = 'Test site',
 ) {
   const { sessionId } = await t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -235,6 +236,7 @@ describe('user image upload helpers', () => {
     const t = userImageTest()
     const storageId = await createStorageId(t)
     const { sessionId } = await t.mutation(api.sessions.create, {
+      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
       prompt: 'Private product launch page',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',

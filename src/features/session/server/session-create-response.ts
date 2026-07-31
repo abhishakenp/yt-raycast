@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto'
-
 import type { ConvexHttpClient } from 'convex/browser'
 import type { FunctionArgs } from 'convex/server'
 
@@ -11,7 +9,11 @@ import {
   enforceUserInputModeration,
   moderationErrorResponse,
 } from '@/features/moderation/server/enforce-user-input-moderation'
+import { getClientIp, hashClientIp } from '@/lib/client-ip'
 import { checkRateLimit, sessionCreateHits } from '@/lib/rate-limit'
+
+// Re-exported for the many call sites that already import them from here.
+export { getClientIp, hashClientIp }
 
 type CreateSessionArgs = FunctionArgs<typeof api.sessions.create>
 
@@ -38,39 +40,6 @@ function json(body: unknown, init?: ResponseInit) {
       ...init?.headers,
     },
   })
-}
-
-export function getClientIp(request: Request): string {
-  // Proxy-specific headers are set by the trusted proxy (Cloudflare, Fly.io,
-  // nginx) and cannot be spoofed by the client. Check these FIRST so that a
-  // client-supplied X-Forwarded-For cannot override the real client IP.
-  const proxyIp =
-    request.headers.get('cf-connecting-ip')?.trim() ||
-    request.headers.get('fly-client-ip')?.trim() ||
-    request.headers.get('x-real-ip')?.trim()
-  if (proxyIp) return proxyIp
-
-  // X-Forwarded-For is a comma-separated chain: `client, proxy1, proxy2`.
-  // The LEFTMOST entry is client-controlled and spoofable. The RIGHTMOST
-  // entry is set by the closest trusted proxy. Use the last entry to get
-  // the IP as seen by our proxy, not the client-claimed IP.
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) {
-    const parts = forwarded
-      .split(',')
-      .map((p) => p.trim())
-      .filter(Boolean)
-    if (parts.length > 0) return parts[parts.length - 1]!
-  }
-
-  return 'unknown'
-}
-
-export function hashClientIp(
-  ip: string,
-  salt = process.env.SHIP_FAST_IP_HASH_SALT ?? '',
-): string {
-  return createHash('sha256').update(`${salt}:${ip}`).digest('hex').slice(0, 48)
 }
 
 function getBearerToken(request: Request): string | null {

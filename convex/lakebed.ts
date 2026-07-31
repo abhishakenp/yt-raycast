@@ -2,6 +2,7 @@ import { ConvexError, v } from 'convex/values'
 
 import { isAuthDisabled } from './lib/session_export_helpers'
 import { isUserAdmin } from './lib/session_access_helpers'
+import { timingSafeEqual } from './lib/timingSafeEqual'
 import { internalMutation, mutation, query } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
@@ -146,7 +147,7 @@ async function getSessionActor(
     const ownsAnonymousSession =
       session.userId === undefined &&
       session.anonOwnerSecretHash !== undefined &&
-      session.anonOwnerSecretHash === anonymousOwnerSecretHash
+      timingSafeEqual(session.anonOwnerSecretHash, anonymousOwnerSecretHash)
 
     if (ownsAnonymousSession) {
       const userId = `anonymous:${anonymousOwnerSecretHash}`
@@ -196,6 +197,11 @@ async function getRequiredSessionActor(
     })
   }
 
+  // Deliberately NOT an ownership check. Lakebed rows on a public session are
+  // per-visitor state for the generated site (cart contents, form drafts,
+  // selections), so every visitor must be able to write. Isolation comes from
+  // `ownerKey`: each actor reads and writes only its own row, and the shared
+  // seed row is never reachable — see the persistence-boundary tests.
   return actor
 }
 

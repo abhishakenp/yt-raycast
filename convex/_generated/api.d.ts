@@ -8,10 +8,12 @@
  * @module
  */
 
+import type * as account from "../account.js";
 import type * as billing from "../billing.js";
 import type * as brandfetch from "../brandfetch.js";
 import type * as commerce_operations from "../commerce_operations.js";
 import type * as contentCache from "../contentCache.js";
+import type * as crons from "../crons.js";
 import type * as customLanguages from "../customLanguages.js";
 import type * as exportRenderCache from "../exportRenderCache.js";
 import type * as export_artifacts from "../export_artifacts.js";
@@ -35,8 +37,10 @@ import type * as lib_export_progress_stages from "../lib/export_progress_stages.
 import type * as lib_gallery_helpers from "../lib/gallery_helpers.js";
 import type * as lib_openui_error_html from "../lib/openui_error_html.js";
 import type * as lib_openui_handoff_html from "../lib/openui_handoff_html.js";
+import type * as lib_preview_html_safety from "../lib/preview_html_safety.js";
 import type * as lib_referral_helpers from "../lib/referral_helpers.js";
 import type * as lib_referral_qualification from "../lib/referral_qualification.js";
+import type * as lib_server_secret from "../lib/server_secret.js";
 import type * as lib_session_access_helpers from "../lib/session_access_helpers.js";
 import type * as lib_session_ai_capsule_helpers from "../lib/session_ai_capsule_helpers.js";
 import type * as lib_session_api_response_helpers from "../lib/session_api_response_helpers.js";
@@ -95,10 +99,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  account: typeof account;
   billing: typeof billing;
   brandfetch: typeof brandfetch;
   commerce_operations: typeof commerce_operations;
   contentCache: typeof contentCache;
+  crons: typeof crons;
   customLanguages: typeof customLanguages;
   exportRenderCache: typeof exportRenderCache;
   export_artifacts: typeof export_artifacts;
@@ -122,8 +128,10 @@ declare const fullApi: ApiFromModules<{
   "lib/gallery_helpers": typeof lib_gallery_helpers;
   "lib/openui_error_html": typeof lib_openui_error_html;
   "lib/openui_handoff_html": typeof lib_openui_handoff_html;
+  "lib/preview_html_safety": typeof lib_preview_html_safety;
   "lib/referral_helpers": typeof lib_referral_helpers;
   "lib/referral_qualification": typeof lib_referral_qualification;
+  "lib/server_secret": typeof lib_server_secret;
   "lib/session_access_helpers": typeof lib_session_access_helpers;
   "lib/session_ai_capsule_helpers": typeof lib_session_ai_capsule_helpers;
   "lib/session_api_response_helpers": typeof lib_session_api_response_helpers;

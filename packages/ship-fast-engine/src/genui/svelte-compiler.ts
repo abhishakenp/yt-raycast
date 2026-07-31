@@ -3,9 +3,10 @@
 // The SSR HTML is used for gallery/preview rendering; the DOM JS is shipped to
 // the browser for client-side interactivity (Svelte island pattern).
 
-import { writeFileSync, unlinkSync } from 'node:fs'
+import { mkdirSync, writeFileSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomBytes } from 'node:crypto'
+import { Worker } from 'node:worker_threads'
 
 import { validateSvelteAst } from './svelte-ast-validator'
 
@@ -294,22 +295,109 @@ function sanitizeSsrHtml(html: string): string {
   return result
 }
 
+/** Where model-authored SSR modules are staged.
+ *
+ *  It has to sit under `node_modules` so the module's `svelte/internal`
+ *  imports resolve, but NOT in the project source root: files written there
+ *  are picked up by the dev-server file watcher, swept into builds, and show
+ *  up as untracked files in `git status`. `node_modules/.cache` is ignored by
+ *  all three. */
+function ssrScratchDirectory(): string {
+  const directory = join(
+    process.cwd(),
+    'node_modules',
+    '.cache',
+    'ship-fast-svelte-ssr',
+  )
+  mkdirSync(directory, { recursive: true })
+  return directory
+}
+
+/** Hard ceilings for model-authored SSR evaluation. */
+const SSR_EVAL_TIMEOUT_MS = 5_000
+const SSR_EVAL_MAX_OLD_GENERATION_MB = 128
+
+const SSR_WORKER_SOURCE = `
+import { parentPort, workerData } from 'node:worker_threads'
+
+const run = async () => {
+  const mod = await import(workerData.modulePath)
+  const Component = mod.default
+  if (!Component || typeof Component.render !== 'function') {
+    throw new Error('SSR module does not export a component with render()')
+  }
+  return Component.render()?.html ?? ''
+}
+
+run().then(
+  (html) => parentPort.postMessage({ ok: true, html }),
+  (error) =>
+    parentPort.postMessage({
+      ok: false,
+      message: error instanceof Error ? error.message : String(error),
+    }),
+)
+`
+
 /** Evaluate a compiled Svelte SSR module and call its render() to get HTML.
- *  Writes the module to a temp .mjs file inside the project so that
- *  `svelte/internal` imports resolve from node_modules. */
+ *
+ *  The module is MODEL-AUTHORED code. It runs in a worker thread with a wall
+ *  clock timeout and a heap ceiling so a generated infinite loop or runaway
+ *  allocation cannot take the server process down with it — previously this
+ *  was a bare `await import()` on the main thread, with no way to interrupt it.
+ *  (A worker is not a security sandbox; the real gate is the AST validator
+ *  that must pass before anything reaches this function.) */
 async function evaluateSsrModule(ssrJsCode: string): Promise<string> {
-  const tmpFileName = `.svelte-ssr-${randomBytes(6).toString('hex')}.mjs`
-  // Write inside the project root so node_modules resolution works
-  const tmpFilePath = join(process.cwd(), tmpFileName)
+  const tmpFilePath = join(
+    ssrScratchDirectory(),
+    `svelte-ssr-${randomBytes(12).toString('hex')}.mjs`,
+  )
   writeFileSync(tmpFilePath, ssrJsCode)
+
   try {
-    const mod = await import(/* @vite-ignore */ tmpFilePath)
-    const Component = mod.default
-    if (!Component || typeof Component.render !== 'function') {
-      throw new Error('SSR module does not export a component with render()')
-    }
-    const result = Component.render()
-    return result.html ?? ''
+    return await new Promise<string>((resolve, reject) => {
+      const worker = new Worker(SSR_WORKER_SOURCE, {
+        eval: true,
+        workerData: { modulePath: tmpFilePath },
+        resourceLimits: {
+          maxOldGenerationSizeMb: SSR_EVAL_MAX_OLD_GENERATION_MB,
+        },
+      })
+
+      const timer = setTimeout(() => {
+        void worker.terminate()
+        reject(
+          new Error(
+            `SSR evaluation exceeded ${SSR_EVAL_TIMEOUT_MS}ms and was terminated`,
+          ),
+        )
+      }, SSR_EVAL_TIMEOUT_MS)
+
+      const settle = (finish: () => void) => {
+        clearTimeout(timer)
+        void worker.terminate()
+        finish()
+      }
+
+      worker.once(
+        'message',
+        (message: { ok: boolean; html?: string; message?: string }) => {
+          settle(() =>
+            message.ok
+              ? resolve(message.html ?? '')
+              : reject(new Error(message.message ?? 'SSR evaluation failed')),
+          )
+        },
+      )
+      worker.once('error', (error) => settle(() => reject(error)))
+      worker.once('exit', (code) => {
+        if (code !== 0) {
+          settle(() =>
+            reject(new Error(`SSR evaluation worker exited with code ${code}`)),
+          )
+        }
+      })
+    })
   } finally {
     try {
       unlinkSync(tmpFilePath)

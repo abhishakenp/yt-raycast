@@ -8,6 +8,10 @@ import {
   isAuthDisabled,
 } from './session_export_helpers'
 import { timingSafeEqual } from './timingSafeEqual'
+import {
+  SERVER_MUTATION_SECRET_ENV,
+  verifyServerSecret,
+} from './server_secret'
 
 const textEncoder = new TextEncoder()
 
@@ -51,6 +55,7 @@ export type ClaimAnonymousSessionInput = {
 
 export type ClaimAnonymousSessionsByClientIdInput = {
   anonymousClientId: string
+  secret?: string
 }
 
 export type ClaimAnonymousSessionsByIpInput = {
@@ -133,11 +138,15 @@ export async function isSessionOwner(
       ? undefined
       : await hashOwnerSecret(anonymousOwnerSecret)
 
+  if (session.userId !== undefined) return session.userId === userId
+
+  // Constant-time: a plain `===` on hex digests returns as soon as two
+  // characters differ, which leaks how much of the digest an attacker has
+  // guessed correctly.
   return (
-    (session.userId !== undefined && session.userId === userId) ||
-    (session.userId === undefined &&
-      session.anonOwnerSecretHash !== undefined &&
-      session.anonOwnerSecretHash === anonymousOwnerSecretHash)
+    session.anonOwnerSecretHash !== undefined &&
+    anonymousOwnerSecretHash !== undefined &&
+    timingSafeEqual(session.anonOwnerSecretHash, anonymousOwnerSecretHash)
   )
 }
 
@@ -197,6 +206,17 @@ export async function assertCanReadPrivateSession(
   })
 }
 
+/**
+ * NOTE ON BRUTE FORCE: a failed-attempt counter cannot live in this function.
+ * Convex mutations are atomic — throwing FORBIDDEN rolls back every write the
+ * mutation made, including the counter increment, so the count would always
+ * read zero. Throttling therefore lives at the HTTP layer
+ * (`assertOwnerSecretAttemptAllowed` in `src/lib/owner-secret-throttle.ts`),
+ * which observes the rejection after the transaction has already unwound.
+ *
+ * The in-mutation defense is the secret itself: 256 bits from
+ * `crypto.getRandomValues`, compared in constant time by `isSessionOwner`.
+ */
 export async function assertCanMutateSession(
   ctx: AuthCtx,
   session: {
@@ -338,6 +358,11 @@ export async function claimAnonymousSessionsByClientId(
   ctx: MutationCtx,
   args: ClaimAnonymousSessionsByClientIdInput,
 ) {
+  // `anonymousClientId` is a browser-local value with no proof attached: a
+  // caller who learns or guesses one could transfer somebody else's anonymous
+  // sessions onto their own account. Server callers only.
+  verifyServerSecret(SERVER_MUTATION_SECRET_ENV, args.secret)
+
   const userId = await getUserId(ctx)
   if (userId === undefined) {
     throw new ConvexError({

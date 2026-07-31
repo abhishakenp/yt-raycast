@@ -1,8 +1,7 @@
 import { v } from 'convex/values'
 
-import { ConvexError } from 'convex/values'
 import { mutation, query } from './_generated/server'
-import { timingSafeEqual } from './lib/timingSafeEqual'
+import { verifyServerSecret as verifySharedServerSecret } from './lib/server_secret'
 
 /**
  * Check whether a share bonus has been claimed for the given IP hash today.
@@ -64,15 +63,5 @@ export const claimShareBonus = mutation({
 })
 
 function verifyServerSecret(secret: string | undefined): void {
-  const expected = process.env.SHARE_BONUS_MUTATION_SECRET
-  if (
-    expected === undefined ||
-    secret === undefined ||
-    !timingSafeEqual(secret, expected)
-  ) {
-    throw new ConvexError({
-      code: 'FORBIDDEN',
-      message: 'This operation can only be called from the server.',
-    })
-  }
+  verifySharedServerSecret('SHARE_BONUS_MUTATION_SECRET', secret)
 }

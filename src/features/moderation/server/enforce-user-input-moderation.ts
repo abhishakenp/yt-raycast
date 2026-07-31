@@ -69,6 +69,10 @@ const unavailableError = () =>
 
 const surfaceByField: Record<ModerationField, ModerationSurface> = {
   cloneBrief: 'clone_brief',
+  // Reference/clone URLs are moderated as part of the session-create surface —
+  // they arrive on the same request as the prompt.
+  cloneUrl: 'session_create',
+  designReferenceUrls: 'session_create',
   cloneRegeneration: 'clone_regeneration',
   customLanguage: 'custom_language',
   designReferenceNotes: 'design_reference_notes',

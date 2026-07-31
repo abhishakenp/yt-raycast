@@ -1,5 +1,5 @@
 import { makeFunctionReference } from 'convex/server'
-import { ConvexError, v } from 'convex/values'
+import { v } from 'convex/values'
 
 import type { Id } from './_generated/dataModel'
 import { internalAction, mutation } from './_generated/server'
@@ -9,7 +9,7 @@ import type {
   ModerationSurface,
 } from './lib/content_moderation_policy'
 import { hashOwnerSecret } from './lib/session_access_helpers'
-import { timingSafeEqual } from './lib/timingSafeEqual'
+import { verifyServerSecret } from './lib/server_secret'
 import {
   contentModerationBlockedEvent,
   sendSharedNotification,
@@ -140,13 +140,11 @@ export const recordBlockedAttempt = mutation({
     sessionId: v.optional(v.id('sessions')),
   },
   handler: async (ctx, args) => {
-    const expectedSecret = process.env.CONTENT_MODERATION_MUTATION_SECRET
-    if (!expectedSecret || !timingSafeEqual(args.secret, expectedSecret)) {
-      throw new ConvexError({
-        code: 'FORBIDDEN',
-        message: 'Invalid content moderation mutation secret.',
-      })
-    }
+    verifyServerSecret(
+      'CONTENT_MODERATION_MUTATION_SECRET',
+      args.secret,
+      'Invalid content moderation mutation secret.',
+    )
 
     const identity = await ctx.auth.getUserIdentity()
     const userId = identity?.tokenIdentifier ?? identity?.subject

@@ -132,6 +132,8 @@ export async function startVpsGeneration(
     const t_session_load = Date.now()
     session = await client.query(api.sessions.getGenerationSessionPublic, {
       sessionId: input.sessionId,
+      // The worker needs the unredacted document (owner email, IP bucket).
+      secret: process.env.SHARE_BONUS_MUTATION_SECRET,
     })
 
     stepTimings.session_load = Date.now() - t_session_load
@@ -255,6 +257,8 @@ export async function startVpsGeneration(
           client.mutation(api.contentCache.setPublic, {
             promptCacheKey: cacheInput.promptCacheKey,
             contentJson: cacheInput.rawPlan,
+            // Shared prompt-keyed cache — server writers only.
+            secret: process.env.SHARE_BONUS_MUTATION_SECRET,
           }),
       },
       promptCacheKey: session.promptCacheKey ?? undefined,

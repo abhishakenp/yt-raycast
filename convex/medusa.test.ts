@@ -14,6 +14,7 @@ function createTestSession(
   prompt = 'Test store',
 ) {
   return t.mutation(api.sessions.create, {
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',

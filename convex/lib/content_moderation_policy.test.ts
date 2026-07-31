@@ -142,3 +142,48 @@ describe('deterministic content moderation policy', () => {
     }
   })
 })
+
+describe('URL fields are moderated', () => {
+  it('blocks a clone target whose path carries prohibited content', () => {
+    // Slash/hyphen separated words are invisible to the phrase rules until
+    // the URL is decoded and its separators become spaces.
+    expect(
+      classifyDeterministicModeration({
+        cloneUrl: 'https://example.com/child-porn/gallery',
+      }).decision,
+    ).toBe('blocked')
+  })
+
+  it('blocks percent-encoded prohibited content in a clone target', () => {
+    expect(
+      classifyDeterministicModeration({
+        cloneUrl: 'https://example.com/%63hild%20porn',
+      }).decision,
+    ).toBe('blocked')
+  })
+
+  it('inspects every design reference URL, not just the first', () => {
+    const result = classifyDeterministicModeration({
+      designReferenceUrls: [
+        'https://example.com/hero-inspiration',
+        'https://example.com/child-porn',
+      ],
+    })
+    expect(result.decision).toBe('blocked')
+    expect(result.decision === 'blocked' && result.matchedField).toBe(
+      'designReferenceUrls',
+    )
+  })
+
+  it('leaves ordinary reference URLs alone', () => {
+    expect(
+      classifyDeterministicModeration({
+        cloneUrl: 'https://stripe.com/pricing',
+        designReferenceUrls: [
+          'https://linear.app/homepage',
+          'https://vercel.com/design',
+        ],
+      }).decision,
+    ).toBe('safe')
+  })
+})

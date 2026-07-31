@@ -9,6 +9,7 @@ import {
   hashClientIp,
 } from '@/features/session/server/session-create-response'
 import { checkRateLimit, translateHits } from '@/lib/rate-limit'
+import { admitModelCall, modelSpendBlockedResponse } from '@/lib/spend-cap'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -207,10 +208,18 @@ function createDefaultTranslationCacheClient(): TranslationCacheClient | null {
         client.mutation(api.translationCache.setBatch, input),
       claimBatch: (input) =>
         client.mutation(api.translationCache.claimBatch, input),
+      // These two write the SHARED translation cache, so they are gated on
+      // the server secret in Convex.
       completeBatch: (input) =>
-        client.mutation(api.translationCache.completeBatch, input),
+        client.mutation(api.translationCache.completeBatch, {
+          ...input,
+          secret: process.env.SHARE_BONUS_MUTATION_SECRET,
+        }),
       releaseBatch: (input) =>
-        client.mutation(api.translationCache.releaseBatch, input),
+        client.mutation(api.translationCache.releaseBatch, {
+          ...input,
+          secret: process.env.SHARE_BONUS_MUTATION_SECRET,
+        }),
     }
   } catch {
     return null
@@ -627,6 +636,9 @@ export async function createTranslateResponse(
       { status: 429 },
     )
   }
+
+  const spend = admitModelCall('translate')
+  if (!spend.allowed) return modelSpendBlockedResponse(spend)
 
   let body: TranslationRequestBody = {}
 
