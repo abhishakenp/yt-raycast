@@ -12,38 +12,39 @@ import { cn } from '#/lib/utils.ts'
  * Use `asChild` to render as a button, link, or article while keeping the surface classes.
  */
 export const surfaceCard = cva(' p-6', {
- variants: {
- variant: {
- default: 'border border-border bg-card text-card-foreground',
- muted: 'border border-border bg-muted text-foreground',
- outline: 'border border-border bg-transparent text-foreground',
- elevated: 'border border-border bg-card text-card-foreground ',
- },
- },
- defaultVariants: {
- variant: 'default',
- },
+  variants: {
+    variant: {
+      default: 'border border-border bg-card text-card-foreground',
+      muted: 'border border-border bg-muted text-foreground',
+      outline: 'border border-border bg-transparent text-foreground',
+      elevated: 'border border-border bg-card text-card-foreground ',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
 })
 
 export interface CardProps
- extends
- React.HTMLAttributes<HTMLDivElement>,
- VariantProps<typeof surfaceCard> {
- asChild?: boolean
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof surfaceCard> {
+  asChild?: boolean
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
- ({ className, variant, asChild = false, ...props }, ref) => {
- const Comp = asChild ? Slot : 'div'
- return (
- <Comp
- ref={ref}
- data-slot="card"
- data-d-role="card"className={cn(surfaceCard({ variant }), className)}
- {...props}
- />
- )
- },
+  ({ className, variant, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'div'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="card"
+        data-d-role="card"
+        className={cn(surfaceCard({ variant }), className)}
+        {...props}
+      />
+    )
+  },
 )
 Card.displayName = 'Card'
 

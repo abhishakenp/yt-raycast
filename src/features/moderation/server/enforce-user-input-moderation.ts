@@ -97,6 +97,43 @@ export const enforceUserInputModeration = async (
   const decision = await classify({ fields, surface })
   if (decision.decision === 'safe') return
   if (decision.decision === 'unavailable') throw unavailableError()
+
+  // Deterministic blocks must be enforced regardless of whether the audit
+  // mutation is available. The audit recording is best-effort — a missing
+  // mutation secret or a Convex outage must NOT let blocked content through.
+  if (decision.source === 'deterministic') {
+    if (mutationSecret) {
+      try {
+        const client = createClient()
+        if (bearerToken) client.setAuth?.(bearerToken)
+        await client.mutation(recordBlockedAttempt, {
+          anonymousClientId,
+          category: decision.category,
+          classifierModel: undefined,
+          clientIpHash,
+          decisionSource: decision.source,
+          matchedField: decision.matchedField,
+          prompt: decision.prompt,
+          ruleId: decision.ruleId,
+          secret: mutationSecret,
+          sessionId,
+          surface: surfaceByField[decision.matchedField],
+        })
+      } catch {
+        // Audit recording failed — still block the content.
+      }
+    }
+    throw new ContentModerationError(
+      'CONTENT_POLICY',
+      CONTENT_POLICY_CLIENT_MESSAGE,
+      422,
+    )
+  }
+
+  // Semantic blocks require the audit mutation to be available so the
+  // decision can be reviewed. If the mutation is unavailable, treat as
+  // unavailable rather than blocking (to avoid false positives without
+  // audit trail).
   if (!mutationSecret) throw unavailableError()
 
   try {

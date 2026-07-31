@@ -4,10 +4,10 @@ import { describe, expect, it } from 'vitest'
 import { buildOpenUIHtmlExport } from './openui-html-export-builder'
 
 const bakerySource = `
-home_navbar = BakeryNavbar()
-home_hero = BakeryHero()
+home_navbar = Navbar("Sweet Crumb Bakery", ["Home", "Menu"], "Cart")
+home_hero = SplitHero("Fresh daily", "Artisan baked goods", undefined, "Small-batch treats", "Order Now")
 home = Stack([home_navbar, home_hero])
-root = PageSwitch(["Home"], [home], "", {"Home":"Home"})
+root = PageSwitch(["Home", "Menu"], [home, Stack([Text("Daily menu")])], "", {"Home":"Home","Menu":"Menu"})
 `
 
 const bakeryPreviewHtml = `

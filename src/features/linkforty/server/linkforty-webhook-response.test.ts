@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { ConvexHttpClient } from 'convex/browser'
 
 import { createLinkFortyWebhookResponse } from '@/features/linkforty/server/linkforty-webhook-response'
 import { verifyLinkFortyWebhookSignature } from '@/features/linkforty/lib/linkforty-client'
@@ -203,7 +204,7 @@ describe('linkforty-webhook-response', () => {
       }
 
       const response = await createLinkFortyWebhookResponse(request, {
-        convexClient: mockClient,
+        convexClient: mockClient as Pick<ConvexHttpClient, 'mutation'>,
         env: {
           LINKFORTY_ENABLED: 'true',
           LINKFORTY_WEBHOOK_SECRET: SECRET,
@@ -235,7 +236,7 @@ describe('linkforty-webhook-response', () => {
       }
 
       const response = await createLinkFortyWebhookResponse(request, {
-        convexClient: mockClient,
+        convexClient: mockClient as Pick<ConvexHttpClient, 'mutation'>,
         env: {
           LINKFORTY_ENABLED: 'true',
           LINKFORTY_WEBHOOK_SECRET: SECRET,
@@ -262,7 +263,7 @@ describe('linkforty-webhook-response', () => {
       }
 
       await createLinkFortyWebhookResponse(request, {
-        convexClient: mockClient,
+        convexClient: mockClient as Pick<ConvexHttpClient, 'mutation'>,
         env: {
           LINKFORTY_ENABLED: 'true',
           LINKFORTY_WEBHOOK_SECRET: SECRET,

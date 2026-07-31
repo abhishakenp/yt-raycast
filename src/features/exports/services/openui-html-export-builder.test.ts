@@ -122,7 +122,8 @@ pricing = Stack([Text("Pricing page must not be captured")])`
     expect(html).toContain('Gallery landing page')
     expect(html).not.toContain('Pricing page must not be captured')
     expect(html.match(/data-sf-export-page=/g)).toHaveLength(1)
-    expect(html).not.toContain('<script')
+    // JS runtime is now included for visual parity (nav scroll effects, etc.)
+    expect(html).toContain('<script')
     expect(html).not.toContain('data-ship-fast-export-badge')
   })
 })
@@ -225,5 +226,68 @@ describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
         process.env.VITE_PEXELS_API_KEY = originalVitePexelsKey
       }
     }
+  })
+})
+
+describe('buildOpenUIHtmlExport — @design axis parity with dashboard', () => {
+  it('emits DesignSystemProvider wrapper attributes when siteSpecJson contains @design intent', async () => {
+    const source = 'root = Stack([Text("design parity")])'
+    const siteSpecJson = JSON.stringify({
+      projectName: 'Design Parity Test',
+      design:
+        'radius:rounded-xl shadow:shadow-lg density:compact typography:technical gradient:subtle motion:lively',
+    })
+    const result = await buildOpenUIHtmlExport(
+      baseInput({ source, siteSpecJson }),
+    )
+    const html = typeof result.body === 'string' ? result.body : ''
+
+    // The SSR render must wrap output in DesignSystemProvider, emitting
+    // data-{axis} attributes for named presets and --d-{axis} CSS custom
+    // properties for Tailwind axes — matching the dashboard's live preview.
+    expect(html).toContain('data-density="compact"')
+    expect(html).toContain('data-typography="technical"')
+    expect(html).toContain('data-gradient="subtle"')
+    expect(html).toContain('data-motion="lively"')
+    // Tailwind axes → CSS custom properties
+    expect(html).toContain('--d-radius')
+    expect(html).toContain('--d-shadow')
+  })
+
+  it('emits DEFAULT_DESIGN wrapper attributes when siteSpecJson has no @design intent', async () => {
+    const source = 'root = Stack([Text("default design")])'
+    const siteSpecJson = JSON.stringify({ projectName: 'No Design Intent' })
+    const result = await buildOpenUIHtmlExport(
+      baseInput({ source, siteSpecJson }),
+    )
+    const html = typeof result.body === 'string' ? result.body : ''
+
+    // DEFAULT_DESIGN: density=balanced, typography=editorial, gradient=none, motion=subtle
+    expect(html).toContain('data-density="balanced"')
+    expect(html).toContain('data-typography="editorial"')
+    expect(html).toContain('data-gradient="none"')
+    expect(html).toContain('data-motion="subtle"')
+  })
+})
+
+describe('buildOpenUIHtmlThumbnail — @design axis parity with dashboard', () => {
+  it('emits DesignSystemProvider wrapper attributes when siteSpecJson contains @design intent', async () => {
+    const source = 'root = Stack([Text("thumbnail design parity")])'
+    const siteSpecJson = JSON.stringify({
+      projectName: 'Thumbnail Design Parity',
+      design:
+        'radius:rounded-full shadow:shadow-2xl density:airy typography:display gradient:vibrant motion:none',
+    })
+    const result = await buildOpenUIHtmlThumbnail(
+      baseInput({ source, siteSpecJson }),
+    )
+    const html = typeof result.body === 'string' ? result.body : ''
+
+    expect(html).toContain('data-density="airy"')
+    expect(html).toContain('data-typography="display"')
+    expect(html).toContain('data-gradient="vibrant"')
+    expect(html).toContain('data-motion="none"')
+    expect(html).toContain('--d-radius')
+    expect(html).toContain('--d-shadow')
   })
 })

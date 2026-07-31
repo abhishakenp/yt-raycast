@@ -729,8 +729,10 @@ export default defineSchema({
 
   // One row per referred user. status transitions:
   //   pending      → signed up via a ref link, not yet a paying customer
-  //   qualified    → referred user paid AND used a non-disposable email
-  //   disqualified → referred user used a disposable email (never counts)
+  //   qualified    → referred user paid
+  //   disqualified → legacy: referred user used a disposable email (Clerk now
+  //                  blocks disposable emails at sign-up, so this status is no
+  //                  longer set for new referrals; kept for backward compat)
   referrals: defineTable({
     referrerUserId: v.string(),
     referredUserId: v.string(),

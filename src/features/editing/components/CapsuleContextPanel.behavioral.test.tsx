@@ -249,40 +249,40 @@ describe('CapsuleContextPanel', () => {
   })
 
   it('renders variant switcher for CoworkingGallery columns', () => {
-    mockActions.sectionData = { columns: 3, images: [] }
+    mockActions.sectionData = { chrome: 'editorial', images: [] }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
       }),
     )
 
-    expect(screen.getByText('columns')).toBeTruthy()
-    expect(screen.getAllByRole('button', { name: '2' }).length).toBeGreaterThan(
-      0,
-    )
-    expect(screen.getAllByRole('button', { name: '3' }).length).toBeGreaterThan(
-      0,
-    )
-    expect(screen.getAllByRole('button', { name: '4' }).length).toBeGreaterThan(
-      0,
-    )
+    expect(screen.getByText('chrome')).toBeTruthy()
+    expect(
+      screen.getAllByRole('button', { name: 'hairline' }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      screen.getAllByRole('button', { name: 'editorial' }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      screen.getAllByRole('button', { name: 'brutalist' }).length,
+    ).toBeGreaterThan(0)
   })
 
   it('renders collection editor for CoworkingGallery images', () => {
     mockActions.sectionData = {
       images: [
-        { alt: 'Photo 1', caption: 'Caption 1' },
-        { alt: 'Photo 2', caption: '' },
+        { alt: 'Photo 1', src: 'photo1.jpg' },
+        { alt: 'Photo 2', src: '' },
       ],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -297,17 +297,17 @@ describe('CapsuleContextPanel', () => {
   })
 
   it('clicking variant option previews locally without persisting immediately', async () => {
-    mockActions.sectionData = { columns: 2 }
+    mockActions.sectionData = { chrome: 'hairline' }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
     )
 
-    const fourButtons = screen.getAllByRole('button', { name: '4' })
+    const fourButtons = screen.getAllByRole('button', { name: 'brutalist' })
     await act(async () => {
       fireEvent.click(fourButtons[0]!)
     })
@@ -320,7 +320,7 @@ describe('CapsuleContextPanel', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -340,7 +340,7 @@ describe('CapsuleContextPanel', () => {
 
     expect(mockActions.addItem).toHaveBeenCalledWith('images', {
       alt: '',
-      caption: '',
+      src: '',
     })
   })
 
@@ -351,7 +351,7 @@ describe('CapsuleContextPanel', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingPricing',
+        capsuleName: 'PricingTable',
         statementId: 'pricing_1',
         sessionId: 'sess-1',
       }),
@@ -361,20 +361,20 @@ describe('CapsuleContextPanel', () => {
     expect(screen.getByText('Basic')).toBeTruthy()
   })
 
-  it('renders collection editor for CoworkingTestimonials members', () => {
+  it('renders collection editor for TestimonialRow testimonials', () => {
     mockActions.sectionData = {
-      members: [{ name: 'Alice', quote: 'Great space!' }],
+      testimonials: [{ quote: 'Great space!', author: 'Alice' }],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingTestimonials',
+        capsuleName: 'TestimonialRow',
         statementId: 'testimonials_1',
         sessionId: 'sess-1',
       }),
     )
 
-    expect(screen.getAllByText(/Members/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Testimonials/).length).toBeGreaterThan(0)
     expect(screen.getByText('Alice')).toBeTruthy()
   })
 
@@ -391,7 +391,7 @@ describe('CapsuleContextPanel', () => {
 
     const provider = container.querySelector('[data-testid="provider"]')
     expect(provider).toBeTruthy()
-    expect(container.textContent).not.toContain('columns')
+    expect(container.textContent).not.toContain('chrome')
     expect(container.textContent).not.toContain('Images')
   })
 
@@ -401,7 +401,7 @@ describe('CapsuleContextPanel', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -412,12 +412,12 @@ describe('CapsuleContextPanel', () => {
 
   it('expanding an item shows field inputs', () => {
     mockActions.sectionData = {
-      images: [{ alt: 'Test photo', caption: 'A caption' }],
+      images: [{ alt: 'Test photo', src: 'caption.jpg' }],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -426,7 +426,7 @@ describe('CapsuleContextPanel', () => {
     fireEvent.click(screen.getByText('Test photo'))
 
     expect(screen.getByPlaceholderText('Alt')).toBeTruthy()
-    expect(screen.getByPlaceholderText('Caption')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Src')).toBeTruthy()
   })
 
   it('confirming remove stages deletion instead of persisting immediately', async () => {
@@ -436,7 +436,7 @@ describe('CapsuleContextPanel', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -465,7 +465,7 @@ describe('CapsuleContextPanel', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -505,31 +505,31 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
   // ── Variant active state ─────────────────────────────────────────────────
 
   it('variant active option reflects current sectionData value', () => {
-    mockActions.sectionData = { columns: 3, images: [] }
+    mockActions.sectionData = { chrome: 'editorial', images: [] }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
     )
 
     // The active variant button has bg-cyan-300/20 class
-    const threeBtn = screen.getAllByRole('button', { name: '3' })[0]!
+    const threeBtn = screen.getAllByRole('button', { name: 'editorial' })[0]!
     expect(threeBtn.className.includes('bg-cyan-300/20')).toBe(true)
 
     // Non-active buttons should not have the active class
-    const twoBtn = screen.getAllByRole('button', { name: '2' })[0]!
+    const twoBtn = screen.getAllByRole('button', { name: 'hairline' })[0]!
     expect(twoBtn.className.includes('bg-cyan-300/20')).toBe(false)
   })
 
   it('variant with boolean shows Yes/No labels', () => {
-    mockActions.sectionData = { showPrice: true, tiers: [] }
+    mockActions.sectionData = { chrome: 'editorial', tiers: [] }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingPricing',
+        capsuleName: 'PricingTable',
         statementId: 'pricing_1',
         sessionId: 'sess-1',
       }),
@@ -543,17 +543,17 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
   })
 
   it('clicking different variant option does not call setProp before Apply', async () => {
-    mockActions.sectionData = { columns: 2, images: [] }
+    mockActions.sectionData = { chrome: 'hairline', images: [] }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
     )
 
-    const threeBtn = screen.getAllByRole('button', { name: '3' })[0]!
+    const threeBtn = screen.getAllByRole('button', { name: 'editorial' })[0]!
     await act(async () => {
       fireEvent.click(threeBtn)
     })
@@ -569,10 +569,8 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
         {
           name: 'Basic',
           price: '$10',
-          period: 'mo',
           features: ['A', 'B'],
           cta: 'Join',
-          ctaTarget: '#',
           highlighted: false,
         },
       ],
@@ -580,7 +578,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingPricing',
+        capsuleName: 'PricingTable',
         statementId: 'pricing_1',
         sessionId: 'sess-1',
       }),
@@ -592,22 +590,20 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     // All field inputs should be visible (placeholder-based labels)
     expect(screen.getByPlaceholderText('Name')).toBeTruthy()
     expect(screen.getByPlaceholderText('Price')).toBeTruthy()
-    expect(screen.getByPlaceholderText('Period')).toBeTruthy()
     expect(screen.getByPlaceholderText('Features (one per line)')).toBeTruthy()
     expect(screen.getByPlaceholderText('Cta')).toBeTruthy()
-    expect(screen.getByPlaceholderText('Cta Target')).toBeTruthy()
     // Highlighted is a boolean → renders as checkbox with text label
     expect(screen.getByText('Highlighted')).toBeTruthy()
   })
 
   it('collapsing expanded item hides field inputs', () => {
     mockActions.sectionData = {
-      images: [{ alt: 'Test', caption: 'Cap' }],
+      images: [{ alt: 'Test', src: 'cap.jpg' }],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -626,12 +622,12 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
   it('editing a text field calls editItem on Save', async () => {
     mockActions.sectionData = {
-      images: [{ alt: 'Old alt', caption: '' }],
+      images: [{ alt: 'Old alt', src: '' }],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -658,18 +654,18 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     expect(mockActions.editItem).toHaveBeenCalledWith('images', 0, {
       alt: 'New alt',
-      caption: '',
+      src: '',
     })
   })
 
   it('editing a number field calls editItem on Save', async () => {
     mockActions.sectionData = {
-      members: [{ name: 'Alice', quote: 'Great!', rating: 5 }],
+      testimonials: [{ quote: 'Great!', author: 'Alice', role: 'Member' }],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingTestimonials',
+        capsuleName: 'TestimonialRow',
         statementId: 'testimonials_1',
         sessionId: 'sess-1',
       }),
@@ -678,13 +674,11 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     // Expand
     fireEvent.click(screen.getByText('Alice'))
 
-    const ratingInput = screen.getByPlaceholderText(
-      'Rating',
-    ) as HTMLInputElement
-    expect(ratingInput.value).toBe('5')
+    const roleInput = screen.getByPlaceholderText('Role') as HTMLInputElement
+    expect(roleInput.value).toBe('Member')
 
     await act(async () => {
-      fireEvent.change(ratingInput, { target: { value: '10' } })
+      fireEvent.change(roleInput, { target: { value: 'Founder' } })
     })
 
     // editItem should NOT be called yet (buffered)
@@ -695,10 +689,10 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     })
 
-    expect(mockActions.editItem).toHaveBeenCalledWith('members', 0, {
-      name: 'Alice',
+    expect(mockActions.editItem).toHaveBeenCalledWith('testimonials', 0, {
       quote: 'Great!',
-      rating: 10,
+      author: 'Alice',
+      role: 'Founder',
     })
   })
 
@@ -709,7 +703,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingPricing',
+        capsuleName: 'PricingTable',
         statementId: 'pricing_1',
         sessionId: 'sess-1',
       }),
@@ -745,12 +739,12 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
   it('Cancel reverts edits without calling editItem', async () => {
     mockActions.sectionData = {
-      images: [{ alt: 'Old alt', caption: '' }],
+      images: [{ alt: 'Old alt', src: '' }],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -783,7 +777,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -803,7 +797,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -828,7 +822,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -846,7 +840,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -861,27 +855,17 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
   // ── Multiple collections ──────────────────────────────────────────────────
 
-  it('renders multiple collections in same capsule', () => {
+  it('renders CardGrid cards collection', () => {
     mockActions.sectionData = {
-      countdown: [
-        { value: '12', unit: 'Hours' },
-        { value: '30', unit: 'Minutes' },
-      ],
-      items: [
+      cards: [
         {
           title: 'Camera Kit',
-          subtitle: 'Starter bundle',
-          price: '$499',
-          was: '$599',
-          discount: 'Save $100',
+          description: 'Starter bundle',
           imageAlt: 'Camera bundle',
         },
         {
           title: 'Audio Kit',
-          subtitle: 'Creator audio',
-          price: '$199',
-          was: '$249',
-          discount: 'Save $50',
+          description: 'Creator audio',
           imageAlt: 'Microphone bundle',
         },
       ],
@@ -889,30 +873,24 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'ElectronicsStoreDeals',
+        capsuleName: 'CardGrid',
         statementId: 'deals_1',
         sessionId: 'sess-1',
       }),
     )
 
-    expect(screen.getAllByText(/Countdown/).length).toBeGreaterThan(0)
-    expect(screen.getAllByText(/Items/).length).toBeGreaterThan(0)
-    expect(screen.getByText('Countdown 1')).toBeTruthy()
+    expect(screen.getAllByText(/Cards/).length).toBeGreaterThan(0)
     expect(screen.getByText('Camera Kit')).toBeTruthy()
-    expect(screen.getAllByRole('button', { name: /Add/ }).length).toBe(2)
-    expect(screen.getAllByTitle('Move down').length).toBe(4)
+    expect(screen.getAllByRole('button', { name: /Add/ }).length).toBe(1)
+    expect(screen.getAllByTitle('Move down').length).toBe(2)
   })
 
-  it('editing an item in the second collection saves with the second collection key', async () => {
+  it('editing a card item saves with the cards collection key', async () => {
     mockActions.sectionData = {
-      countdown: [{ value: '12', unit: 'Hours' }],
-      items: [
+      cards: [
         {
           title: 'Camera Kit',
-          subtitle: 'Starter bundle',
-          price: '$499',
-          was: '$599',
-          discount: 'Save $100',
+          description: 'Starter bundle',
           imageAlt: 'Camera bundle',
         },
       ],
@@ -920,28 +898,27 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'ElectronicsStoreDeals',
+        capsuleName: 'CardGrid',
         statementId: 'deals_1',
         sessionId: 'sess-1',
       }),
     )
 
     fireEvent.click(screen.getByText('Camera Kit'))
-    const priceInput = screen.getByPlaceholderText('Price') as HTMLInputElement
+    const descInput = screen.getByPlaceholderText(
+      'Description',
+    ) as HTMLInputElement
 
     await act(async () => {
-      fireEvent.change(priceInput, { target: { value: '$449' } })
+      fireEvent.change(descInput, { target: { value: 'Pro bundle' } })
     })
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     })
 
-    expect(mockActions.editItem).toHaveBeenCalledWith('items', 0, {
+    expect(mockActions.editItem).toHaveBeenCalledWith('cards', 0, {
       title: 'Camera Kit',
-      subtitle: 'Starter bundle',
-      price: '$449',
-      was: '$599',
-      discount: 'Save $100',
+      description: 'Pro bundle',
       imageAlt: 'Camera bundle',
     })
   })
@@ -950,68 +927,57 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
   it('renders scalar string field with current value', () => {
     mockActions.sectionData = {
-      eyebrow: 'Flexible Workspaces',
-      headingLead: 'Work',
-      headingMuted: 'Your Way',
+      badge: 'Flexible Workspaces',
       primaryCta: 'Explore Plans',
       secondaryCta: 'See the Space',
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingHero',
+        capsuleName: 'SplitHero',
         statementId: 'hero_1',
         sessionId: 'sess-1',
       }),
     )
 
-    const eyebrowInput = screen.getByPlaceholderText(
-      'Eyebrow',
-    ) as HTMLInputElement
-    expect(eyebrowInput.value).toBe('Flexible Workspaces')
-
-    const headingLeadInput = screen.getByPlaceholderText(
-      'Heading Lead',
-    ) as HTMLInputElement
-    expect(headingLeadInput.value).toBe('Work')
+    const badgeInput = screen.getByPlaceholderText('Badge') as HTMLInputElement
+    expect(badgeInput.value).toBe('Flexible Workspaces')
   })
 
   it('editing scalar field updates the local preview without persisting immediately', async () => {
     mockActions.sectionData = {
-      eyebrow: 'Old text',
+      badge: 'Old text',
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingHero',
+        capsuleName: 'SplitHero',
         statementId: 'hero_1',
         sessionId: 'sess-1',
       }),
     )
 
-    const eyebrowInput = screen.getByPlaceholderText(
-      'Eyebrow',
-    ) as HTMLInputElement
+    const badgeInput = screen.getByPlaceholderText('Badge') as HTMLInputElement
 
     await act(async () => {
-      fireEvent.change(eyebrowInput, { target: { value: 'New text' } })
+      fireEvent.change(badgeInput, { target: { value: 'New text' } })
     })
     await act(async () => {
-      fireEvent.blur(eyebrowInput)
+      fireEvent.blur(badgeInput)
     })
 
-    expect(eyebrowInput.value).toBe('New text')
+    expect(badgeInput.value).toBe('New text')
     expect(mockActions.setProp).not.toHaveBeenCalled()
   })
 
   // ── Missing sessionId ─────────────────────────────────────────────────────
 
   it('renders capsule fields even with empty sessionId (provider is pass-through)', () => {
-    mockActions.sectionData = { columns: 3, images: [] }
+    mockActions.sectionData = { chrome: 'editorial', images: [] }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: '',
         anonymousOwnerSecret: undefined,
@@ -1022,7 +988,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     // renders capsule fields regardless of sessionId. In production, an
     // empty sessionId would cause the real provider to skip subscription,
     // resulting in canEdit=false → loading state.
-    expect(screen.getByText('columns')).toBeTruthy()
+    expect(screen.getByText('chrome')).toBeTruthy()
   })
 
   // ── Item label uses first string field ────────────────────────────────────
@@ -1034,7 +1000,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingPricing',
+        capsuleName: 'PricingTable',
         statementId: 'pricing_1',
         sessionId: 'sess-1',
       }),
@@ -1045,12 +1011,12 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
   it('item label falls back to alt field when no name field', () => {
     mockActions.sectionData = {
-      images: [{ alt: 'Gallery photo', caption: '' }],
+      images: [{ alt: 'Gallery photo', src: '' }],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),
@@ -1061,12 +1027,12 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
   it('item label falls back to index when no string field has value', () => {
     mockActions.sectionData = {
-      images: [{ alt: '', caption: '' }],
+      images: [{ alt: '', src: '' }],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
       }),

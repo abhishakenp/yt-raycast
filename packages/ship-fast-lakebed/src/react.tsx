@@ -271,12 +271,11 @@ export function LakebedSessionProvider({
   children?: ReactNode
   sessionId?: string
 }) {
-  const value = useMemo(
+  const value = useMemo<LakebedSessionContextValue>(
     () => ({
       ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
-      ...(sessionId === undefined
-        ? {}
-        : { sessionId: sessionId as Id<'sessions'> }),
+      sessionId:
+        sessionId === undefined ? undefined : (sessionId as Id<'sessions'>),
     }),
     [anonymousOwnerSecret, sessionId],
   )
@@ -310,7 +309,10 @@ function lakebedSessionArgs({
   anonymousOwnerSecret,
   capsule,
   sessionId,
-}: LakebedSessionContextValue & { capsule: string }) {
+}: Omit<LakebedSessionContextValue, 'sessionId'> & {
+  capsule: string
+  sessionId: Id<'sessions'>
+}) {
   return {
     ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
     capsule,
@@ -324,7 +326,13 @@ export function useSessionState<TData extends JsonRecord = JsonRecord>(
   const session = useLakebedSession()
   const state = useConvexQuery(
     lakebedApi.getSessionState,
-    session.sessionId ? lakebedSessionArgs({ ...session, capsule }) : 'skip',
+    session.sessionId
+      ? lakebedSessionArgs({
+          anonymousOwnerSecret: session.anonymousOwnerSecret,
+          capsule,
+          sessionId: session.sessionId,
+        })
+      : 'skip',
   ) as { auth: LakebedAuthContext; canWrite?: boolean; data: TData } | undefined
 
   return state === undefined
@@ -379,7 +387,13 @@ export function useOptionalSessionState<TData extends JsonRecord = JsonRecord>(
   const session = useOptionalLakebedSession()
   const state = useOptionalConvexQuery(
     lakebedApi?.getSessionState,
-    session?.sessionId ? lakebedSessionArgs({ ...session, capsule }) : 'skip',
+    session?.sessionId
+      ? lakebedSessionArgs({
+          anonymousOwnerSecret: session?.anonymousOwnerSecret,
+          capsule,
+          sessionId: session.sessionId,
+        })
+      : 'skip',
   ) as { auth: LakebedAuthContext; canWrite?: boolean; data: TData } | undefined
 
   return state === undefined
@@ -402,11 +416,18 @@ export function useMergeSessionData<TData extends JsonRecord = JsonRecord>(
   const mergeSessionData = useConvexMutation(lakebedApi.mergeSessionData)
 
   return useCallback(
-    async (patch) =>
-      (await mergeSessionData({
-        ...lakebedSessionArgs({ ...session, capsule }),
+    async (patch) => {
+      if (!session.sessionId)
+        throw new Error('Session ID is required for mergeSessionData')
+      return (await mergeSessionData({
+        ...lakebedSessionArgs({
+          anonymousOwnerSecret: session.anonymousOwnerSecret,
+          capsule,
+          sessionId: session.sessionId,
+        }),
         patch,
-      })) as TData,
+      })) as TData
+    },
     [capsule, mergeSessionData, session],
   )
 }
@@ -418,11 +439,18 @@ export function useReplaceSessionData<TData extends JsonRecord = JsonRecord>(
   const replaceSessionData = useConvexMutation(lakebedApi.replaceSessionData)
 
   return useCallback(
-    async (data) =>
-      (await replaceSessionData({
+    async (data) => {
+      if (!session.sessionId)
+        throw new Error('Session ID is required for replaceSessionData')
+      return (await replaceSessionData({
         data,
-        ...lakebedSessionArgs({ ...session, capsule }),
-      })) as TData,
+        ...lakebedSessionArgs({
+          anonymousOwnerSecret: session.anonymousOwnerSecret,
+          capsule,
+          sessionId: session.sessionId,
+        }),
+      })) as TData
+    },
     [capsule, replaceSessionData, session],
   )
 }

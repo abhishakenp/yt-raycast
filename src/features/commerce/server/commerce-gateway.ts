@@ -31,7 +31,7 @@ type FetchLike = typeof fetch
 type JsonRecord = Record<string, unknown>
 
 export type CommerceCartEnvelope = {
-  cart: JsonRecord
+  cart: { id: string; [key: string]: unknown }
 }
 
 export type CommerceCatalogEnvelope = {
@@ -420,7 +420,7 @@ export class MedusaCommerceGateway {
         status: 404,
       })
     }
-    return { cart }
+    return { cart: cart as { id: string; [key: string]: unknown } }
   }
 
   private async boundCart(cartId: string): Promise<CommerceCartEnvelope> {

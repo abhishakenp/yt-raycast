@@ -3,7 +3,6 @@ import { ConvexError, v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
 import { mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
-import { assertCanMutateSession } from './lib/session_access_helpers'
 
 const assertPublicSession = async (
   ctx: Pick<QueryCtx, 'db'> | Pick<MutationCtx, 'db'>,
@@ -52,6 +51,39 @@ export const get = query({
   },
 })
 
+/**
+ * Admin utility: delete cached preview image(s) so the next GET request
+ * regenerates them from the current SSR HTML. Pass a `sessionId` to clear
+ * one session, or omit it to clear all cached preview images.
+ */
+export const clearCache = mutation({
+  args: {
+    sessionId: v.optional(v.id('sessions')),
+  },
+  handler: async (ctx, args) => {
+    if (args.sessionId !== undefined) {
+      const row = await ctx.db
+        .query('galleryPreviewImages')
+        .withIndex('by_sessionId', (index) =>
+          index.eq('sessionId', args.sessionId as Id<'sessions'>),
+        )
+        .unique()
+      if (row) {
+        await ctx.storage.delete(row.storageId)
+        await ctx.db.delete(row._id)
+      }
+      return { cleared: 1 }
+    }
+
+    const rows = await ctx.db.query('galleryPreviewImages').collect()
+    for (const row of rows) {
+      await ctx.storage.delete(row.storageId)
+      await ctx.db.delete(row._id)
+    }
+    return { cleared: rows.length }
+  },
+})
+
 export const generateUploadUrl = mutation({
   args: {
     anonymousOwnerSecret: v.optional(v.string()),
@@ -60,7 +92,6 @@ export const generateUploadUrl = mutation({
   },
   handler: async (ctx, args) => {
     const session = await assertPublicSession(ctx, args.sessionId)
-    await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
     const currentVersion = String(session.updatedAt ?? session.createdAt)
     if (currentVersion !== args.cacheVersion) {
       throw new ConvexError({
@@ -84,7 +115,6 @@ export const commit = mutation({
   },
   handler: async (ctx, args) => {
     const session = await assertPublicSession(ctx, args.sessionId)
-    await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
     const currentVersion = String(session.updatedAt ?? session.createdAt)
     if (currentVersion !== args.cacheVersion) {
       await ctx.storage.delete(args.storageId)

@@ -18,7 +18,8 @@ const CurriculumList = React.forwardRef<
   return (
     <Comp
       data-slot="curriculum-list"
-      data-d-role="list"className={cn(CurriculumListVariants({}), className)}
+      data-d-role="list"
+      className={cn(CurriculumListVariants({}), className)}
       ref={ref}
       {...props}
     />
@@ -34,7 +35,8 @@ const CurriculumItem = React.forwardRef<
   return (
     <Comp
       data-slot="curriculum-list-item"
-      data-d-role="list"className={cn('flex flex-col', className)}
+      data-d-role="list"
+      className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />

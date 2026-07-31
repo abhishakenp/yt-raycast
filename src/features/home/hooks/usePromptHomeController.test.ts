@@ -325,10 +325,10 @@ describe('usePromptHomeController submit guard', () => {
 
   it('clears the prompt before navigate resolves', async () => {
     const state = getTestState()
-    let promptAtNavigateCall: string | undefined
+    let promptAtNavigateCall: string | null = null
     state.navigate.mockImplementationOnce(() => {
       promptAtNavigateCall = window.localStorage.getItem(
-        'ship-fast:last-prompt',
+        'ship-fast:prompt-session-cache',
       )
       return Promise.resolve()
     })
@@ -346,9 +346,9 @@ describe('usePromptHomeController submit guard', () => {
     act(() => {
       result.current.setPrompt('Build a product website')
     })
-    expect(window.localStorage.getItem('ship-fast:last-prompt')).toBe(
-      'Build a product website',
-    )
+    expect(
+      window.localStorage.getItem('ship-fast:prompt-session-cache'),
+    ).not.toBeNull()
 
     await act(async () => {
       await result.current.submitPrompt()
@@ -1194,5 +1194,269 @@ describe('usePromptHomeController speculative fingerprint cache', () => {
     })
 
     expect(fetch).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('usePromptHomeController unified prompt-session cache', () => {
+  beforeEach(() => {
+    const state = getTestState()
+    state.createSession.mockReset()
+    state.createSession.mockResolvedValue({
+      sessionId: 'session_unified_cache',
+      cached: false,
+    })
+    state.mutationRefs = []
+    state.navigate.mockReset()
+    state.navigate.mockResolvedValue(undefined)
+    state.preloadRoute.mockReset()
+    state.preloadRoute.mockResolvedValue(undefined)
+    referralAuthToken.mockReset()
+    referralAuthToken.mockResolvedValue(null)
+    originalFetch = globalThis.fetch
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_unified_cache',
+        cached: false,
+      }),
+    }) as unknown as typeof globalThis.fetch
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+    document.body.innerHTML = ''
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.useRealTimers()
+    globalThis.fetch = originalFetch
+  })
+
+  it('persists the prompt to the unified cache on setPrompt', () => {
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('A cozy coffee shop')
+    })
+
+    const raw = window.localStorage.getItem('ship-fast:prompt-session-cache')
+    expect(raw).not.toBeNull()
+    const parsed = JSON.parse(raw!) as { prompt: string }
+    expect(parsed.prompt).toBe('A cozy coffee shop')
+  })
+
+  it('restores the prompt from the unified cache on mount', () => {
+    window.localStorage.setItem(
+      'ship-fast:prompt-session-cache',
+      JSON.stringify({
+        prompt: 'A restored coffee shop prompt',
+        fingerprint: '',
+        preferredLanguage: 'en',
+        createdAt: Date.now(),
+      }),
+    )
+
+    const { result } = renderHook(() => usePromptHomeController())
+    expect(result.current.prompt).toBe('A restored coffee shop prompt')
+  })
+
+  it('clears the unified cache on successful generate', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_clear_cache',
+        cached: false,
+      }),
+    } as Response)
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a product website')
+    })
+    expect(
+      window.localStorage.getItem('ship-fast:prompt-session-cache'),
+    ).not.toBeNull()
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(
+      window.localStorage.getItem('ship-fast:prompt-session-cache'),
+    ).toBeNull()
+    expect(result.current.prompt).toBe('')
+  })
+
+  it('persists the speculative session to the unified cache on completion', async () => {
+    vi.useFakeTimers()
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_spec_cache_persist',
+        cached: false,
+      }),
+    } as Response)
+
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('a blog about dogs with photo galleries')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+      await Promise.resolve()
+    })
+
+    const raw = window.localStorage.getItem('ship-fast:prompt-session-cache')
+    expect(raw).not.toBeNull()
+    const parsed = JSON.parse(raw!) as {
+      sessionId: string
+      fingerprint: string
+      workspace: string
+    }
+    expect(parsed.sessionId).toBe('session_spec_cache_persist')
+    expect(parsed.fingerprint).not.toBe('')
+    expect(parsed.workspace).not.toBe('')
+  })
+
+  it('does not re-fire speculative on reload when a cached session exists', async () => {
+    vi.useFakeTimers()
+    // Simulate a prior speculative session persisted to localStorage.
+    const fingerprint = JSON.stringify({
+      cloneUrl: '',
+      designReferenceNotes: '',
+      designReferenceUrls: [],
+      isPrivate: false,
+      preferredLanguage: 'en',
+      prompt: 'a blog about dogs with photo galleries',
+    })
+    window.localStorage.setItem(
+      'ship-fast:prompt-session-cache',
+      JSON.stringify({
+        prompt: 'a blog about dogs with photo galleries',
+        fingerprint,
+        preferredLanguage: 'en',
+        sessionId: 'session_cached_reload',
+        anonymousOwnerSecret: 'secret_cached',
+        workspace: 'workspace_cached',
+        createdAt: Date.now(),
+      }),
+    )
+
+    // Mount the hook — should hydrate the cached session and NOT fire
+    // speculative for the same fingerprint.
+    const { result } = renderHook(() => usePromptHomeController())
+
+    expect(result.current.prompt).toBe('a blog about dogs with photo galleries')
+
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+      await Promise.resolve()
+    })
+
+    // No fetch should have been made — the cached fingerprint prevents
+    // a duplicate speculative draft.
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('reuses the cached speculative session on submit instead of creating a new one', async () => {
+    vi.useFakeTimers()
+    const fingerprint = JSON.stringify({
+      cloneUrl: '',
+      designReferenceNotes: '',
+      designReferenceUrls: [],
+      isPrivate: false,
+      preferredLanguage: 'en',
+      prompt: 'a blog about dogs with photo galleries',
+    })
+    window.localStorage.setItem(
+      'ship-fast:prompt-session-cache',
+      JSON.stringify({
+        prompt: 'a blog about dogs with photo galleries',
+        fingerprint,
+        preferredLanguage: 'en',
+        sessionId: 'session_cached_reuse',
+        anonymousOwnerSecret: 'secret_cached',
+        workspace: 'workspace_cached',
+        createdAt: Date.now(),
+      }),
+    )
+
+    const state = getTestState()
+    const { result } = renderHook(() => usePromptHomeController())
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    // The only fetch to /api/sessions/create should be the draft-promote
+    // call (isDraft: false), NOT a new session creation. The promote
+    // reuses the same workspace so the idempotency check finds and
+    // promotes the existing draft.
+    const createCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(([url]) => url === '/api/sessions/create')
+    expect(createCalls).toHaveLength(1)
+    const promoteBody = JSON.parse(createCalls[0]![1]!.body as string)
+    expect(promoteBody.isDraft).toBe(false)
+    expect(promoteBody.workspace).toBe('workspace_cached')
+
+    // We navigated to the cached session, not a new one.
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_cached_reuse' },
+    })
+
+    // And the cache was cleared.
+    expect(
+      window.localStorage.getItem('ship-fast:prompt-session-cache'),
+    ).toBeNull()
+  })
+
+  it('syncs prompt state from cache on bfcache restore (pageshow persisted)', async () => {
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('A prompt that should be cleared')
+    })
+    expect(result.current.prompt).toBe('A prompt that should be cleared')
+
+    // Simulate: user hits generate → cache cleared
+    window.localStorage.removeItem('ship-fast:prompt-session-cache')
+
+    // Simulate bfcache restore
+    await act(async () => {
+      window.dispatchEvent(
+        new PageTransitionEvent('pageshow', { persisted: true }),
+      )
+    })
+
+    expect(result.current.prompt).toBe('')
+  })
+
+  it('does not alter prompt on non-persisted pageshow (normal load)', async () => {
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('A prompt that stays')
+    })
+
+    await act(async () => {
+      window.dispatchEvent(
+        new PageTransitionEvent('pageshow', { persisted: false }),
+      )
+    })
+
+    expect(result.current.prompt).toBe('A prompt that stays')
   })
 })

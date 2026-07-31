@@ -121,14 +121,18 @@ describe('/api/share-bonus route', () => {
     expect(await second.json()).toEqual({ claimed: true, success: false })
   })
 
-  it('uses the first forwarded IP so proxy chains do not share one bonus bucket', async () => {
+  it('uses the proxy-set client IP so different clients get separate bonus buckets', async () => {
     const { Route } = await import('./share-bonus')
     const route = Route as unknown as RouteWithHandlers
 
+    // cf-connecting-ip is set by Cloudflare and cannot be spoofed by the
+    // client. Two different clients behind the same proxy get separate
+    // buckets because cf-connecting-ip gives the real client IP.
     const first = await route.options.server.handlers.POST({
       request: new Request('https://ship-fast.test/api/share-bonus', {
         method: 'POST',
         headers: {
+          'cf-connecting-ip': '203.0.113.10',
           'x-forwarded-for': '203.0.113.10, 198.51.100.1',
         },
       }),
@@ -137,6 +141,7 @@ describe('/api/share-bonus route', () => {
       request: new Request('https://ship-fast.test/api/share-bonus', {
         method: 'POST',
         headers: {
+          'cf-connecting-ip': '203.0.113.10',
           'x-forwarded-for': '203.0.113.10, 198.51.100.77',
         },
       }),
@@ -145,6 +150,7 @@ describe('/api/share-bonus route', () => {
       request: new Request('https://ship-fast.test/api/share-bonus', {
         method: 'POST',
         headers: {
+          'cf-connecting-ip': '203.0.113.11',
           'x-forwarded-for': '203.0.113.11, 198.51.100.1',
         },
       }),

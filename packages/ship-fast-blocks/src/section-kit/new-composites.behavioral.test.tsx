@@ -649,6 +649,7 @@ describe('CommandSearch', () => {
       <RoutesContext.Provider
         value={{
           routes: ['Home', 'Pricing'],
+          pageIds: [],
           currentPage: 'Home',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,

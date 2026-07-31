@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Doc } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
@@ -212,9 +212,14 @@ const createReferences = () => ({
     >[1],
 })
 
+const TEST_SERVER_SECRET = 'test-server-secret'
+
 describe('session creation helpers', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
+  })
+  beforeEach(() => {
+    vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', TEST_SERVER_SECRET)
   })
 
   it('detects environment-based generation limit bypasses', () => {
@@ -351,6 +356,22 @@ describe('session creation helpers', () => {
     })
   })
 
+  it('rejects forged clientIpHash without serverSecret (bypass attack)', async () => {
+    const now = Date.now()
+
+    // Direct Convex mutation call with forged clientIpHash but no serverSecret.
+    // The clientIpHash must be ignored, so anonymous creation must fail.
+    await expect(
+      loadGenerationAdmission(ctxFor({ sessions: [] }), {
+        clientIpHash: 'forged_ip_hash',
+        now,
+        disableLimits: false,
+      }),
+    ).rejects.toMatchObject({
+      data: { code: 'CLIENT_IP_REQUIRED' },
+    })
+  })
+
   it('computes anonymous admission with monthly quota and daily cap', async () => {
     const now = Date.now()
     const sessionCount = MAX_ANON_PER_DAY - 1
@@ -367,6 +388,7 @@ describe('session creation helpers', () => {
         }),
         {
           clientIpHash: 'ip_hash',
+          serverSecret: TEST_SERVER_SECRET,
           now,
           disableLimits: false,
         },
@@ -393,6 +415,7 @@ describe('session creation helpers', () => {
         }),
         {
           clientIpHash: 'ip_hash',
+          serverSecret: TEST_SERVER_SECRET,
           now,
           disableLimits: false,
         },
@@ -425,6 +448,7 @@ describe('session creation helpers', () => {
     await expect(
       loadGenerationAdmission(ctxFor({ sessions: [...drafts, realSession] }), {
         clientIpHash: 'ip_hash',
+        serverSecret: TEST_SERVER_SECRET,
         now,
         disableLimits: false,
       }),
@@ -452,6 +476,7 @@ describe('session creation helpers', () => {
         }),
         {
           clientIpHash: 'ip_hash',
+          serverSecret: TEST_SERVER_SECRET,
           now,
           disableLimits: false,
         },
@@ -482,6 +507,7 @@ describe('session creation helpers', () => {
         }),
         {
           clientIpHash: 'ip_hash',
+          serverSecret: TEST_SERVER_SECRET,
           now,
           disableLimits: false,
         },
@@ -526,6 +552,7 @@ describe('session creation helpers', () => {
         {
           anonymousClientIdHash: 'anon_hash',
           clientIpHash: 'ip_hash',
+          serverSecret: TEST_SERVER_SECRET,
           now,
           disableLimits: false,
         },
@@ -731,6 +758,7 @@ describe('session creation helpers', () => {
         anonymousOwnerSecret: 'owner-secret',
         anonymousClientId: 'anon-client',
         clientIpHash: 'ip_hash_create',
+        serverSecret: TEST_SERVER_SECRET,
         designReferenceUrls: [
           ' https://example.com/inspiration#hero ',
           'https://example.com/second',
@@ -810,6 +838,7 @@ describe('session creation helpers', () => {
           isPrivate: false,
           workspace: 'workspace-blocked-reference-notes',
           clientIpHash: 'ip_hash_blocked_reference_notes',
+          serverSecret: TEST_SERVER_SECRET,
           designReferenceNotes: 'reference sch0olgirl-p0rn images',
         },
         references,
@@ -838,6 +867,7 @@ describe('session creation helpers', () => {
         workspace: 'workspace-draft-schedule',
         anonymousClientId: 'anon-draft-client',
         clientIpHash: 'ip_hash_draft',
+        serverSecret: TEST_SERVER_SECRET,
         isDraft: true,
       },
       references,
@@ -870,6 +900,7 @@ describe('session creation helpers', () => {
         workspace: 'workspace-real-no-schedule',
         anonymousClientId: 'anon-real-client',
         clientIpHash: 'ip_hash_real',
+        serverSecret: TEST_SERVER_SECRET,
       },
       references,
     )
@@ -928,6 +959,7 @@ describe('session creation helpers', () => {
         isPrivate: false,
         workspace: 'workspace-config-failure',
         clientIpHash: 'ip_hash_config_failure',
+        serverSecret: TEST_SERVER_SECRET,
       },
       references,
     )
@@ -991,6 +1023,7 @@ describe('session creation helpers', () => {
         isPrivate: false,
         workspace: 'workspace-force-fresh',
         clientIpHash: 'ip_hash_force_fresh',
+        serverSecret: TEST_SERVER_SECRET,
         forceFresh: true,
       },
       references,
@@ -1314,6 +1347,7 @@ describe('session creation helpers', () => {
       loadGenerationAdmission(ctxFor({ sessions }), {
         userId: 'user_1',
         clientIpHash: 'ip_a',
+        serverSecret: TEST_SERVER_SECRET,
         now,
         disableLimits: false,
       }),
@@ -1338,6 +1372,7 @@ describe('session creation helpers', () => {
       loadGenerationAdmission(ctxFor({ sessions: [shared] }), {
         userId: 'user_1',
         clientIpHash: 'ip_a',
+        serverSecret: TEST_SERVER_SECRET,
         now,
         disableLimits: false,
       }),
@@ -1366,6 +1401,7 @@ describe('session creation helpers', () => {
       loadGenerationAdmission(ctxFor({ sessions }), {
         userId: 'user_2',
         clientIpHash: 'ip_a',
+        serverSecret: TEST_SERVER_SECRET,
         now,
         disableLimits: false,
       }),
@@ -1405,6 +1441,7 @@ describe('session creation helpers', () => {
         {
           userId: 'user_1',
           clientIpHash: 'ip_b',
+          serverSecret: TEST_SERVER_SECRET,
           now,
           disableLimits: false,
         },
@@ -1444,6 +1481,7 @@ describe('session creation helpers', () => {
         {
           userId: 'user_1',
           clientIpHash: 'ip_c',
+          serverSecret: TEST_SERVER_SECRET,
           now,
           disableLimits: false,
         },
@@ -1473,6 +1511,7 @@ describe('session creation helpers', () => {
         isPrivate: false,
         workspace: 'workspace-authed-ip',
         clientIpHash: 'ip_hash_authed',
+        serverSecret: TEST_SERVER_SECRET,
       },
       references,
     )

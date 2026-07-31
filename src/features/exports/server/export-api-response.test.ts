@@ -1,9 +1,14 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { exportHits } from '@/lib/rate-limit'
 import { createSessionExportResponse } from './export-api-response'
 
 describe('createSessionExportResponse', () => {
   const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+
+  beforeEach(() => {
+    exportHits.clear()
+  })
 
   it('forwards bearer auth before creating an export', async () => {
     const client = {

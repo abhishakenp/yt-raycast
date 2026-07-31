@@ -23,7 +23,9 @@ const DESIGN_THEME_POOLS: Array<{
 }> = [
   // Brutalist / bold — hard offset shadow is the strongest signal
   {
-    match: (d) => d.shadow === 'shadow-[8px_8px_0_0]' || d.shadow === 'shadow-[4px_4px_0_0]',
+    match: (d) =>
+      d.shadow === 'shadow-[8px_8px_0_0]' ||
+      d.shadow === 'shadow-[4px_4px_0_0]',
     pool: ['neo-brutalism', 'doom-64', 'mono', 'bold-tech', 'cyberpunk'],
   },
   // Mesh / futuristic — gradient:mesh is distinctive
@@ -80,7 +82,9 @@ const DESIGN_THEME_POOLS: Array<{
   },
   // Humanist / soft / friendly
   {
-    match: (d) => d.typography === 'humanist' && (d.radius === 'rounded-xl' || d.radius === 'rounded-2xl'),
+    match: (d) =>
+      d.typography === 'humanist' &&
+      (d.radius === 'rounded-xl' || d.radius === 'rounded-2xl'),
     pool: [
       't3-chat',
       'bubblegum',

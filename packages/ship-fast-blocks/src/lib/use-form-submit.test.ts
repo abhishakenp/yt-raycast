@@ -24,7 +24,10 @@ describe('useFormSubmit', () => {
     input.value = 'test@example.com'
     form.appendChild(input)
     const preventDefault = vi.fn()
-    const event = { preventDefault, currentTarget: form } as unknown as React.FormEvent<HTMLFormElement>
+    const event = {
+      preventDefault,
+      currentTarget: form,
+    } as unknown as React.FormEvent<HTMLFormElement>
 
     let promise: Promise<void>
     act(() => {
@@ -52,7 +55,10 @@ describe('useFormSubmit', () => {
     input.name = 'name'
     input.value = 'John'
     form.appendChild(input)
-    const event = { preventDefault: vi.fn(), currentTarget: form } as unknown as React.FormEvent<HTMLFormElement>
+    const event = {
+      preventDefault: vi.fn(),
+      currentTarget: form,
+    } as unknown as React.FormEvent<HTMLFormElement>
 
     await act(async () => {
       await result.current.handleSubmit(event)
@@ -67,7 +73,10 @@ describe('useFormSubmit', () => {
     const { result } = renderHook(() => useFormSubmit({ mutationFn }))
 
     const form = document.createElement('form')
-    const event = { preventDefault: vi.fn(), currentTarget: form } as unknown as React.FormEvent<HTMLFormElement>
+    const event = {
+      preventDefault: vi.fn(),
+      currentTarget: form,
+    } as unknown as React.FormEvent<HTMLFormElement>
 
     await act(async () => {
       await result.current.handleSubmit(event)
@@ -82,7 +91,10 @@ describe('useFormSubmit', () => {
     const { result } = renderHook(() => useFormSubmit({ mutationFn }))
 
     const form = document.createElement('form')
-    const event = { preventDefault: vi.fn(), currentTarget: form } as unknown as React.FormEvent<HTMLFormElement>
+    const event = {
+      preventDefault: vi.fn(),
+      currentTarget: form,
+    } as unknown as React.FormEvent<HTMLFormElement>
 
     await act(async () => {
       await result.current.handleSubmit(event)
@@ -100,7 +112,10 @@ describe('useFormSubmit', () => {
     const { result } = renderHook(() => useFormSubmit({ simulateDelay: 500 }))
 
     const form = document.createElement('form')
-    const event = { preventDefault: vi.fn(), currentTarget: form } as unknown as React.FormEvent<HTMLFormElement>
+    const event = {
+      preventDefault: vi.fn(),
+      currentTarget: form,
+    } as unknown as React.FormEvent<HTMLFormElement>
 
     act(() => {
       result.current.handleSubmit(event)

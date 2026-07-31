@@ -691,13 +691,11 @@ export function Dashboard({ sessionId }: DashboardProps) {
     const session = generationView.session
     if (!session?.prompt) return
 
-    // Persist the last prompt so it can be restored when the user returns
-    // (e.g. after signing in or coming back the next day).
-    try {
-      window.localStorage.setItem('ship-fast:last-prompt', session.prompt)
-    } catch {
-      // Storage may be blocked; non-critical.
-    }
+    // NOTE: Do NOT persist the prompt to localStorage here. The home page's
+    // unified prompt-session cache (ship-fast:prompt-session-cache) is cleared
+    // when the user hits Generate. Re-writing the prompt here would undo
+    // that clear, causing the old prompt to reappear when the user navigates
+    // back to home. The cache is managed solely by usePromptHomeController.
   }, [generationView, isPreviewReady])
 
   const progress = useMemo(() => {

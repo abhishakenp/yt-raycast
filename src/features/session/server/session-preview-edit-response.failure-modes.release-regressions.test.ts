@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
+import { previewHtmlHits } from '@/lib/rate-limit'
 import {
   createInlineStyleEditResponse,
   createInlineTextEditResponse,
@@ -16,6 +17,10 @@ function jsonRequest(body: unknown, headers?: HeadersInit) {
 }
 
 describe('preview edit response failure modes', () => {
+  beforeEach(() => {
+    previewHtmlHits.clear()
+  })
+
   it('ignores a blank body owner secret and falls back to the authenticated header secret', async () => {
     const calls: unknown[] = []
     const response = await createInlineTextEditResponse(

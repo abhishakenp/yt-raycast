@@ -46,7 +46,8 @@ const LogoStrip = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="logo-strip"
-      data-d-role="image"className={cn(className)}
+      data-d-role="image"
+      className={cn(className)}
       {...props}
     />
   )
@@ -66,7 +67,8 @@ const LogoStripLabel = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="logo-strip-label"
-      data-d-role="image"className={cn(
+      data-d-role="image"
+      className={cn(
         'text-center text-sm font-medium uppercase tracking-wide text-muted-foreground',
         className,
       )}
@@ -91,7 +93,8 @@ const LogoStripItems = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="logo-strip-items"
-      data-d-role="image"className={cn(logoStripVariants({ layout }), className)}
+      data-d-role="image"
+      className={cn(logoStripVariants({ layout }), className)}
       {...props}
     />
   )
@@ -113,7 +116,8 @@ const LogoStripItem = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="logo-strip-item"
-      data-d-role="card"className={cn(logoItemVariants({ variant }), className)}
+      data-d-role="card"
+      className={cn(logoItemVariants({ variant }), className)}
       {...props}
     />
   )

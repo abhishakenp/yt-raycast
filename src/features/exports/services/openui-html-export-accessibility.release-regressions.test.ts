@@ -28,7 +28,7 @@ beforeAll(async () => {
   artifactHtml = typeof built.body === 'string' ? built.body : ''
 }, 180_000)
 
-const openArtifact = () =>
+const openArtifact = (): JSDOM =>
   new JSDOM(artifactHtml, {
     pretendToBeVisual: true,
     runScripts: 'dangerously',
@@ -44,16 +44,16 @@ describe('OpenUI standalone HTML accessibility release regressions', () => {
   it('renders localized route containers with one visible route', () => {
     const dom = openArtifact()
     try {
-      const pages = Array.from(
-        dom.window.document.querySelectorAll<HTMLElement>(
+      const pages: HTMLElement[] = Array.from(
+        dom.window.document.querySelectorAll(
           '[data-export-page],[data-sf-export-page]',
         ),
       )
       expect(pages).toHaveLength(2)
-      expect(pages.filter((page) => !page.hidden)).toHaveLength(1)
+      expect(pages.filter((page: HTMLElement) => !page.hidden)).toHaveLength(1)
       expect(
         pages.map(
-          (page) =>
+          (page: HTMLElement) =>
             page.getAttribute('data-export-page') ??
             page.getAttribute('data-sf-export-page'),
         ),
@@ -66,13 +66,13 @@ describe('OpenUI standalone HTML accessibility release regressions', () => {
   it('gives every generated interactive control a non-empty accessible name', () => {
     const dom = openArtifact()
     try {
-      const controls = Array.from(
-        dom.window.document.querySelectorAll<HTMLElement>(
-          'button,a,input,select,textarea',
-        ),
+      const controls: HTMLElement[] = Array.from(
+        dom.window.document.querySelectorAll('button,a,input,select,textarea'),
       )
       expect(controls.length).toBeGreaterThan(0)
-      expect(controls.filter((control) => !accessibleName(control))).toEqual([])
+      expect(
+        controls.filter((control: HTMLElement) => !accessibleName(control)),
+      ).toEqual([])
     } finally {
       dom.window.close()
     }
@@ -82,11 +82,11 @@ describe('OpenUI standalone HTML accessibility release regressions', () => {
     const dom = openArtifact()
     try {
       const unresolved = Array.from(
-        dom.window.document.querySelectorAll<HTMLElement>(
+        dom.window.document.querySelectorAll(
           '[aria-controls],[aria-describedby],[aria-labelledby]',
-        ),
+        ) as HTMLElement[],
       )
-        .flatMap((element) =>
+        .flatMap((element: HTMLElement) =>
           ['aria-controls', 'aria-describedby', 'aria-labelledby'].flatMap(
             (attribute) =>
               (element.getAttribute(attribute) ?? '')
@@ -105,8 +105,8 @@ describe('OpenUI standalone HTML accessibility release regressions', () => {
     const dom = openArtifact()
     try {
       const ids = Array.from(
-        dom.window.document.querySelectorAll<HTMLElement>('[id]'),
-      ).map((element) => element.id)
+        dom.window.document.querySelectorAll('[id]') as HTMLElement[],
+      ).map((element: HTMLElement) => element.id)
       expect(ids.filter((id) => /[\u0900-\u097f]/.test(id))).toEqual([])
       expect(dom.window.document.body.textContent).toContain('खट्टी रोटी')
     } finally {

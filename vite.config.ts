@@ -629,7 +629,7 @@ function subdomainRewriteDevMiddleware(): Plugin {
   return {
     name: 'ship-fast-subdomain-rewrite-dev',
     configureServer(server) {
-      server.middlewares.use((req, res, next) => {
+      server.middlewares.use((req, _res, next) => {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           next()
           return

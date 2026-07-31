@@ -108,7 +108,6 @@ export function parseComposition(raw: string): ParsedComposition {
   const sections: CompositionSection[] = []
 
   let currentSection: CompositionSection | null = null
-  let sectionLine = 0
   let currentPage = 'home'
 
   for (let i = 0; i < lines.length; i++) {
@@ -207,7 +206,6 @@ export function parseComposition(raw: string): ParsedComposition {
         line: i + 1,
         page: currentPage,
       }
-      sectionLine = i + 1
       continue
     }
 
@@ -750,7 +748,7 @@ function serializeDesignForProp(intent: DesignIntent): string {
     if (key === 'roles') {
       // Per-role overrides: roles is Record<axis, Record<role, value>>
       const roles = val as Record<string, Record<string, string>>
-      for (const [axis, roleMap] of Object.entries(roles)) {
+      for (const [roleMap] of Object.entries(roles)) {
         for (const [role, value] of Object.entries(roleMap)) {
           parts.push(`${role}:${value}`)
         }

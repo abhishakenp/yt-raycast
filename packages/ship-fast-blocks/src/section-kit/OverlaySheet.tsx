@@ -4,13 +4,13 @@ import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import {
- Sheet,
- SheetTrigger,
- SheetContent,
- SheetHeader,
- SheetFooter,
- SheetTitle,
- SheetDescription,
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
 
@@ -32,144 +32,161 @@ import { cn } from '#/lib/utils.ts'
  */
 
 const overlaySheetContentVariants = cva(
- 'border-l border-border bg-background p-0 text-foreground',
- {
- variants: {
- // `drawer` = the canonical square hairline drawer (nav/subscribe/history):
- // no glow, explicit rounded-none. `panel` keeps the base sheet shadow
- // (e.g. the cart, which deliberately floats with the base ).
- variant: {
- drawer: 'rounded-none shadow-none',
- panel: '',
- },
- size: {
- sm: 'w-[min(100%,22rem)] sm:max-w-[22rem]',
- md: 'w-[min(100%,24rem)] sm:max-w-[24rem]',
- },
- },
- defaultVariants: { variant: 'drawer', size: 'sm' },
- },
+  'border-l border-border bg-background p-0 text-foreground',
+  {
+    variants: {
+      // `drawer` = the canonical square hairline drawer (nav/subscribe/history):
+      // no glow, explicit rounded-none. `panel` keeps the base sheet shadow
+      // (e.g. the cart, which deliberately floats with the base ).
+      variant: {
+        drawer: 'rounded-none shadow-none',
+        panel: '',
+      },
+      size: {
+        sm: 'w-[min(100%,22rem)] sm:max-w-[22rem]',
+        md: 'w-[min(100%,24rem)] sm:max-w-[24rem]',
+      },
+    },
+    defaultVariants: { variant: 'drawer', size: 'sm' },
+  },
 )
 
 function OverlaySheet(props: React.ComponentProps<typeof Sheet>) {
- return <Sheet {...props} />
+  return <Sheet {...props} />
 }
 
 function OverlaySheetTrigger(props: React.ComponentProps<typeof SheetTrigger>) {
- return <SheetTrigger {...props} />
+  return <SheetTrigger {...props} />
 }
 
 function OverlaySheetContent({
- className,
- variant,
- size,
- ...props
+  className,
+  variant,
+  size,
+  ...props
 }: React.ComponentProps<typeof SheetContent> &
- VariantProps<typeof overlaySheetContentVariants>) {
- return (
- <SheetContent
- data-slot="overlay-sheet-content"
- data-d-role="container"className={cn(overlaySheetContentVariants({ variant, size }), className)}
- {...props}
- />
- )
+  VariantProps<typeof overlaySheetContentVariants>) {
+  return (
+    <SheetContent
+      data-slot="overlay-sheet-content"
+      data-d-role="container"
+      className={cn(overlaySheetContentVariants({ variant, size }), className)}
+      {...props}
+    />
+  )
 }
 
 function OverlaySheetHeader({
- className,
- ...props
+  className,
+  ...props
 }: React.ComponentProps<'div'>) {
- return (
- <SheetHeader
- data-slot="overlay-sheet-header"
- className={cn('border-b border-border px-5 py-4 text-left', className)}
- {...props}
- />
- )
+  return (
+    <SheetHeader
+      data-slot="overlay-sheet-header"
+      className={cn('border-b border-border px-5 py-4 text-left', className)}
+      {...props}
+    />
+  )
 }
 
 function OverlaySheetEyebrow({
- className,
- ...props
+  className,
+  ...props
 }: React.ComponentProps<'span'>) {
- return (
- <span
- data-slot="overlay-sheet-eyebrow"
- data-d-role="eyebrow"aria-hidden="true"
- className={cn(
- 'font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]',
- className,
- )}
- {...props}
- />
- )
+  return (
+    <span
+      data-slot="overlay-sheet-eyebrow"
+      data-d-role="eyebrow"
+      aria-hidden="true"
+      className={cn(
+        'font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]',
+        className,
+      )}
+      {...props}
+    />
+  )
 }
 
 function OverlaySheetTitle(props: React.ComponentProps<typeof SheetTitle>) {
- return <SheetTitle data-slot="overlay-sheet-title" data-d-role="heading"{...props} />
+  return (
+    <SheetTitle
+      data-slot="overlay-sheet-title"
+      data-d-role="heading"
+      {...props}
+    />
+  )
 }
 
 function OverlaySheetDescription(
- props: React.ComponentProps<typeof SheetDescription>,
+  props: React.ComponentProps<typeof SheetDescription>,
 ) {
- return <SheetDescription data-slot="overlay-sheet-description" data-d-role="body"{...props} />
+  return (
+    <SheetDescription
+      data-slot="overlay-sheet-description"
+      data-d-role="body"
+      {...props}
+    />
+  )
 }
 
 function OverlaySheetBody({
- className,
- ...props
+  className,
+  ...props
 }: React.ComponentProps<'div'>) {
- return (
- <div
- data-slot="overlay-sheet-body"
- data-d-role="body"className={cn('flex flex-col divide-y divide-border', className)}
- {...props}
- />
- )
+  return (
+    <div
+      data-slot="overlay-sheet-body"
+      data-d-role="body"
+      className={cn('flex flex-col divide-y divide-border', className)}
+      {...props}
+    />
+  )
 }
 
 function OverlaySheetFooter({
- className,
- ...props
+  className,
+  ...props
 }: React.ComponentProps<'div'>) {
- return (
- <SheetFooter
- data-slot="overlay-sheet-footer"
- data-d-role="footer"className={cn('border-t border-border px-5 py-4', className)}
- {...props}
- />
- )
+  return (
+    <SheetFooter
+      data-slot="overlay-sheet-footer"
+      className={cn('border-t border-border px-5 py-4', className)}
+      {...props}
+    />
+  )
 }
 
 function OverlaySheetClose({
- children,
- className,
- ...props
+  children,
+  className,
+  ...props
 }: React.ComponentProps<'button'>) {
- return (
- <button
- type="button"
- data-slot="overlay-sheet-close"
- className={cn(
- 'inline-flex size-8 shrink-0 items-center justify-center rounded-none border border-border text-lg leading-none text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px',
- className,
- )}
- {...props}>
- {children ?? '×'}
- </button>
- )
+  return (
+    <button
+      type="button"
+      data-slot="overlay-sheet-close"
+      data-d-role="btn"
+      className={cn(
+        'inline-flex size-8 shrink-0 items-center justify-center rounded-none border border-border text-lg leading-none text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px',
+        className,
+      )}
+      {...props}
+    >
+      {children ?? '×'}
+    </button>
+  )
 }
 
 export {
- OverlaySheet,
- OverlaySheetTrigger,
- OverlaySheetContent,
- OverlaySheetHeader,
- OverlaySheetEyebrow,
- OverlaySheetTitle,
- OverlaySheetDescription,
- OverlaySheetBody,
- OverlaySheetFooter,
- OverlaySheetClose,
- overlaySheetContentVariants,
+  OverlaySheet,
+  OverlaySheetTrigger,
+  OverlaySheetContent,
+  OverlaySheetHeader,
+  OverlaySheetEyebrow,
+  OverlaySheetTitle,
+  OverlaySheetDescription,
+  OverlaySheetBody,
+  OverlaySheetFooter,
+  OverlaySheetClose,
+  overlaySheetContentVariants,
 }

@@ -29,7 +29,7 @@ import type {
   CommerceCatalogProduct,
   CommerceProductSlot,
   CommerceProductVariant,
-} from './services/commerce-product-binding'
+} from './contracts'
 import {
   loadSessionCommerceConfig,
   provisionSessionMedusaTenant,

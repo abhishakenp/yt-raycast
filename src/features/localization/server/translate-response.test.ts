@@ -5,6 +5,8 @@ vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
   moderationErrorResponse: vi.fn(() => null),
 }))
 
+import { translateHits } from '@/lib/rate-limit'
+
 import { createTranslateResponse } from './translate-response'
 
 // Observed via:
@@ -22,6 +24,7 @@ describe('createTranslateResponse', () => {
 
   beforeEach(() => {
     process.env.VITE_DISABLE_CLERK = 'true'
+    translateHits.clear()
   })
 
   afterEach(() => {

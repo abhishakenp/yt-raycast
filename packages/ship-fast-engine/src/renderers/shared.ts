@@ -1,6 +1,7 @@
 import { renderAeoSectionHtml } from '@ship-fast/aeo'
 import { isMixedEnglishIndicCode } from '../config/languages'
 import { shouldUseSwiper } from '../lib/swiper-policy'
+import { sanitizeCloneHtml } from '../lib/sanitize-clone-html'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing'
 
 /**
@@ -388,6 +389,7 @@ export function renderNextExactClonePageComponent(): string {
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { installExactCloneBlueprint } from '../lib/clone-runtime'
+import { sanitizeCloneHtml } from '../lib/sanitize-clone-html'
 
 export default function ExactClonePage({ page }) {
   const rootRef = useRef(null)
@@ -437,7 +439,7 @@ export default function ExactClonePage({ page }) {
       ref={rootRef}
       className="sf-exact-clone-root"
       suppressHydrationWarning
-      dangerouslySetInnerHTML={{ __html: blueprint.bodyHtml }}
+      dangerouslySetInnerHTML={{ __html: sanitizeCloneHtml(blueprint.bodyHtml) }}
     />
   )
 }
@@ -467,6 +469,7 @@ export function renderExactClonePageComponent({
 import { useEffect, useRef } from 'react'
 ${routerImport}
 import { installExactCloneBlueprint } from '../lib/clone-runtime'
+import { sanitizeCloneHtml } from '../lib/sanitize-clone-html'
 
 export default function ExactClonePage({ page }) {
   const anchorRef = useRef(null)
@@ -479,7 +482,7 @@ export default function ExactClonePage({ page }) {
     const anchor = anchorRef.current
     if (!anchor) return cleanupClone
 
-    const fragment = document.createRange().createContextualFragment(blueprint.bodyHtml || '')
+    const fragment = document.createRange().createContextualFragment(sanitizeCloneHtml(blueprint.bodyHtml || ''))
     const cloneNodes = Array.from(fragment.childNodes)
     const insertionAnchor = document.body.firstChild
     cloneNodes.forEach((node) => {
@@ -537,7 +540,7 @@ ${
       <div
         data-sf-clone-ssr="1"
         suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: blueprint.bodyHtml }}
+        dangerouslySetInnerHTML={{ __html: sanitizeCloneHtml(blueprint.bodyHtml) }}
       />`
           : ''
       }

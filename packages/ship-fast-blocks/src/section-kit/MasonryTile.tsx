@@ -15,41 +15,42 @@ import { cn } from '#/lib/utils.ts'
  * 4-5-card).
  */
 const masonryTileVariants = cva('overflow-hidden', {
- variants: {
- treatment: {
- '3-4-xl': 'aspect-[3/4] ',
- 'square-xl': 'aspect-square ',
- 'h-64-xl': 'h-64 ',
- 'h-48-xl': 'h-48 ',
- '3-4-card': 'aspect-[3/4] bg-card',
- 'square-card': 'aspect-square bg-card',
- '4-5-card': 'aspect-[4/5] bg-card',
- },
- },
- defaultVariants: {
- treatment: '3-4-xl',
- },
+  variants: {
+    treatment: {
+      '3-4-xl': 'aspect-[3/4] ',
+      'square-xl': 'aspect-square ',
+      'h-64-xl': 'h-64 ',
+      'h-48-xl': 'h-48 ',
+      '3-4-card': 'aspect-[3/4] bg-card',
+      'square-card': 'aspect-square bg-card',
+      '4-5-card': 'aspect-[4/5] bg-card',
+    },
+  },
+  defaultVariants: {
+    treatment: '3-4-xl',
+  },
 })
 
 export interface MasonryTileProps
- extends
- React.HTMLAttributes<HTMLDivElement>,
- VariantProps<typeof masonryTileVariants> {
- asChild?: boolean
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof masonryTileVariants> {
+  asChild?: boolean
 }
 
 const MasonryTile = React.forwardRef<HTMLDivElement, MasonryTileProps>(
- ({ className, treatment, asChild = false, ...props }, ref) => {
- const Comp = asChild ? Slot : 'div'
- return (
- <Comp
- ref={ref}
- data-slot="masonry-tile"
- data-d-role="card"className={cn(masonryTileVariants({ treatment }), className)}
- {...props}
- />
- )
- },
+  ({ className, treatment, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'div'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="masonry-tile"
+        data-d-role="card"
+        className={cn(masonryTileVariants({ treatment }), className)}
+        {...props}
+      />
+    )
+  },
 )
 MasonryTile.displayName = 'MasonryTile'
 

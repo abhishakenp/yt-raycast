@@ -27,7 +27,8 @@ const PortfolioGrid = React.forwardRef<
   return (
     <Comp
       data-slot="portfolio-grid"
-      data-d-role="grid"className={cn(portfolioGridVariants({ cols }), className)}
+      data-d-role="grid"
+      className={cn(portfolioGridVariants({ cols }), className)}
       ref={ref}
       {...props}
     />
@@ -43,7 +44,8 @@ const PortfolioItem = React.forwardRef<
   return (
     <Comp
       data-slot="portfolio-item"
-      data-d-role="card"className={cn(
+      data-d-role="card"
+      className={cn(
         'group relative flex flex-col text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className,
       )}

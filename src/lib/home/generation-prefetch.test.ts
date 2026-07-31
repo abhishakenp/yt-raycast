@@ -98,7 +98,9 @@ describe('generation prefetch reuse', () => {
   })
 
   it('does not flag non-English prompts as gibberish', () => {
-    expect(isGibberishPromptClient('मुंबई के लिए मराठी शादी प्लानर वेबसाइट')).toBe(false)
+    expect(
+      isGibberishPromptClient('मुंबई के लिए मराठी शादी प्लानर वेबसाइट'),
+    ).toBe(false)
     expect(isGibberishPromptClient('为我的餐厅创建一个网站')).toBe(false)
     expect(isGibberishPromptClient('أنشئ موقعاً لمطعمي')).toBe(false)
   })

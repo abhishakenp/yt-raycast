@@ -1,6 +1,66 @@
 import { writeFile } from './pipeline/workspace'
+import { sanitizeSvg } from './lib/sanitize-svg'
 
 const DEFAULT_TIMEOUT_MS = 6000
+
+/**
+ * SSRF protection — blocks non-HTTPS, private IPs, localhost, and link-local
+ * addresses from being fetched server-side.
+ */
+function isPrivateIpv4Address(hostname: string): boolean {
+  const parts = hostname.split('.').map(Number)
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false
+  }
+  const [first = 0, second = 0] = parts
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    first >= 224
+  )
+}
+
+function isPrivateIpv6Address(hostname: string): boolean {
+  const address = hostname.replace(/^\[|\]$/g, '').toLowerCase()
+  return (
+    address === '::' ||
+    address === '::1' ||
+    address.startsWith('fc') ||
+    address.startsWith('fd') ||
+    /^fe[89ab]/.test(address) ||
+    address.startsWith('::ffff:127.') ||
+    address.startsWith('::ffff:10.') ||
+    address.startsWith('::ffff:192.168.')
+  )
+}
+
+function isSafeRemoteUrl(value: string): boolean {
+  try {
+    const url = new URL(value)
+    const hostname = url.hostname.toLowerCase()
+    return (
+      url.protocol === 'https:' &&
+      url.username === '' &&
+      url.password === '' &&
+      hostname !== 'localhost' &&
+      !hostname.endsWith('.localhost') &&
+      !hostname.endsWith('.local') &&
+      !isPrivateIpv4Address(hostname) &&
+      !isPrivateIpv6Address(hostname)
+    )
+  } catch {
+    return false
+  }
+}
 
 async function withTimeout(
   promise: (signal: AbortSignal) => Promise<any>,
@@ -130,7 +190,7 @@ export async function materializeBrandfetchLogoToWorkspace(
   if (fromDataUri) {
     return {
       kind: 'svg',
-      svg: fromDataUri,
+      svg: sanitizeSvg(fromDataUri),
       alt: label,
       provider: 'brandfetch',
       confidence: logo.confidence,
@@ -144,6 +204,12 @@ export async function materializeBrandfetchLogoToWorkspace(
     provider: 'brandfetch-fallback',
     confidence: Math.min(Number(logo.confidence || 0.4) || 0.4, 0.55),
   })
+
+  // SSRF protection: reject non-HTTPS URLs, private IPs, localhost, and
+  // link-local addresses before fetching. An attacker who controls a
+  // Brandfetch brand entry could set the logo URL to an internal endpoint
+  // (e.g. AWS metadata at 169.254.169.254).
+  if (!isSafeRemoteUrl(logo.src)) return toFallback()
 
   try {
     const res = await fetch(logo.src, {
@@ -170,7 +236,7 @@ export async function materializeBrandfetchLogoToWorkspace(
       if (/<svg/i.test(text)) {
         return {
           kind: 'svg',
-          svg: text,
+          svg: sanitizeSvg(text),
           alt: label,
           provider: 'brandfetch',
           confidence: logo.confidence,
@@ -197,7 +263,7 @@ export async function materializeBrandfetchLogoToWorkspace(
         .trim()
       return {
         kind: 'svg',
-        svg: text,
+        svg: sanitizeSvg(text),
         alt: label,
         provider: 'brandfetch',
         confidence: logo.confidence,

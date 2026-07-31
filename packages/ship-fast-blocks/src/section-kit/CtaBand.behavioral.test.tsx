@@ -81,9 +81,19 @@ describe('CtaBand', () => {
 
   it('forwards ref', () => {
     let ref: HTMLElement | null = null
-    render(<CtaBand ref={(r) => (ref = r)}>x</CtaBand>)
+    render(
+      <CtaBand
+        ref={
+          ((r: unknown) => {
+            ref = r as HTMLElement | null
+          }) as never
+        }
+      >
+        x
+      </CtaBand>,
+    )
     expect(ref).not.toBeNull()
-    expect(ref?.tagName).toBe('SECTION')
+    expect((ref as HTMLElement | null)?.tagName).toBe('SECTION')
   })
 })
 

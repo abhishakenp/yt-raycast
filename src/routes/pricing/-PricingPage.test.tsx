@@ -7,6 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react'
 import type { ReactNode } from 'react'
+import React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const authState = vi.hoisted(() => ({
@@ -46,33 +47,37 @@ vi.mock('./PricingContent', () => ({
   }: {
     onCheckoutClick: () => void
     isCheckoutStarting: boolean
-  }) => (
-    <div>
-      <section data-testid="pricing-copy">
-        One plan. Everything included.
-      </section>
-      <button
-        data-pricing-checkout-cta="true"
-        onClick={onCheckoutClick}
-        disabled={isCheckoutStarting}
-      >
-        Start Pro
-      </button>
-      <div data-faq-item>
+  }) => {
+    const [isOpen, setIsOpen] = React.useState(false)
+    return (
+      <div>
+        <section data-testid="pricing-copy">
+          One plan. Everything included.
+        </section>
         <button
-          type="button"
-          data-faq-trigger
-          aria-expanded="false"
-          aria-controls="pricing-faq-test"
+          data-pricing-checkout-cta="true"
+          onClick={onCheckoutClick}
+          disabled={isCheckoutStarting}
         >
-          What is included in Pro?
+          Start Pro
         </button>
-        <p id="pricing-faq-test" hidden>
-          Everything needed to ship.
-        </p>
+        <div data-faq-item data-open={isOpen || undefined}>
+          <button
+            type="button"
+            data-faq-trigger
+            aria-expanded={isOpen}
+            aria-controls="pricing-faq-test"
+            onClick={() => setIsOpen((v) => !v)}
+          >
+            What is included in Pro?
+          </button>
+          <p id="pricing-faq-test" hidden={!isOpen}>
+            Everything needed to ship.
+          </p>
+        </div>
       </div>
-    </div>
-  ),
+    )
+  },
 }))
 
 vi.mock('./-pricing-main-html', () => ({

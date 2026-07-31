@@ -189,7 +189,12 @@ export function buildBackgroundImageUrl(
 
 /** Search both Pexels and Unsplash for multiple images at once, merged and
  *  shuffled together. Supports pagination via `page`. Returns up to
- *  `perPage` results per call (split across both providers). */
+ *  `perPage` results per call (split across both providers).
+ *
+ *  When running in the browser, proxies through `/api/stock-images` to keep
+ *  API keys server-side only. When running on the server, calls Pexels and
+ *  Unsplash directly using `PEXELS_API_KEY` / `UNSPLASH_ACCESS_KEY` env vars.
+ */
 export async function searchStockImages({
   query,
   w = 400,
@@ -205,15 +210,30 @@ export async function searchStockImages({
 }): Promise<StockImageResult[]> {
   if (!query.trim()) return []
 
+  // Client-side: proxy through the server to avoid leaking API keys in the
+  // client bundle. The VITE_PEXELS_API_KEY / VITE_UNSPLASH_ACCESS_KEY env
+  // vars are NOT used client-side — they're only for server-side fallback.
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams({ q: query })
+    if (w) params.set('w', String(w))
+    if (h) params.set('h', String(h))
+    if (page) params.set('page', String(page))
+    if (perPage) params.set('perPage', String(perPage))
+    try {
+      const res = await fetch(`/api/stock-images?${params}`)
+      if (!res.ok) return []
+      const data = (await res.json()) as { results: StockImageResult[] }
+      return data.results ?? []
+    } catch {
+      return []
+    }
+  }
+
   const orientation = orientationFromSize(w, h)
-  const pexelsKey =
-    process.env.PEXELS_API_KEY ||
-    process.env.VITE_PEXELS_API_KEY ||
-    import.meta.env.VITE_PEXELS_API_KEY
-  const unsplashKey =
-    process.env.UNSPLASH_ACCESS_KEY ||
-    process.env.VITE_UNSPLASH_ACCESS_KEY ||
-    import.meta.env.VITE_UNSPLASH_ACCESS_KEY
+  // Server-only env vars — never expose API keys in the client bundle.
+  // The VITE_-prefixed fallbacks were removed to prevent accidental leakage.
+  const pexelsKey = process.env.PEXELS_API_KEY
+  const unsplashKey = process.env.UNSPLASH_ACCESS_KEY
 
   // Split perPage across both providers, requesting a bit more to account
   // for failures. Each provider gets at least 1 slot.
@@ -344,14 +364,9 @@ export async function resolveStockImage({
   const cached = cache.get(key)
   if (cached) return cached
 
-  const pexelsKey =
-    process.env.PEXELS_API_KEY ||
-    process.env.VITE_PEXELS_API_KEY ||
-    import.meta.env.VITE_PEXELS_API_KEY
-  const unsplashKey =
-    process.env.UNSPLASH_ACCESS_KEY ||
-    process.env.VITE_UNSPLASH_ACCESS_KEY ||
-    import.meta.env.VITE_UNSPLASH_ACCESS_KEY
+  // Server-only env vars — never expose API keys in the client bundle.
+  const pexelsKey = process.env.PEXELS_API_KEY
+  const unsplashKey = process.env.UNSPLASH_ACCESS_KEY
 
   if (pexelsKey) {
     try {
@@ -395,7 +410,7 @@ export async function resolveStockImage({
 
   if (!pexelsKey && !unsplashKey) {
     console.warn(
-      'No stock image API keys configured (PEXELS_API_KEY / VITE_PEXELS_API_KEY / UNSPLASH_ACCESS_KEY / VITE_UNSPLASH_ACCESS_KEY); using picsum fallback',
+      'No stock image API keys configured (PEXELS_API_KEY / UNSPLASH_ACCESS_KEY); using picsum fallback',
     )
   }
 

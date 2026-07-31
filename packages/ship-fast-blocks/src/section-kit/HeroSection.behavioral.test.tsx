@@ -16,6 +16,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
@@ -288,6 +289,20 @@ describe('HeroActions', () => {
     expect(el.className).toContain('flex-wrap')
     expect(el.className).toContain('gap-3.5')
     expect(el.getAttribute('data-slot')).toBe('hero-ctas')
+  })
+
+  it('does NOT have data-d-role="btn" (layout wrapper, not a button)', () => {
+    // Regression: HeroActions had data-d-role="btn", causing the design-presets
+    // CSS to stamp box-shadow:var(--d-shadow) onto the entire CTA group wrapper
+    // — an unwanted shadow on a layout container. Only HeroCta (the actual
+    // button) should have data-d-role="btn".
+    render(
+      <HeroActions data-testid="ctas">
+        <HeroCta>Click</HeroCta>
+      </HeroActions>,
+    )
+    const wrapper = screen.getByTestId('ctas')
+    expect(wrapper.getAttribute('data-d-role')).toBeNull()
   })
 })
 

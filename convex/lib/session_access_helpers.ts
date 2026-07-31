@@ -7,6 +7,7 @@ import {
   areExportPaywallsDisabled,
   isAuthDisabled,
 } from './session_export_helpers'
+import { timingSafeEqual } from './timingSafeEqual'
 
 const textEncoder = new TextEncoder()
 
@@ -54,6 +55,7 @@ export type ClaimAnonymousSessionsByClientIdInput = {
 
 export type ClaimAnonymousSessionsByIpInput = {
   clientIpHash: string
+  secret?: string
 }
 
 export type SetSessionThemeOverrideInput = {
@@ -381,6 +383,22 @@ export async function claimAnonymousSessionsByIp(
   ctx: MutationCtx,
   args: ClaimAnonymousSessionsByIpInput,
 ) {
+  // Verify server secret — the clientIpHash is derived server-side from
+  // request headers by the HTTP route, but this mutation is public and
+  // could be called directly with an arbitrary clientIpHash to steal
+  // anonymous sessions from other IPs.
+  const expectedSecret = process.env.SHARE_BONUS_MUTATION_SECRET
+  if (
+    expectedSecret === undefined ||
+    args.secret === undefined ||
+    !timingSafeEqual(args.secret, expectedSecret)
+  ) {
+    throw new ConvexError({
+      code: 'FORBIDDEN',
+      message: 'This operation can only be called from the server.',
+    })
+  }
+
   const userId = await getUserId(ctx)
   if (userId === undefined) {
     throw new ConvexError({

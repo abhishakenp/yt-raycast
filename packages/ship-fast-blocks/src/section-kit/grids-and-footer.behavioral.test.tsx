@@ -4,7 +4,13 @@ import * as React from 'react'
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { CtaBand } from './CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandActions,
+  CtaAction,
+} from './CtaBand.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -120,6 +126,7 @@ describe('section-kit grids and footer', () => {
       <RoutesContext.Provider
         value={{
           routes,
+          pageIds: [],
           currentPage: 'Home',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
@@ -251,10 +258,14 @@ describe('section-kit grids and footer', () => {
             <StatLabel>Launch time</StatLabel>
           </StatItem>
         </StatGrid>
-        <CtaBand
-          title="Ready to ship"
-          actions={[{ label: 'Book a demo', target: 'Contact' }]}
-        />
+        <CtaBand>
+          <CtaBandInner>
+            <CtaBandTitle>Ready to ship</CtaBandTitle>
+            <CtaBandActions>
+              <CtaAction onClick={() => {}}>Book a demo</CtaAction>
+            </CtaBandActions>
+          </CtaBandInner>
+        </CtaBand>
         <SiteFooter>
           <FooterContent>
             <FooterGrid>
@@ -313,12 +324,11 @@ describe('section-kit grids and footer', () => {
 
   it('does not crash when AI output omits optional collection props', () => {
     renderMalformed(
-      <CtaBand
-        title="Ready"
-        actions={
-          undefined as unknown as Parameters<typeof CtaBand>[0]['actions']
-        }
-      />,
+      <CtaBand>
+        <CtaBandInner>
+          <CtaBandTitle>Ready</CtaBandTitle>
+        </CtaBandInner>
+      </CtaBand>,
     )
     renderMalformed(
       <SiteFooter>
@@ -335,24 +345,23 @@ describe('section-kit grids and footer', () => {
       </SiteFooter>,
     )
 
-    expect(screen.getByTitle('Ready')).toBeTruthy()
+    expect(screen.getByText('Ready')).toBeTruthy()
     expect(screen.getAllByText(/Northwind/).length).toBeGreaterThan(0)
   })
 
   it('does not crash when CtaBand receives malformed generated actions', () => {
     renderMalformed(
-      <CtaBand
-        title="Ready"
-        actions={
-          [
-            null,
-            { label: 'Contact', target: 'Contact' },
-          ] as unknown as Parameters<typeof CtaBand>[0]['actions']
-        }
-      />,
+      <CtaBand>
+        <CtaBandInner>
+          <CtaBandTitle>Ready</CtaBandTitle>
+          <CtaBandActions>
+            <CtaAction onClick={() => {}}>Contact</CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>,
     )
 
-    expect(screen.getByTitle('Ready')).toBeTruthy()
+    expect(screen.getByText('Ready')).toBeTruthy()
   })
 
   it('does not crash when FeatureGrid receives missing generated features', () => {
@@ -578,5 +587,60 @@ describe('section-kit grids and footer', () => {
     )
 
     expect(screen.getAllByText(/Northwind/).length).toBeGreaterThan(0)
+  })
+
+  it('only the <footer> root carries data-d-role="footer" (no padded sub-components)', () => {
+    // Regression: every SiteFooter sub-component used to carry
+    // data-d-role="footer", so the design-presets.css rule
+    // [data-d-role="footer"] { padding-block: var(--d-density-footer, 3rem); }
+    // stamped 48px top+bottom padding onto every nested element (h3, ul, li,
+    // brand, columns), inflating the footer to ~900px. Only the outer
+    // <footer> should carry the role.
+    render(
+      <SiteFooter>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand="Northwind" />
+            <FooterColumn>
+              <FooterColumnTitle>Product</FooterColumnTitle>
+              <FooterColumnList>
+                <li>
+                  <FooterLink href="Features">Features</FooterLink>
+                </li>
+              </FooterColumnList>
+            </FooterColumn>
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>© 2026</FooterCopyright>
+            <FooterLegal />
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>,
+    )
+
+    const footerRoles = document.querySelectorAll('[data-d-role="footer"]')
+    expect(footerRoles.length).toBe(1)
+    expect(footerRoles[0].tagName).toBe('FOOTER')
+    // sub-components keep their data-slot but not the role
+    expect(
+      document
+        .querySelector('[data-slot="footer-content"]')
+        ?.getAttribute('data-d-role'),
+    ).toBeNull()
+    expect(
+      document
+        .querySelector('[data-slot="footer-grid"]')
+        ?.getAttribute('data-d-role'),
+    ).toBeNull()
+    expect(
+      document
+        .querySelector('[data-slot="footer-column-title"]')
+        ?.getAttribute('data-d-role'),
+    ).toBeNull()
+    expect(
+      document
+        .querySelector('[data-slot="footer-column-list"]')
+        ?.getAttribute('data-d-role'),
+    ).toBeNull()
   })
 })

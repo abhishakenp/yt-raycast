@@ -51,7 +51,10 @@ const SLOT_TO_ROLE = [
   // Heading
   { test: /heading|title|name|question/, role: 'heading' },
   // Body / text
-  { test: /subheading|subtitle|body|excerpt|description|answer|text|content|meta|role|label|info|strip-item|step-content|process-content/, role: 'body' },
+  {
+    test: /subheading|subtitle|body|excerpt|description|answer|text|content|meta|role|label|info|strip-item|step-content|process-content/,
+    role: 'body',
+  },
   // Highlight
   { test: /highlight/, role: 'highlight' },
 ]
@@ -64,7 +67,8 @@ function slotToRole(slot) {
 }
 
 const files = readdirSync(DIR).filter(
-  (f) => f.endsWith('.tsx') && !f.includes('.test.') && !f.includes('.registry.'),
+  (f) =>
+    f.endsWith('.tsx') && !f.includes('.test.') && !f.includes('.registry.'),
 )
 
 let totalAdded = 0
@@ -95,5 +99,7 @@ for (const file of files) {
   }
 }
 
-console.log(`Modified ${filesModified} files, added ${totalAdded} data-d-role attributes`)
+console.log(
+  `Modified ${filesModified} files, added ${totalAdded} data-d-role attributes`,
+)
 console.log(report.join('\n'))

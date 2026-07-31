@@ -79,7 +79,9 @@ describe('parseDesignOverride', () => {
   })
 
   it('accepts @design prefix or bare key:value', () => {
-    expect(parseDesignOverride('@design rounded-none').radius).toBe('rounded-none')
+    expect(parseDesignOverride('@design rounded-none').radius).toBe(
+      'rounded-none',
+    )
     expect(parseDesignOverride('rounded-none').radius).toBe('rounded-none')
   })
 
@@ -88,7 +90,9 @@ describe('parseDesignOverride', () => {
   })
 
   it('handles double-colon syntax', () => {
-    expect(parseDesignOverride('radius::rounded-none').radius).toBe('rounded-none')
+    expect(parseDesignOverride('radius::rounded-none').radius).toBe(
+      'rounded-none',
+    )
   })
 
   it('parses per-role overrides into roles map', () => {
@@ -480,9 +484,7 @@ describe('DesignSystemProvider renders data attrs and CSS custom properties', ()
 
   it('sets inline CSS custom properties for arbitrary bracket values', () => {
     const html = renderToString(
-      <DesignSystemProvider
-        intent={{ ...DEFAULT_DESIGN, radius: '[13px]' }}
-      >
+      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, radius: '[13px]' }}>
         <div>x</div>
       </DesignSystemProvider>,
     )

@@ -64,7 +64,10 @@ describe('pickThemeForDesignIntent', () => {
       'bold-tech',
       'cyberpunk',
     ]
-    const design: DesignIntent = { ...DEFAULT_DESIGN, shadow: 'shadow-[8px_8px_0_0]' }
+    const design: DesignIntent = {
+      ...DEFAULT_DESIGN,
+      shadow: 'shadow-[8px_8px_0_0]',
+    }
     // Try multiple rng values — all should land in the brutalist pool
     for (const v of [0.0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
       const theme = pickThemeForDesignIntent(design, rngFrom([v]))
@@ -81,7 +84,11 @@ describe('pickThemeForDesignIntent', () => {
       'clean-slate',
       'supabase',
     ]
-    const design: DesignIntent = { ...DEFAULT_DESIGN, typography: 'technical', shadow: 'shadow-sm' }
+    const design: DesignIntent = {
+      ...DEFAULT_DESIGN,
+      typography: 'technical',
+      shadow: 'shadow-sm',
+    }
     for (const v of [0.0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
       const theme = pickThemeForDesignIntent(design, rngFrom([v]))
       expect(techPool).toContain(theme)

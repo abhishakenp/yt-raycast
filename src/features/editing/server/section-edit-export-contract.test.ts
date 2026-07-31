@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+vi.mock('@tanstack/ai-isolate-node', () => ({
+  createNodeIsolateDriver: () => ({}),
+}))
 
 import { renderOpenUIToHTML } from '@ship-fast/engine/openui-ssr.js'
 import {

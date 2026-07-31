@@ -26,7 +26,8 @@ const DealsGrid = React.forwardRef<
   return (
     <Comp
       data-slot="deals-grid"
-      data-d-role="grid"className={cn(dealsGridVariants({ cols }), className)}
+      data-d-role="grid"
+      className={cn(dealsGridVariants({ cols }), className)}
       ref={ref}
       {...props}
     />

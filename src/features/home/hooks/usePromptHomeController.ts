@@ -19,8 +19,12 @@ import {
 import type { BuildCreateSessionPayloadInput } from '@/features/session/services/session-create-payload'
 import { getReferralAuthToken } from '@/features/referrals/lib/referral-client'
 import { AppError } from '@/shared/errors/app-error'
-
-const LAST_PROMPT_STORAGE_KEY = 'ship-fast:last-prompt'
+import {
+  clearPromptSessionCache,
+  readPromptSessionCache,
+  updatePromptInCache,
+  updateSessionInCache,
+} from '@/features/home/services/prompt-session-cache'
 
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
@@ -47,6 +51,7 @@ type CreateSessionResult = {
   sessionId: string
   cached?: boolean
   cloned?: boolean
+  reused?: boolean
 }
 type CreateSessionErrorResult = {
   code?: unknown
@@ -59,6 +64,14 @@ type SessionLaunch = {
 }
 type SpeculativeGeneration = SessionLaunch & {
   request: Promise<CreateSessionResult>
+}
+
+type CachedSpeculativeSession = {
+  fingerprint: string
+  sessionId: string
+  anonymousOwnerSecret: string
+  workspace: string
+  preferredLanguage: string
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -255,7 +268,8 @@ export const usePromptHomeController = () => {
   const router = useRouter()
   const [prompt, setPromptState] = useState(() => {
     try {
-      return window.localStorage.getItem(LAST_PROMPT_STORAGE_KEY) ?? ''
+      const cache = readPromptSessionCache(window.localStorage)
+      return cache?.prompt ?? ''
     } catch {
       return ''
     }
@@ -272,6 +286,11 @@ export const usePromptHomeController = () => {
   const speculativeGenerationTimerRef = useRef<number | null>(null)
   const speculativeGenerationTimerFingerprintRef = useRef<string | null>(null)
   const completedSpeculativeFingerprintsRef = useRef<string[]>([])
+  // A speculative session restored from localStorage on mount. When the user
+  // hits Generate with a matching fingerprint, we navigate to this session
+  // instead of creating a new one — preventing duplicate draft sessions on
+  // reload.
+  const cachedSpeculativeRef = useRef<CachedSpeculativeSession | null>(null)
   // Tracks whether a session was launched — used to clear the prompt from
   // localStorage on unmount so returning to the home page doesn't show
   // the old prompt (which would appear "concatenated" with new typing).
@@ -309,14 +328,47 @@ export const usePromptHomeController = () => {
     [invalidateSpeculativeGeneration],
   )
 
-  // On unmount: if a session was started, ensure the prompt is cleared from
-  // localStorage so returning to the home page doesn't show stale text that
-  // would appear "concatenated" with new typing.
+  // On mount: hydrate the cached speculative session from localStorage. If a
+  // valid cache entry exists with a sessionId, populate the completed-
+  // fingerprints ref so speculative generation does NOT re-fire for the same
+  // prompt on reload (which would create a duplicate draft session). Also
+  // store the session info so runSubmit can navigate to it directly.
+  useEffect(() => {
+    try {
+      const cache = readPromptSessionCache(window.localStorage)
+      if (cache === null) return
+      if (
+        cache.sessionId !== undefined &&
+        cache.fingerprint !== undefined &&
+        cache.fingerprint !== '' &&
+        cache.anonymousOwnerSecret !== undefined &&
+        cache.workspace !== undefined
+      ) {
+        completedSpeculativeFingerprintsRef.current = [
+          cache.fingerprint,
+          ...completedSpeculativeFingerprintsRef.current,
+        ].slice(-SPECULATIVE_COMPLETED_FINGERPRINT_LIMIT)
+        cachedSpeculativeRef.current = {
+          fingerprint: cache.fingerprint,
+          sessionId: cache.sessionId,
+          anonymousOwnerSecret: cache.anonymousOwnerSecret,
+          workspace: cache.workspace,
+          preferredLanguage: cache.preferredLanguage,
+        }
+      }
+    } catch {
+      // Storage may be blocked; non-critical.
+    }
+  }, [])
+
+  // On unmount: if a session was started, ensure the prompt cache is cleared
+  // so returning to the home page doesn't show stale text that would appear
+  // "concatenated" with new typing.
   useEffect(
     () => () => {
       if (sessionStartedRef.current) {
         try {
-          window.localStorage.removeItem(LAST_PROMPT_STORAGE_KEY)
+          clearPromptSessionCache(window.localStorage)
         } catch {
           // Storage may be blocked
         }
@@ -324,6 +376,27 @@ export const usePromptHomeController = () => {
     },
     [],
   )
+
+  // bfcache restore: when the browser restores the page from the back-forward
+  // cache, the frozen React state may still hold the old prompt even though
+  // localStorage was cleared by runSubmit. Re-sync from the cache so the
+  // textarea is empty after Generate → Back.
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return
+      try {
+        const cache = readPromptSessionCache(window.localStorage)
+        setPromptState(cache?.prompt ?? '')
+        if (cache === null) {
+          cachedSpeculativeRef.current = null
+        }
+      } catch {
+        // Storage may be blocked; non-critical.
+      }
+    }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [])
 
   // Clean up stale ready-session cache entries on mount.
   // These are no longer written, but old entries from previous visits
@@ -456,6 +529,21 @@ export const usePromptHomeController = () => {
           .then((result) => {
             if (typeof result.sessionId === 'string' && result.sessionId) {
               preloadGenerationRoute(result.sessionId)
+              // Persist the speculative session to localStorage so a reload
+              // does NOT create a duplicate draft. The fingerprint lets
+              // runSubmit reuse this session; the sessionId + owner secret
+              // let us navigate directly to it.
+              try {
+                updateSessionInCache(window.localStorage, {
+                  sessionId: result.sessionId,
+                  anonymousOwnerSecret: launch.anonymousOwnerSecret,
+                  workspace: launch.payload.workspace,
+                  fingerprint: launch.fingerprint,
+                  preferredLanguage: launch.payload.preferredLanguage ?? 'en',
+                })
+              } catch {
+                // Storage may be blocked; non-critical.
+              }
               // Track completed fingerprints so typing away and back doesn't
               // re-fire. Bounded to prevent unbounded growth.
               const completed = completedSpeculativeFingerprintsRef.current
@@ -518,8 +606,25 @@ export const usePromptHomeController = () => {
           ? speculativeGenerationRef.current
           : null
       speculativeGenerationRef.current = null
-      const result = await (speculativeGeneration?.request ??
-        createSessionWithRetry(createSessionFromHttp, launch.payload))
+
+      // Check if we have a cached speculative session from a previous mount
+      // (e.g. after reload) whose fingerprint matches the current submit.
+      // If so, navigate directly to it and promote the draft — do NOT create
+      // a new session. This prevents duplicate draft sessions for the same
+      // prompt across reloads.
+      const cachedSpeculative = cachedSpeculativeRef.current
+      const cachedSessionMatch =
+        cachedSpeculative !== null &&
+        cachedSpeculative.fingerprint === launch.fingerprint
+
+      const result = cachedSessionMatch
+        ? ({
+            sessionId: cachedSpeculative!.sessionId,
+            cached: true,
+            reused: true,
+          } satisfies CreateSessionResult)
+        : await (speculativeGeneration?.request ??
+            createSessionWithRetry(createSessionFromHttp, launch.payload))
       const sessionId = result.sessionId
 
       if (!sessionId || typeof sessionId !== 'string' || !sessionId.trim()) {
@@ -529,19 +634,32 @@ export const usePromptHomeController = () => {
       const isOwnedCachedClone =
         result.cached === true && result.cloned === true
 
-      if (speculativeGeneration !== null && result.cached !== true) {
+      // Promote the draft session (flip isDraft → false) so it becomes a
+      // real session and the TTL cleanup cron doesn't delete it. Uses the
+      // same workspace as the original draft so the idempotency check finds
+      // and promotes it rather than creating a new session.
+      if (cachedSessionMatch) {
+        const promotePayload = {
+          ...launch.payload,
+          workspace: cachedSpeculative!.workspace,
+          anonymousOwnerSecret: cachedSpeculative!.anonymousOwnerSecret,
+        }
+        void publishDraftSessionFromHttp(promotePayload).catch(() => undefined)
+      } else if (speculativeGeneration !== null && result.cached !== true) {
         void publishDraftSessionFromHttp(speculativeGeneration.payload).catch(
           () => undefined,
         )
       }
 
-      if (result.cached !== true || isOwnedCachedClone) {
+      if (result.cached !== true || isOwnedCachedClone || cachedSessionMatch) {
         try {
           persistAnonymousOwnerSecret(
             window.localStorage,
             sessionId,
-            speculativeGeneration?.anonymousOwnerSecret ??
-              launch.anonymousOwnerSecret,
+            cachedSessionMatch
+              ? cachedSpeculative!.anonymousOwnerSecret
+              : (speculativeGeneration?.anonymousOwnerSecret ??
+                  launch.anonymousOwnerSecret),
           )
         } catch {
           // Storage can be blocked; session launch should still continue.
@@ -550,8 +668,9 @@ export const usePromptHomeController = () => {
 
       setPrompt('')
       sessionStartedRef.current = true
+      cachedSpeculativeRef.current = null
       try {
-        window.localStorage.removeItem(LAST_PROMPT_STORAGE_KEY)
+        clearPromptSessionCache(window.localStorage)
       } catch {
         // Storage may be blocked; session launch should still continue.
       }
@@ -588,7 +707,7 @@ export const usePromptHomeController = () => {
   const setPrompt = useCallback((value: string) => {
     setPromptState(value)
     try {
-      window.localStorage.setItem(LAST_PROMPT_STORAGE_KEY, value)
+      updatePromptInCache(window.localStorage, value)
     } catch {
       // Storage may be blocked; prompt still works in-session.
     }

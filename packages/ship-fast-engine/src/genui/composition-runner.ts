@@ -182,13 +182,11 @@ export async function runComposition(
     })
   }
 
-  // ── Compile ───────────────────────────────────────────────────────
-  const compiled = await compileComposition(parsed, {
-    brand: parsed.brand,
-    title: parsed.title,
-  })
-
-  // ── Validate svelte blocks (if any) ───────────────────────────────
+  // ── Validate svelte blocks BEFORE compiling (fatal) ───────────────
+  // Security: LLM-generated Svelte code is compiled and executed on both
+  // server (SSR) and client (DOM JS). XSS pattern validation must run
+  // before compilation and reject the composition if any block fails —
+  // a non-fatal warning would allow bypassable malicious code to execute.
   const svelteSections = parsed.sections.filter((s) => s.svelte?.source)
   if (svelteSections.length > 0) {
     const { validateSvelteSource } = await import('./svelte-compiler.ts')
@@ -205,10 +203,19 @@ export async function runComposition(
         .join('\n')
       opts.sessionCtx?.broadcast?.({
         type: 'log',
-        message: `Svelte validation errors (non-fatal):\n${errorLines}`,
+        message: `Svelte validation errors (fatal — rejecting composition):\n${errorLines}`,
       })
+      throw new Error(
+        `Composition rejected: Svelte XSS validation failed.\n${errorLines}`,
+      )
     }
   }
+
+  // ── Compile ───────────────────────────────────────────────────────
+  const compiled = await compileComposition(parsed, {
+    brand: parsed.brand,
+    title: parsed.title,
+  })
 
   // ── Content quality gate (before anything is persisted) ───────────
   enforceCompositionQuality(compiled.source, opts.sessionCtx)

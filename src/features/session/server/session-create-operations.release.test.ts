@@ -1,5 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
+  enforceUserInputModeration: vi.fn().mockResolvedValue(undefined),
+  moderationErrorResponse: () => null,
+}))
+
+import { sessionCreateHits } from '@/lib/rate-limit'
 import { createSessionCreateResponse } from './session-create-response'
 
 const endpoint = 'https://ship-fast.test/api/sessions/create'
@@ -12,6 +18,10 @@ const successfulMutation = () =>
   })
 
 describe('public session creation release operations', () => {
+  beforeEach(() => {
+    sessionCreateHits.clear()
+  })
+
   it('rejects cross-origin browser-simple bodies before mutation', async () => {
     const mutation = successfulMutation()
     const response = await createSessionCreateResponse(

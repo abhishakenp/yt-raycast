@@ -13,25 +13,63 @@ const prompts = [
 
 // Warm the cache first
 const warmWs = mkdtempSync(join(tmpdir(), 'warm-'))
-const warmCtx = { id: 'warm', broadcast: () => {}, setPrompt: () => {}, setTasks: () => {}, updateTask: () => {}, signalHomepageReady: () => {}, signalOpenuiReady: () => {}, setElapsed: () => {}, setCost: () => {} }
-try { await runComposition({ prompt: prompts[0], workspace: warmWs, sessionCtx: warmCtx }) } catch {}
+const warmCtx = {
+  id: 'warm',
+  broadcast: () => {},
+  setPrompt: () => {},
+  setTasks: () => {},
+  updateTask: () => {},
+  signalHomepageReady: () => {},
+  signalOpenuiReady: () => {},
+  setElapsed: () => {},
+  setCost: () => {},
+}
+try {
+  await runComposition({
+    prompt: prompts[0],
+    workspace: warmWs,
+    sessionCtx: warmCtx,
+  })
+} catch {}
 rmSync(warmWs, { recursive: true, force: true })
 console.log('Cache warmed\n')
 
 for (let i = 0; i < prompts.length; i++) {
   const ws = mkdtempSync(join(tmpdir(), `tok-${i}-`))
-  const ctx = { id: `bench`, broadcast: () => {}, setPrompt: () => {}, setTasks: () => {}, updateTask: () => {}, signalHomepageReady: () => {}, signalOpenuiReady: () => {}, setElapsed: () => {}, setCost: () => {} }
+  const ctx = {
+    id: `bench`,
+    broadcast: () => {},
+    setPrompt: () => {},
+    setTasks: () => {},
+    updateTask: () => {},
+    signalHomepageReady: () => {},
+    signalOpenuiReady: () => {},
+    setElapsed: () => {},
+    setCost: () => {},
+  }
   try {
-    const r = await runComposition({ prompt: prompts[i], workspace: ws, sessionCtx: ctx })
+    const r = await runComposition({
+      prompt: prompts[i],
+      workspace: ws,
+      sessionCtx: ctx,
+    })
     let currentPage = 'home'
-    let navbarCount = 0, footerCount = 0
+    let navbarCount = 0,
+      footerCount = 0
     const pageSet = new Set(['home'])
     for (const line of r.raw.split('\n')) {
-      if (line.startsWith('@page ')) { currentPage = line.slice(6).trim(); pageSet.add(currentPage) }
+      if (line.startsWith('@page ')) {
+        currentPage = line.slice(6).trim()
+        pageSet.add(currentPage)
+      }
       if (line.startsWith('@section Navbar')) navbarCount++
       if (line.startsWith('@section Footer')) footerCount++
     }
-    console.log(`p${i+1}: ${r.duration}ms, ${r.raw.length} chars, ~${Math.round(r.raw.length/4)} tok, ${pageSet.size} pages, Navbar:${navbarCount}, Footer:${footerCount}`)
-  } catch(e) { console.log(`p${i+1}: FAILED - ${e.message}`) }
+    console.log(
+      `p${i + 1}: ${r.duration}ms, ${r.raw.length} chars, ~${Math.round(r.raw.length / 4)} tok, ${pageSet.size} pages, Navbar:${navbarCount}, Footer:${footerCount}`,
+    )
+  } catch (e) {
+    console.log(`p${i + 1}: FAILED - ${e.message}`)
+  }
   rmSync(ws, { recursive: true, force: true })
 }

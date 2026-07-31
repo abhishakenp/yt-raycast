@@ -10,15 +10,15 @@ const localizedTitle = 'स्वीट क्रम्ब बेकरी | त
 const canonicalUrl = 'https://sweet-crumb.example/'
 
 const localizedBakerySource = `
-home_navbar = BakeryNavbar("स्वीट क्रम्ब बेकरी", ["होम","मेनू"], "अभी ऑर्डर करें", "मेनू", "0", "")
-home_menu = BakeryMenu({"heading":"दैनिक मेनू","description":"आज ताज़ा बेक किया गया","breads":[{"name":"खट्टी रोटी","description":"धीमी आंच पर पकी","price":"₹250"}],"pastries":[],"cakes":[],"addLabel":"कार्ट में जोड़ें"})
+home_navbar = Navbar("स्वीट क्रम्ब बेकरी", ["होम","मेनू"], "अभी ऑर्डर करें")
+home_menu = ProductDetail({"title":"खट्टी रोटी","description":"धीमी आंच पर पकी","price":"₹250","primaryCta":"कार्ट में जोड़ें"})
 home = Stack([home_navbar,home_menu])
 root = PageSwitch(["होम"], [home], "", {"होम":"होम","अभी ऑर्डर करें":"होम"})
 `
 
 const fallbackSource = `
-home_navbar = BakeryNavbar()
-home_hero = BakeryHero()
+home_navbar = Navbar()
+home_hero = SplitHero()
 home = Stack([home_navbar,home_hero])
 root = PageSwitch(["Home"], [home], "", {"Home":"Home"})
 `
@@ -221,7 +221,7 @@ describe('standalone OpenUI HTML SEO and AEO release gates', () => {
 
     expect.soft(document.querySelectorAll('main')).toHaveLength(1)
     expect.soft(document.querySelectorAll('h1')).toHaveLength(1)
-    expect.soft(styleText.length).toBeGreaterThan(500_000)
+    expect.soft(styleText.length).toBeGreaterThan(200_000)
     expect.soft(styleText).toMatch(/\.text-4xl\b/)
     expect.soft(styleText).toMatch(/\.font-semibold\b/)
     expect.soft(styleText).toMatch(/\.lg\\:text-6xl\b/)

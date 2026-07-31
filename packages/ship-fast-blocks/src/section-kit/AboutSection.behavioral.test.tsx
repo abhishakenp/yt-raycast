@@ -49,15 +49,17 @@ describe('AboutSection', () => {
     let ref: HTMLElement | null = null
     render(
       <AboutSection
-        ref={(r) => {
-          ref = r
-        }}
+        ref={
+          ((r: unknown) => {
+            ref = r as HTMLElement | null
+          }) as never
+        }
       >
         x
       </AboutSection>,
     )
     expect(ref).not.toBeNull()
-    expect(ref?.tagName).toBe('SECTION')
+    expect((ref as HTMLElement | null)?.tagName).toBe('SECTION')
   })
 })
 

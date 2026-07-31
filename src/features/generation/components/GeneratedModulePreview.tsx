@@ -10,10 +10,7 @@ import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { lazy, Suspense, useEffect } from 'react'
 import type { CommerceRuntimeMode } from '@/features/commerce/contracts'
-import {
-  parseDesignLine,
-  type DesignIntent,
-} from '@ship-fast/blocks/runtime'
+import { parseDesignLine, type DesignIntent } from '@ship-fast/blocks/runtime'
 
 type BrandLogoSelection = {
   name: string

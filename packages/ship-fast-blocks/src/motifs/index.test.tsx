@@ -58,7 +58,6 @@ import {
 } from '#/primitives/design-system.ts'
 
 const SHARP_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'rounded-none' }
-const ROUNDED_DESIGN: DesignIntent = { ...DEFAULT_DESIGN, radius: 'rounded-xl' }
 
 // Helper: render a capsule with props
 function renderCapsule(
@@ -531,7 +530,9 @@ describe('PosterHero', () => {
     expect(cta.getAttribute('data-d-role')).toBe('btn')
     const wrapper = cta.closest('[style*="--d-radius"]')
     expect(wrapper).not.toBeNull()
-    expect(wrapper?.getAttribute('style') ?? '').toContain('--d-radius: 0.75rem')
+    expect(wrapper?.getAttribute('style') ?? '').toContain(
+      '--d-radius: 0.75rem',
+    )
   })
 })
 
@@ -747,7 +748,7 @@ describe('MapBlock image rendering', () => {
 
 describe('CardGrid eyebrow prop', () => {
   it('uses eyebrow prop in editorial chrome instead of hardcoded Services', () => {
-    const { container } = renderCapsule(CardGrid, {
+    renderCapsule(CardGrid, {
       heading: 'Seasonal Lookbook',
       eyebrow: 'Collection',
       chrome: 'editorial',
@@ -762,7 +763,7 @@ describe('CardGrid eyebrow prop', () => {
   })
 
   it('uses eyebrow in card labels instead of hardcoded Service', () => {
-    const { container } = renderCapsule(CardGrid, {
+    renderCapsule(CardGrid, {
       heading: 'Lookbook',
       eyebrow: 'Look',
       chrome: 'editorial',
@@ -780,5 +781,55 @@ describe('CardGrid eyebrow prop', () => {
       cards: [{ title: 'Card 1' }],
     })
     expect(screen.getByText('Collection')).toBeTruthy()
+  })
+})
+
+// ─── Design role tagging (brutalist shadow/border application) ───────────
+
+describe('design-d-role tagging on motif buttons and cards', () => {
+  it('EditorialHero CTAs carry data-d-role="btn"', () => {
+    renderCapsule(SplitHero, {
+      heading: 'Test',
+      primaryCta: 'Primary',
+      secondaryCta: 'Secondary',
+    })
+    const btns = document.querySelectorAll('[data-d-role="btn"]')
+    expect(btns.length).toBeGreaterThanOrEqual(2)
+    const texts = [...btns].map((b) => b.textContent?.trim())
+    expect(texts).toContain('Primary')
+    expect(texts).toContain('Secondary')
+  })
+
+  it('CardGrid editorial cards carry data-d-role="card"', () => {
+    renderCapsule(CardGrid, {
+      heading: 'Features',
+      chrome: 'editorial',
+      cards: [{ title: 'Card 1' }, { title: 'Card 2' }, { title: 'Card 3' }],
+    })
+    const cards = document.querySelectorAll('[data-d-role="card"]')
+    expect(cards.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('TestimonialRow cards carry data-d-role="card"', () => {
+    renderCapsule(TestimonialRow, {
+      heading: 'Testimonials',
+      chrome: 'editorial',
+      cards: [
+        { quote: 'Great', author: 'A' },
+        { quote: 'Good', author: 'B' },
+      ],
+    })
+    const cards = document.querySelectorAll('[data-d-role="card"]')
+    expect(cards.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('CtaBand button carries data-d-role="btn"', () => {
+    renderCapsule(CtaBand, {
+      heading: 'Ready?',
+      cta: 'Get Started',
+      chrome: 'brutalist',
+    })
+    const btns = document.querySelectorAll('[data-d-role="btn"]')
+    expect(btns.length).toBeGreaterThanOrEqual(1)
   })
 })

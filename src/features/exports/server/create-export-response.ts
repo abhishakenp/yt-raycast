@@ -127,6 +127,9 @@ const isSafeArtifactStorageUrl = (value: string): boolean => {
   }
 }
 
+// Re-export for callers that need the same SSRF check
+export { isSafeArtifactStorageUrl as isSafeFetchUrl }
+
 const isExpectedArtifactMediaType = (
   target: ExportTarget,
   contentType: string | undefined,
@@ -144,6 +147,9 @@ const hasZipSignature = (bytes: Uint8Array): boolean =>
   ((bytes[2] === 0x03 && bytes[3] === 0x04) ||
     (bytes[2] === 0x05 && bytes[3] === 0x06) ||
     (bytes[2] === 0x07 && bytes[3] === 0x08))
+
+/** Maximum artifact download size — prevents OOM from corrupted/huge artifacts. */
+const MAX_ARTIFACT_BYTES = 100 * 1024 * 1024 // 100 MB
 
 const isValidArtifactBody = (
   target: ExportTarget,
@@ -607,6 +613,9 @@ export async function createExportResponse(
     }
 
     const artifactBytes = new Uint8Array(await artifactResponse.arrayBuffer())
+    if (artifactBytes.byteLength > MAX_ARTIFACT_BYTES) {
+      return unavailableArtifactResponse()
+    }
     if (
       !legacyStoredArtifact &&
       !isValidArtifactBody(normalizedTarget, artifactBytes)

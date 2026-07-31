@@ -318,9 +318,7 @@ Examples:
     let known = KNOWN_LANGUAGES.find((l) => l.code === code)
     if (!known) {
       const lowerName = name.toLowerCase()
-      known = KNOWN_LANGUAGES.find(
-        (l) => l.name.toLowerCase() === lowerName,
-      )
+      known = KNOWN_LANGUAGES.find((l) => l.name.toLowerCase() === lowerName)
     }
     // If we found a known language by name, use its canonical code
     const finalCode = known ? known.code : code

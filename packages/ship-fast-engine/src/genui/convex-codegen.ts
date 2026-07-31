@@ -4,8 +4,6 @@
 // it generates real, deployable Convex backend code.
 import type {
   LakebedDefinition,
-  LakebedTable,
-  LakebedField,
   LakebedQuery,
   LakebedMutation,
 } from './types.ts'
@@ -44,8 +42,7 @@ function generateQuerySource(query: LakebedQuery): string {
   return `export const ${query.name} = query({
   handler: async (ctx) => {
     return await ctx.db.query('${query.table}').order('desc').collect()
-  },
-})
+  }})
 `
 }
 
@@ -96,8 +93,7 @@ ${argsObj}
   },
   handler: async (ctx, args) => {
 ${handlerBody}
-  },
-})
+  }})
 `
 }
 
@@ -147,7 +143,7 @@ export function generateConvexFunctions(
 /** Generate a seed data file from the lakebed tables that have seedFromProps.
  *  This populates the tables with initial data from the LLM-authored content. */
 export function generateSeedScript(
-  lakebed: LakebedDefinition,
+  _lakebed: LakebedDefinition,
   seedData: Record<string, unknown[]>,
 ): string {
   const seedFns = Object.entries(seedData)
@@ -175,8 +171,7 @@ ${Object.keys(seedData)
     }`,
   )
   .join('\n')}
-  },
-})
+  }})
 `
 }
 

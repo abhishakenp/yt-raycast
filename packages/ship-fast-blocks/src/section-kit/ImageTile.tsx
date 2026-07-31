@@ -15,43 +15,44 @@ import { cn } from '#/lib/utils.ts'
  * BentoGrid) — its `reveal` CVA handles always-visible vs hover-fade.
  */
 const imageTileVariants = cva('group relative overflow-hidden', {
- variants: {
- treatment: {
- '4-3-xl': 'aspect-[4/3] ',
- '4-3-lg': 'aspect-[4/3] ',
- '4-3-2xl-muted': 'aspect-[4/3] bg-muted',
- '4-3-xl-muted': 'aspect-[4/3] bg-muted',
- '4-5-xl-muted': 'aspect-[4/5] bg-muted',
- '4-5-lg-muted': 'aspect-[4/5] bg-muted',
- 'h-72-2xl': 'h-72 ',
- 'h-72-xl': 'h-72 ',
- 'fixed-lg': '',
- },
- },
- defaultVariants: {
- treatment: '4-3-xl',
- },
+  variants: {
+    treatment: {
+      '4-3-xl': 'aspect-[4/3] ',
+      '4-3-lg': 'aspect-[4/3] ',
+      '4-3-2xl-muted': 'aspect-[4/3] bg-muted',
+      '4-3-xl-muted': 'aspect-[4/3] bg-muted',
+      '4-5-xl-muted': 'aspect-[4/5] bg-muted',
+      '4-5-lg-muted': 'aspect-[4/5] bg-muted',
+      'h-72-2xl': 'h-72 ',
+      'h-72-xl': 'h-72 ',
+      'fixed-lg': '',
+    },
+  },
+  defaultVariants: {
+    treatment: '4-3-xl',
+  },
 })
 
 export interface ImageTileProps
- extends
- React.HTMLAttributes<HTMLDivElement>,
- VariantProps<typeof imageTileVariants> {
- asChild?: boolean
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof imageTileVariants> {
+  asChild?: boolean
 }
 
 const ImageTile = React.forwardRef<HTMLDivElement, ImageTileProps>(
- ({ className, treatment, asChild = false, ...props }, ref) => {
- const Comp = asChild ? Slot : 'div'
- return (
- <Comp
- ref={ref}
- data-slot="image-tile"
- data-d-role="card"className={cn(imageTileVariants({ treatment }), className)}
- {...props}
- />
- )
- },
+  ({ className, treatment, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'div'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="image-tile"
+        data-d-role="card"
+        className={cn(imageTileVariants({ treatment }), className)}
+        {...props}
+      />
+    )
+  },
 )
 ImageTile.displayName = 'ImageTile'
 

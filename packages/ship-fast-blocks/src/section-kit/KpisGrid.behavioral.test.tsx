@@ -39,15 +39,17 @@ describe('KpisGrid', () => {
     let ref: HTMLDivElement | null = null
     render(
       <KpisGrid
-        ref={(r) => {
-          ref = r
-        }}
+        ref={
+          ((r: unknown) => {
+            ref = r as HTMLDivElement | null
+          }) as never
+        }
       >
         x
       </KpisGrid>,
     )
     expect(ref).not.toBeNull()
-    expect(ref?.tagName).toBe('DIV')
+    expect((ref as HTMLElement | null)?.tagName).toBe('DIV')
   })
 })
 
@@ -112,12 +114,14 @@ describe('KpiTrendArrow', () => {
     render(
       <KpiTrendArrow
         trend="up"
-        ref={(r) => {
-          ref = r
-        }}
+        ref={
+          ((r: unknown) => {
+            ref = r as HTMLDivElement | null
+          }) as never
+        }
       />,
     )
     expect(ref).not.toBeNull()
-    expect(ref?.tagName).toBe('SPAN')
+    expect((ref as HTMLElement | null)?.tagName).toBe('SPAN')
   })
 })

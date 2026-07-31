@@ -9,6 +9,11 @@ import {
   enforceUserInputModeration,
   moderationErrorResponse,
 } from '@/features/moderation/server/enforce-user-input-moderation'
+import { checkRateLimit, cloneHits } from '@/lib/rate-limit'
+import {
+  getClientIp,
+  hashClientIp,
+} from '@/features/session/server/session-create-response'
 
 // POST /api/clone — kick off a server-side verbatim clone job for a session.
 // Body: { sessionId, anonymousOwnerSecret?, seedUrl, brief }. Bearer in the
@@ -120,6 +125,16 @@ async function writeFailedState(
 }
 
 async function handlePost(request: Request): Promise<Response> {
+  // Rate limit: max 3 clone requests per 10 minutes per IP. Cloning is
+  // compute-heavy (Playwright crawl + capture) and a prime abuse target.
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, cloneHits, 3, 10 * 60 * 1000)) {
+    return json(
+      { error: 'Too many clone requests. Please wait a few minutes.' },
+      { status: 429 },
+    )
+  }
+
   const body = await readJsonBody(request)
   const sessionId = getString(body, 'sessionId')
   const seedUrl = getString(body, 'seedUrl')

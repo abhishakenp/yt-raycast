@@ -9,6 +9,7 @@ import {
   query,
 } from './_generated/server'
 import type { QueryCtx } from './_generated/server'
+import { timingSafeEqual } from './lib/timingSafeEqual'
 import { createLinkFortyShortLink } from '../src/features/linkforty/lib/linkforty-client'
 
 /**
@@ -50,7 +51,12 @@ export const recordClickEvent = mutation({
     referrer: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (args.secret !== process.env.LINKFORTY_WEBHOOK_MUTATION_SECRET) {
+    const expectedLinkfortySecret =
+      process.env.LINKFORTY_WEBHOOK_MUTATION_SECRET
+    if (
+      !expectedLinkfortySecret ||
+      !timingSafeEqual(args.secret, expectedLinkfortySecret)
+    ) {
       throw new Error('Unauthorized.')
     }
 
@@ -301,5 +307,26 @@ async function requireQueryUserId(ctx: QueryCtx): Promise<string> {
   if (identity === null) {
     throw new Error('Not authenticated.')
   }
-  return identity.subject
+  return identity.tokenIdentifier
 }
+
+/**
+ * Test helper: directly set the LinkForty link ID on a referral code.
+ * In production, this is done by the scheduled `provisionShortLink` action
+ * which calls the LinkForty API. Tests bypass the API and set it directly.
+ */
+export const setLinkfortyLinkIdForTest = mutation({
+  args: { code: v.string(), linkId: v.string(), shortUrl: v.string() },
+  handler: async (ctx, args) => {
+    const row = await ctx.db
+      .query('referralCodes')
+      .withIndex('by_code', (index) => index.eq('code', args.code))
+      .first()
+    if (row === null) throw new Error('Code not found')
+    await ctx.db.patch(row._id, {
+      linkfortyLinkId: args.linkId,
+      linkfortyShortUrl: args.shortUrl,
+    })
+    return { ok: true }
+  },
+})

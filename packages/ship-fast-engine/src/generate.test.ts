@@ -126,11 +126,22 @@ describe('generateText model dispatch', () => {
         expect(llmMocks.chat).not.toHaveBeenCalled()
       } else {
         expect(llmMocks.getAdapter).toHaveBeenCalledWith(modelId)
+        // Reasoning models (gpt-oss) get a harmony prefill assistant message
+        const expectedMessages = supportsReasoningEffort(modelId)
+          ? [
+              { role: 'user', content: DB_OBSERVED_PROMPT },
+              {
+                role: 'assistant',
+                content:
+                  '<|start|>assistant<|channel|>analysis<|message|><|end|><|start|>assistant<|channel|>final<|message|>',
+              },
+            ]
+          : [{ role: 'user', content: DB_OBSERVED_PROMPT }]
         expect(llmMocks.chat).toHaveBeenCalledWith(
           expect.objectContaining({
             adapter: { modelId, provider: 'sdk' },
             systemPrompts: ['Build the generated homepage.'],
-            messages: [{ role: 'user', content: DB_OBSERVED_PROMPT }],
+            messages: expectedMessages,
           }),
         )
         expect(llmMocks.talaasChat).not.toHaveBeenCalled()
@@ -341,7 +352,14 @@ describe('generateText model dispatch', () => {
       expect.objectContaining({
         adapter: { modelId: 'openai/gpt-oss-120b', provider: 'sdk' },
         systemPrompts: ['Edit with Code Mode.'],
-        messages: [{ role: 'user', content: 'Make the button yellow.' }],
+        messages: [
+          { role: 'user', content: 'Make the button yellow.' },
+          {
+            role: 'assistant',
+            content:
+              '<|start|>assistant<|channel|>analysis<|message|><|end|><|start|>assistant<|channel|>final<|message|>',
+          },
+        ],
         tools,
         outputSchema,
       }),

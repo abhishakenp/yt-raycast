@@ -27,6 +27,7 @@ async function getShareBonusStatus(request: Request) {
   const claimed = await client.query(api.shareBonus.getShareBonusStatus, {
     clientIpHash,
     date: getToday(),
+    secret: process.env.SHARE_BONUS_MUTATION_SECRET,
   })
 
   return json({ claimed })
@@ -38,6 +39,7 @@ async function claimShareBonus(request: Request) {
   const result = await client.mutation(api.shareBonus.claimShareBonus, {
     clientIpHash,
     date: getToday(),
+    secret: process.env.SHARE_BONUS_MUTATION_SECRET,
   })
 
   return json(result)

@@ -79,12 +79,6 @@ type RazorpayConstructor = new (
   options: Record<string, unknown>,
 ) => RazorpayCheckout
 
-declare global {
-  interface Window {
-    Razorpay?: RazorpayConstructor
-  }
-}
-
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
@@ -112,8 +106,14 @@ const hostedCartLines = (cart: CommerceRuntimeCart | undefined) =>
     }
   })
 
+function getRazorpay(): RazorpayConstructor | undefined {
+  if (typeof window === 'undefined') return undefined
+  return (window as { Razorpay?: RazorpayConstructor }).Razorpay
+}
+
 const loadRazorpay = async (): Promise<RazorpayConstructor> => {
-  if (window.Razorpay !== undefined) return window.Razorpay
+  const existing = getRazorpay()
+  if (existing !== undefined) return existing
 
   await new Promise<void>((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(
@@ -133,10 +133,10 @@ const loadRazorpay = async (): Promise<RazorpayConstructor> => {
     }
   })
 
-  if (window.Razorpay === undefined) {
+  if (getRazorpay() === undefined) {
     throw new Error('Razorpay checkout is unavailable.')
   }
-  return window.Razorpay
+  return getRazorpay() as RazorpayConstructor
 }
 
 export const runCommercePaymentAction = async (
@@ -859,7 +859,7 @@ export function CommerceCartButton({
             )}
             {!isHosted && fullCartTarget ? (
               <NavbarRouteLink
-                disabled={!items.length}
+                aria-disabled={!items.length}
                 className="inline-flex items-center justify-center rounded-none bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
                 onClick={() => {
                   setOpen(false)

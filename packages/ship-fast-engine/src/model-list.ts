@@ -43,10 +43,9 @@ export const SHIP_FAST_MODELS: readonly ShipFastModel[] = [
 // reasoning from the streamed output (see buildModelOptions in generate.ts).
 // Fallback: openai/gpt-oss-20b via Groq if CEREBRAS_API_KEY is not set.
 // Benchmark: bun scripts/bench-model-comparison.mjs
-export const DEFAULT_MODEL =
-  process.env.CEREBRAS_API_KEY
-    ? 'cerebras/gpt-oss-120b'
-    : 'openai/gpt-oss-120b'
+export const DEFAULT_MODEL = process.env.CEREBRAS_API_KEY
+  ? 'cerebras/gpt-oss-120b'
+  : 'openai/gpt-oss-120b'
 
 export function isKnownModel(id: string): boolean {
   return SHIP_FAST_MODELS.some((m) => m.id === id)

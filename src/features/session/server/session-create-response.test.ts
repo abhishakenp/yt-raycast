@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CONTENT_POLICY_CLIENT_MESSAGE } from '@/lib/content-policy'
 import { ContentModerationError } from '@/features/moderation/server/enforce-user-input-moderation'
 import { CONTENT_MODERATION_UNAVAILABLE_MESSAGE } from '@/features/moderation/server/moderation-classifier'
+import { sessionCreateHits } from '@/lib/rate-limit'
 import {
   createSessionCreateResponse,
   getClientIp,
@@ -47,6 +48,7 @@ describe('createSessionCreateResponse', () => {
     routeMocks.enforceUserInputModeration.mockResolvedValue(undefined)
     routeMocks.startVpsGeneration.mockReset()
     routeMocks.startVpsGeneration.mockResolvedValue(undefined)
+    sessionCreateHits.clear()
   })
 
   afterEach(() => {
@@ -184,7 +186,7 @@ describe('createSessionCreateResponse', () => {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-forwarded-for': '203.0.113.15, 10.0.0.1',
+        'cf-connecting-ip': '203.0.113.15',
       },
       body: JSON.stringify({
         prompt: 'Build a public preview site for a design studio',
@@ -210,6 +212,29 @@ describe('createSessionCreateResponse', () => {
         prompt: 'Build a public preview site for a design studio',
       }),
     )
+  })
+
+  it('prefers proxy-set headers over spoofable X-Forwarded-For to prevent rate-limit bypass', () => {
+    // An attacker sends a spoofed X-Forwarded-For, but cf-connecting-ip
+    // (set by Cloudflare, not spoofable) must take priority.
+    const request = new Request('http://ship-fast.test/', {
+      headers: {
+        'x-forwarded-for': '1.2.3.4, 5.6.7.8',
+        'cf-connecting-ip': '203.0.113.99',
+      },
+    })
+    expect(getClientIp(request)).toBe('203.0.113.99')
+  })
+
+  it('uses the last X-Forwarded-For entry (proxy-set) not the first (client-spoofable)', () => {
+    // Without proxy-specific headers, fall back to X-Forwarded-For but take
+    // the LAST entry (set by the trusted proxy), not the first (spoofable).
+    const request = new Request('http://ship-fast.test/', {
+      headers: {
+        'x-forwarded-for': '1.2.3.4, 10.0.0.1',
+      },
+    })
+    expect(getClientIp(request)).toBe('10.0.0.1')
   })
 
   it('forwards real DB-shaped session creation fields without dropping language, export target, privacy, or workspace', async () => {

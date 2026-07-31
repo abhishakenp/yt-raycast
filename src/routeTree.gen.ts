@@ -28,6 +28,7 @@ import { Route as ExamplesCategoryRouteImport } from './routes/examples.$categor
 import { Route as DeployedSlugRouteImport } from './routes/deployed.$slug'
 import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription-status'
+import { Route as ApiStockImagesRouteImport } from './routes/api/stock-images'
 import { Route as ApiShareBonusRouteImport } from './routes/api/share-bonus'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
@@ -58,6 +59,7 @@ import { Route as ApiMedusaStoreConfigRouteImport } from './routes/api/medusa-st
 import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-store.cart'
 import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-admin.config'
 import { Route as ApiLogrocketSplatRouteImport } from './routes/api/logrocket/$'
+import { Route as ApiLinkfortyWebhookRouteImport } from './routes/api/linkforty.webhook'
 import { Route as ApiImagesSessionIdRouteImport } from './routes/api/images.$sessionId'
 import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
 import { Route as ApiStorefrontMedusaConfigRouteImport } from './routes/api/storefront.medusa.config'
@@ -196,6 +198,11 @@ const ApiTranslateRoute = ApiTranslateRouteImport.update({
 const ApiSubscriptionStatusRoute = ApiSubscriptionStatusRouteImport.update({
   id: '/api/subscription-status',
   path: '/api/subscription-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStockImagesRoute = ApiStockImagesRouteImport.update({
+  id: '/api/stock-images',
+  path: '/api/stock-images',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiShareBonusRoute = ApiShareBonusRouteImport.update({
@@ -347,6 +354,11 @@ const ApiMedusaAdminConfigRoute = ApiMedusaAdminConfigRouteImport.update({
 const ApiLogrocketSplatRoute = ApiLogrocketSplatRouteImport.update({
   id: '/api/logrocket/$',
   path: '/api/logrocket/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLinkfortyWebhookRoute = ApiLinkfortyWebhookRouteImport.update({
+  id: '/api/linkforty/webhook',
+  path: '/api/linkforty/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiImagesSessionIdRoute = ApiImagesSessionIdRouteImport.update({
@@ -634,6 +646,7 @@ export interface FileRoutesByFullPath {
   '/api/pexels': typeof ApiPexelsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/share-bonus': typeof ApiShareBonusRoute
+  '/api/stock-images': typeof ApiStockImagesRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
   '/deployed/$slug': typeof DeployedSlugRouteWithChildren
@@ -642,6 +655,7 @@ export interface FileRoutesByFullPath {
   '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
+  '/api/linkforty/webhook': typeof ApiLinkfortyWebhookRoute
   '/api/logrocket/$': typeof ApiLogrocketSplatRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
@@ -728,6 +742,7 @@ export interface FileRoutesByTo {
   '/api/pexels': typeof ApiPexelsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/share-bonus': typeof ApiShareBonusRoute
+  '/api/stock-images': typeof ApiStockImagesRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
   '/deployed/$slug': typeof DeployedSlugRouteWithChildren
@@ -736,6 +751,7 @@ export interface FileRoutesByTo {
   '/examples': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
+  '/api/linkforty/webhook': typeof ApiLinkfortyWebhookRoute
   '/api/logrocket/$': typeof ApiLogrocketSplatRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
@@ -824,6 +840,7 @@ export interface FileRoutesById {
   '/api/pexels': typeof ApiPexelsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/share-bonus': typeof ApiShareBonusRoute
+  '/api/stock-images': typeof ApiStockImagesRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
   '/deployed/$slug': typeof DeployedSlugRouteWithChildren
@@ -832,6 +849,7 @@ export interface FileRoutesById {
   '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
+  '/api/linkforty/webhook': typeof ApiLinkfortyWebhookRoute
   '/api/logrocket/$': typeof ApiLogrocketSplatRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
@@ -921,6 +939,7 @@ export interface FileRouteTypes {
     | '/api/pexels'
     | '/api/rewrite'
     | '/api/share-bonus'
+    | '/api/stock-images'
     | '/api/subscription-status'
     | '/api/translate'
     | '/deployed/$slug'
@@ -929,6 +948,7 @@ export interface FileRouteTypes {
     | '/examples/'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
+    | '/api/linkforty/webhook'
     | '/api/logrocket/$'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
@@ -1015,6 +1035,7 @@ export interface FileRouteTypes {
     | '/api/pexels'
     | '/api/rewrite'
     | '/api/share-bonus'
+    | '/api/stock-images'
     | '/api/subscription-status'
     | '/api/translate'
     | '/deployed/$slug'
@@ -1023,6 +1044,7 @@ export interface FileRouteTypes {
     | '/examples'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
+    | '/api/linkforty/webhook'
     | '/api/logrocket/$'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
@@ -1110,6 +1132,7 @@ export interface FileRouteTypes {
     | '/api/pexels'
     | '/api/rewrite'
     | '/api/share-bonus'
+    | '/api/stock-images'
     | '/api/subscription-status'
     | '/api/translate'
     | '/deployed/$slug'
@@ -1118,6 +1141,7 @@ export interface FileRouteTypes {
     | '/examples/'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
+    | '/api/linkforty/webhook'
     | '/api/logrocket/$'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
@@ -1206,12 +1230,14 @@ export interface RootRouteChildren {
   ApiPexelsRoute: typeof ApiPexelsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
   ApiShareBonusRoute: typeof ApiShareBonusRoute
+  ApiStockImagesRoute: typeof ApiStockImagesRoute
   ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
   DeployedSlugRoute: typeof DeployedSlugRouteWithChildren
   PreviewSlugRoute: typeof PreviewSlugRouteWithChildren
   ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
   ApiImagesSessionIdRoute: typeof ApiImagesSessionIdRoute
+  ApiLinkfortyWebhookRoute: typeof ApiLinkfortyWebhookRoute
   ApiLogrocketSplatRoute: typeof ApiLogrocketSplatRoute
   ApiMedusaAdminConfigRoute: typeof ApiMedusaAdminConfigRoute
   ApiMedusaStoreCartRoute: typeof ApiMedusaStoreCartRouteWithChildren
@@ -1374,6 +1400,13 @@ declare module '@tanstack/react-router' {
       path: '/api/subscription-status'
       fullPath: '/api/subscription-status'
       preLoaderRoute: typeof ApiSubscriptionStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stock-images': {
+      id: '/api/stock-images'
+      path: '/api/stock-images'
+      fullPath: '/api/stock-images'
+      preLoaderRoute: typeof ApiStockImagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/share-bonus': {
@@ -1584,6 +1617,13 @@ declare module '@tanstack/react-router' {
       path: '/api/logrocket/$'
       fullPath: '/api/logrocket/$'
       preLoaderRoute: typeof ApiLogrocketSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/linkforty/webhook': {
+      id: '/api/linkforty/webhook'
+      path: '/api/linkforty/webhook'
+      fullPath: '/api/linkforty/webhook'
+      preLoaderRoute: typeof ApiLinkfortyWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/images/$sessionId': {
@@ -2130,12 +2170,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPexelsRoute: ApiPexelsRoute,
   ApiRewriteRoute: ApiRewriteRoute,
   ApiShareBonusRoute: ApiShareBonusRoute,
+  ApiStockImagesRoute: ApiStockImagesRoute,
   ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,
   ApiTranslateRoute: ApiTranslateRoute,
   DeployedSlugRoute: DeployedSlugRouteWithChildren,
   PreviewSlugRoute: PreviewSlugRouteWithChildren,
   ApiCheckoutStartRoute: ApiCheckoutStartRoute,
   ApiImagesSessionIdRoute: ApiImagesSessionIdRoute,
+  ApiLinkfortyWebhookRoute: ApiLinkfortyWebhookRoute,
   ApiLogrocketSplatRoute: ApiLogrocketSplatRoute,
   ApiMedusaAdminConfigRoute: ApiMedusaAdminConfigRoute,
   ApiMedusaStoreCartRoute: ApiMedusaStoreCartRouteWithChildren,

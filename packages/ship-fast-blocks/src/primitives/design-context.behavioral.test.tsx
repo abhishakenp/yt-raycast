@@ -70,7 +70,9 @@ const PER_ROLE: DesignIntent = {
 }
 
 function renderWithDesign(intent: DesignIntent, ui: React.ReactElement) {
-  return render(<DesignSystemProvider intent={intent}>{ui}</DesignSystemProvider>)
+  return render(
+    <DesignSystemProvider intent={intent}>{ui}</DesignSystemProvider>,
+  )
 }
 
 /** Probe that exposes useDesign()/useDesignIntent() to the DOM. */
@@ -178,7 +180,9 @@ describe('primitives render data-d-role attributes', () => {
   })
 
   it('Divider rule renders data-d-role="divider"', () => {
-    const { container } = render(<Divider variant="rule" text="Section break" />)
+    const { container } = render(
+      <Divider variant="rule" text="Section break" />,
+    )
     const el = container.querySelector('[data-d-role="divider"]')
     expect(el).toBeTruthy()
     expect(el?.getAttribute('data-d-role')).toBe('divider')
@@ -192,7 +196,9 @@ describe('primitives render data-d-role attributes', () => {
   })
 
   it('Navbar renders data-d-role="nav" with link roles', () => {
-    const { container } = render(<Navbar brand="Brand" links={['Home', 'About']} />)
+    const { container } = render(
+      <Navbar brand="Brand" links={['Home', 'About']} />,
+    )
     const nav = container.querySelector('[data-d-role="nav"]')
     expect(nav).toBeTruthy()
     expect(nav?.tagName).toBe('NAV')
@@ -207,22 +213,30 @@ describe('primitives render data-d-role attributes', () => {
 describe('DesignSystemProvider data attributes for named-concept presets', () => {
   it('sets data-gradient for a named preset', () => {
     const { container } = renderWithDesign(NAMED_CONCEPTS, <div>test</div>)
-    expect(container.firstElementChild?.getAttribute('data-gradient')).toBe('vibrant')
+    expect(container.firstElementChild?.getAttribute('data-gradient')).toBe(
+      'vibrant',
+    )
   })
 
   it('sets data-typography for a named preset', () => {
     const { container } = renderWithDesign(NAMED_CONCEPTS, <div>test</div>)
-    expect(container.firstElementChild?.getAttribute('data-typography')).toBe('editorial')
+    expect(container.firstElementChild?.getAttribute('data-typography')).toBe(
+      'editorial',
+    )
   })
 
   it('sets data-motion for a named preset', () => {
     const { container } = renderWithDesign(NAMED_CONCEPTS, <div>test</div>)
-    expect(container.firstElementChild?.getAttribute('data-motion')).toBe('lively')
+    expect(container.firstElementChild?.getAttribute('data-motion')).toBe(
+      'lively',
+    )
   })
 
   it('sets data-density for a named preset', () => {
     const { container } = renderWithDesign(NAMED_CONCEPTS, <div>test</div>)
-    expect(container.firstElementChild?.getAttribute('data-density')).toBe('airy')
+    expect(container.firstElementChild?.getAttribute('data-density')).toBe(
+      'airy',
+    )
   })
 
   it('sets multiple data attributes at once', () => {
@@ -235,7 +249,7 @@ describe('DesignSystemProvider data attributes for named-concept presets', () =>
   })
 
   it('wraps children in a div (not a fragment)', () => {
-    const { container } = renderWithDesign(
+    renderWithDesign(
       { ...DEFAULT_DESIGN, density: 'airy' },
       <span data-testid="child">child</span>,
     )
@@ -342,7 +356,10 @@ describe('useDesignIntent() returns the raw intent', () => {
 
 describe('lock classes opt out of CSS overrides (CSS-level)', () => {
   it('d-radius-lock class is preserved on the element DOM (CSS handles opt-out)', () => {
-    renderWithDesign(NAMED_CONCEPTS, <div className="rounded-xl d-radius-lock">locked</div>)
+    renderWithDesign(
+      NAMED_CONCEPTS,
+      <div className="rounded-xl d-radius-lock">locked</div>,
+    )
     const el = screen.getByText('locked')
     // The lock class passes through to the DOM; the actual override exclusion
     // happens in design-presets.css via :not(.d-radius-lock) selectors.
@@ -351,7 +368,10 @@ describe('lock classes opt out of CSS overrides (CSS-level)', () => {
   })
 
   it('d-shadow-lock class is preserved on the element DOM', () => {
-    renderWithDesign(NAMED_CONCEPTS, <div className="shadow-lg d-shadow-lock">locked</div>)
+    renderWithDesign(
+      NAMED_CONCEPTS,
+      <div className="shadow-lg d-shadow-lock">locked</div>,
+    )
     const el = screen.getByText('locked')
     expect(el.className).toContain('d-shadow-lock')
   })
@@ -372,6 +392,8 @@ describe('lock classes opt out of CSS overrides (CSS-level)', () => {
     )
     // Provider still emits data-density for the preset; the lock only affects
     // CSS override rule matching in design-presets.css, not provider output.
-    expect(container.firstElementChild?.getAttribute('data-density')).toBe('airy')
+    expect(container.firstElementChild?.getAttribute('data-density')).toBe(
+      'airy',
+    )
   })
 })

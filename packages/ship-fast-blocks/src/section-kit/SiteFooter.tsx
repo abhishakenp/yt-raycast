@@ -14,7 +14,8 @@ const SiteFooter = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="site-footer"
-      data-d-role="footer"className={cn('border-t border-border bg-muted/30', className)}
+      data-d-role="footer"
+      className={cn('border-t border-border bg-muted/30', className)}
       {...props}
     />
   )
@@ -30,7 +31,7 @@ const FooterContent = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-content"
-      data-d-role="footer"className={cn('mx-auto max-w-7xl px-6 py-12 lg:px-8', className)}
+      className={cn('mx-auto max-w-7xl px-6 py-12 lg:px-8', className)}
       {...props}
     />
   )
@@ -46,7 +47,7 @@ const FooterGrid = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-grid"
-      data-d-role="footer"className={cn('grid gap-10 md:grid-cols-4', className)}
+      className={cn('grid gap-10 md:grid-cols-4', className)}
       {...props}
     />
   )
@@ -71,7 +72,7 @@ const FooterBrand = React.forwardRef<
       <Comp
         ref={ref}
         data-slot="footer-brand"
-        data-d-role="footer"className={cn('md:col-span-1', className)}
+        className={cn('md:col-span-1', className)}
         {...props}
       >
         <div className="flex items-center gap-2">
@@ -101,7 +102,7 @@ const FooterTagline = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-tagline"
-      data-d-role="footer"className={cn('mt-3 text-sm text-muted-foreground', className)}
+      className={cn('mt-3 text-sm text-muted-foreground', className)}
       {...props}
     />
   )
@@ -117,7 +118,7 @@ const FooterSocial = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-social"
-      data-d-role="footer"className={cn('mt-4 flex flex-wrap gap-3', className)}
+      className={cn('mt-4 flex flex-wrap gap-3', className)}
       {...props}
     />
   )
@@ -133,7 +134,8 @@ const FooterSocialLink = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-social-link"
-      data-d-role="link"className={cn(
+      data-d-role="link"
+      className={cn(
         'text-sm text-muted-foreground hover:text-foreground',
         className,
       )}
@@ -152,7 +154,7 @@ const FooterColumn = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-column"
-      data-d-role="footer"className={cn('', className)}
+      className={cn('', className)}
       {...props}
     />
   )
@@ -168,7 +170,7 @@ const FooterColumnTitle = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-column-title"
-      data-d-role="footer"className={cn('text-sm font-semibold text-foreground', className)}
+      className={cn('text-sm font-semibold text-foreground', className)}
       {...props}
     />
   )
@@ -184,7 +186,7 @@ const FooterColumnList = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-column-list"
-      data-d-role="footer"className={cn('mt-3 space-y-2', className)}
+      className={cn('mt-3 space-y-2', className)}
       {...props}
     />
   )
@@ -201,7 +203,8 @@ const FooterLink = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-link"
-      data-d-role="link"href={routeTarget}
+      data-d-role="link"
+      href={routeTarget}
       className={cn(
         'text-sm text-muted-foreground hover:text-foreground',
         className,
@@ -223,7 +226,7 @@ const FooterBottom = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-bottom"
-      data-d-role="footer"className={cn(
+      className={cn(
         'mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between',
         className,
       )}
@@ -242,7 +245,7 @@ const FooterCopyright = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-copyright"
-      data-d-role="footer"className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-sm text-muted-foreground', className)}
       {...props}
     />
   )
@@ -258,7 +261,7 @@ const FooterLegal = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="footer-legal"
-      data-d-role="footer"className={cn('flex flex-wrap gap-4', className)}
+      className={cn('flex flex-wrap gap-4', className)}
       {...props}
     />
   )

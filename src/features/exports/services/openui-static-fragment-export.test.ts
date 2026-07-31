@@ -40,7 +40,7 @@ describe('static HTML fragment exports', () => {
   it('bundles generated commerce React exports with copied shared helpers', async () => {
     const result = await buildOpenUIExport({
       source:
-        'root = EcommerceGallery("Featured Products", "", "Add to cart", [{name:"Hydrating Serum", price:"$28", imageAlt:"Hydrating serum bottle"}])',
+        'root = ProductGrid("Featured Products", [{name:"Hydrating Serum", price:"$28", imageAlt:"Hydrating serum bottle"}])',
       siteSpecJson: JSON.stringify({ projectName: 'React Commerce' }),
       sessionId: 'demo',
       target: 'react',

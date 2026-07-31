@@ -50,15 +50,17 @@ describe('StorySection', () => {
     let ref: HTMLElement | null = null
     render(
       <StorySection
-        ref={(r) => {
-          ref = r
-        }}
+        ref={
+          ((r: unknown) => {
+            ref = r as HTMLElement | null
+          }) as never
+        }
       >
         x
       </StorySection>,
     )
     expect(ref).not.toBeNull()
-    expect(ref?.tagName).toBe('SECTION')
+    expect((ref as HTMLElement | null)?.tagName).toBe('SECTION')
   })
 })
 
@@ -152,5 +154,13 @@ describe('StoryImageTile', () => {
       </StoryImageTile>,
     )
     expect(screen.getByTestId('t').className).toContain('mt-8')
+  })
+})
+
+describe('StoryFooter — no footer role on sub-components', () => {
+  it('StoryFooter does not carry data-d-role="footer"', () => {
+    render(<StoryFooter data-testid="f">x</StoryFooter>)
+    const el = screen.getByTestId('f')
+    expect(el.getAttribute('data-d-role')).not.toBe('footer')
   })
 })

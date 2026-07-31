@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
+import { previewHtmlHits } from '@/lib/rate-limit'
 import {
   createInlineStyleEditResponse,
   createInlineTextEditResponse,
@@ -39,6 +40,10 @@ async function expectSanitizedFailure(response: Response) {
 }
 
 describe('session preview edit error privacy', () => {
+  beforeEach(() => {
+    previewHtmlHits.clear()
+  })
+
   it('does not leak Convex restore failures', async () => {
     const response = await createPreviewRestoreResponse(
       SESSION_ID,
@@ -88,5 +93,51 @@ describe('session preview edit error privacy', () => {
     )
 
     await expectSanitizedFailure(response)
+  })
+})
+
+describe('preview-homepage-html executable fragment rejection', () => {
+  beforeEach(() => {
+    previewHtmlHits.clear()
+  })
+  it('rejects script tags in full preview HTML saves', async () => {
+    const response = await createPreviewHtmlSaveResponse(
+      SESSION_ID,
+      jsonRequest({
+        anonymousOwnerSecret: OWNER_SECRET,
+        html: '<!DOCTYPE html><html><body><script>alert(1)</script></body></html>',
+      }),
+      rejectingClient(),
+    )
+
+    expect(response.status).toBe(422)
+    const body = await response.json()
+    expect(body.error).toMatch(/Executable preview fragments/)
+  })
+
+  it('rejects javascript: URLs in full preview HTML saves', async () => {
+    const response = await createPreviewHtmlSaveResponse(
+      SESSION_ID,
+      jsonRequest({
+        anonymousOwnerSecret: OWNER_SECRET,
+        html: '<a href="javascript:alert(1)">click</a>',
+      }),
+      rejectingClient(),
+    )
+
+    expect(response.status).toBe(422)
+  })
+
+  it('rejects iframe injection in full preview HTML saves', async () => {
+    const response = await createPreviewHtmlSaveResponse(
+      SESSION_ID,
+      jsonRequest({
+        anonymousOwnerSecret: OWNER_SECRET,
+        html: '<iframe src="https://evil.test"></iframe>',
+      }),
+      rejectingClient(),
+    )
+
+    expect(response.status).toBe(422)
   })
 })

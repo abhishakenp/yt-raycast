@@ -26,7 +26,8 @@ const EventList = React.forwardRef<
   return (
     <Comp
       data-slot="event-list"
-      data-d-role="list"className={cn(eventListVariants({ variant }), className)}
+      data-d-role="list"
+      className={cn(eventListVariants({ variant }), className)}
       ref={ref}
       {...props}
     />
@@ -42,7 +43,8 @@ const EventCard = React.forwardRef<
   return (
     <Comp
       data-slot="event-card"
-      data-d-role="card"className={cn('group flex flex-col', className)}
+      data-d-role="card"
+      className={cn('group flex flex-col', className)}
       ref={ref}
       {...props}
     />

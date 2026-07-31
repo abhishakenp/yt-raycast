@@ -71,8 +71,7 @@ const MOTIF_SIGNATURES: Record<string, string> = {
     'title? price? comparePrice? rating? reviewCount? description? imageAlt? imageSrc? variants>name? primaryCta? specs>label~value?',
   BlogPost:
     'title? author? date? readTime? imageAlt? imageSrc? excerpt? sections>heading~body? pullQuote? authorBio? authorImageAlt?',
-  SidebarNav:
-    'heading? groups>label~items>name? contentTitle? contentBody?',
+  SidebarNav: 'heading? groups>label~items>name? contentTitle? contentBody?',
 }
 
 function buildMotifList(availableMotifs: string[]): string {
@@ -126,7 +125,7 @@ export function buildCompositionPrompt(
   const rhythmGuide = RHYTHM_GUIDES[rhythm] ?? RHYTHM_GUIDES.alternating
 
   const genomeBlock = genome
-    ? `YOUR STRUCTURAL GENOME (defaults — user preferences override):
+    ? `YOUR STRUCTURAL GENOME (DEFAULTS — user preferences override):
 @design radius:${designAxes!.radius} shadow:${designAxes!.shadow} gradient:${designAxes!.gradient} density:${designAxes!.density} typography:${designAxes!.typography}
 @chromes ${chromes.join(', ')}
 @availableMotifs ${availableMotifs.join(', ')}
@@ -134,13 +133,29 @@ export function buildCompositionPrompt(
 @sectionCount ${sectionCount}
 @pageCount ${pageCount}
 @navbarVariant ${genome.navbarVariant}
-@hero ${genome!.hero}
+Default hero: ${genome!.hero}
 
-RULES:
-- User's design preferences override genome defaults. Infer intent from language ("sharp corners"→rounded-none, "minimal"→gradient:none+shadow-none, "brutalist"→rounded-none+shadow-[8px_8px_0_0]+typography:display, etc.)
-- Navbar first, Footer last on every page. Use @navbarVariant for the Navbar variant prop.
-- ~${sectionCount} home sections, ~${pageCount} pages total. Follow user if they imply more/fewer.
-- Each page gets UNIQUE sections with page-specific content. Don't reuse motifs across pages.
+PRIORITY RULE: user preferences always override genome defaults. If the user says "dark mode" or "sharp corners", use those — the genome is just a starting point.
+
+DESIGN AXIS OVERRIDE GUIDE:
+- "sharp corners" / "square buttons" → radius:sharp
+- "soft" / "rounded" → radius:rounded
+- "minimal" / "flat" → shadow:none, gradient:none
+- "brutalist" → radius:sharp, shadow:brutalist, typography:display
+- "retro" / "vintage" → typography:editorial, gradient:subtle
+- "tech" / "modern" → typography:technical, radius:sharp
+- "split hero" / "two-column hero" → hero:SplitHero
+- "centered hero" → hero:CenteredHero
+- "poster" / "full-bleed" → hero:PosterHero
+
+RHYTHM: ${rhythm.toUpperCase()} — ${rhythmGuide}
+
+Target: ~${sectionCount} content sections across ~${pageCount} pages. This is a target, not a hard requirement — follow the user if they imply more or fewer.
+
+PER-PAGE CONTENT RULES:
+- Each page gets UNIQUE sections with page-specific content.
+- Do NOT reuse sections from the home page on sub-pages.
+- Navbar first, Footer last on every page.
 - Assign chromes to 3-5 key sections. Vary them.
 - Vary section heights and rhythms. Don't stack 3 grids in a row.`
     : `@design: emit Tailwind classes directly (rounded-xl, shadow-lg, tracking-wide, font-black, uppercase, border-2, grayscale, etc.) plus named concepts for things Tailwind doesn't cover:
@@ -188,10 +203,15 @@ DSL:
   heading Our Team
   people>Jane Doe~CEO~Built 3 startups~Portrait of confident woman in blazer~jane.jpg^John Smith~CTO~10 years in tech~Portrait of man at desk~john.jpg
 
+MULTI-PAGE OUTPUT:
+- Home sections first (NO @page home). Then @page id + that page's sections.
+- Each page: Navbar first, Footer last.
+- Use @page directive to start each sub-page's sections.
+
 RULES:
 - @design: Tailwind classes + named concepts (density, typography, gradient, motion, chrome, decor). Per-role: btn:rounded-full card:rounded-2xl.
 - Home sections first (NO @page home). Then @page id + that page's sections. Each page: Navbar first, Footer last.
-- Separators: | sibling groups, > group→content, ^ items, ~ fields, , string[] values
+- Separators: | sibling groups, > group→content, ^ items, ~ fields, string[] values
 - string[] uses commas: links>Home, About, Contact. NOT ~.
 - [hl]word[/hl] to highlight in headings.
 - @svelte ONLY for custom interactive components no motif covers (games, calculators). NOT for nav/layout.
@@ -211,16 +231,16 @@ testimonials>This product changed our workflow~Sarah Chen~CEO^Best investment ev
 
 ${genomeBlock}
 
-MOTIFS (${availableMotifs.length}):
+AVAILABLE MOTIFS (${availableMotifs.length}):
 ${motifList}
 
 PAGE GUIDE: Home=hero+3-5 content. About=PersonGrid/Timeline. Portfolio=ProjectGallery/ImageGallery. Blog=ArticlePreview/BlogPost. Menu=GroupedList/SimpleList. Products=ProductGrid/ProductDetail. Pricing=PricingTable. Contact=ContactForm+MapBlock. FAQ=FaqAccordion.
 
-LANGUAGE: ${locale}. imageAlt always English.`
+Respond in ${locale}. imageAlt always English.`
 
   const user = `Build a website for: ${userPrompt}
 
-Extract any design preferences from the prompt and override genome defaults. Then generate the COMPLETE site: @design, @brand, @title, @pages, @nav, then all @section blocks for every page. Do not stop after @design.`
+DESIGN PREFERENCE EXTRACTION: Extract any design preferences from the prompt and override the corresponding genome default. Then generate the COMPLETE site: @design, @brand, @title, @pages, @nav, then all @section blocks for every page. Do not stop after @design.`
 
   return { system, user }
 }

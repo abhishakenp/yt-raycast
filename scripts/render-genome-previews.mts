@@ -9,7 +9,13 @@ import { buildOpenUIHtmlExport } from '../src/features/exports/services/openui-h
 const TEST_DIR = resolve(process.cwd(), '.forge', 'genome-test')
 const OUTPUT_DIR = resolve(TEST_DIR, 'previews')
 
-const TEST_IDS = ['detailed-spec', 'vague-dog-1', 'vague-dog-2', 'vague-cat-1', 'vague-cat-2']
+const TEST_IDS = [
+  'detailed-spec',
+  'vague-dog-1',
+  'vague-dog-2',
+  'vague-cat-1',
+  'vague-cat-2',
+]
 
 mkdirSync(OUTPUT_DIR, { recursive: true })
 
@@ -53,7 +59,9 @@ async function main() {
 
       const outPath = join(OUTPUT_DIR, `${testId}.html`)
       writeFileSync(outPath, html)
-      console.log(`✓ Rendered: ${outPath} (${(html.length / 1024).toFixed(0)}KB)`)
+      console.log(
+        `✓ Rendered: ${outPath} (${(html.length / 1024).toFixed(0)}KB)`,
+      )
     } catch (err) {
       console.log(`✗ Failed ${testId}: ${String(err).slice(0, 200)}`)
     }

@@ -72,6 +72,140 @@ const LEET_MAP = new Map([
   ['!', 'i'],
 ])
 
+/**
+ * Homoglyph map — maps Unicode characters that visually resemble ASCII letters
+ * to their ASCII equivalents. This prevents moderation bypass via Cyrillic,
+ * Greek, or other lookalike characters (e.g., Cyrillic "а" (U+0430) instead
+ * of Latin "a" (U+0061)).
+ *
+ * NFKC normalization does NOT handle these because they are distinct code
+ * points in different scripts, not compatibility forms.
+ */
+const HOMOGLYPH_MAP = new Map<string, string>([
+  // Cyrillic → Latin
+  ['\u0430', 'a'],
+  ['\u0410', 'a'], // а/А
+  ['\u0432', 'b'],
+  ['\u0412', 'b'], // в/В (looks like B)
+  ['\u0435', 'e'],
+  ['\u0415', 'e'], // е/Е
+  ['\u043E', 'o'],
+  ['\u041E', 'o'], // о/О
+  ['\u0440', 'p'],
+  ['\u0420', 'p'], // р/Р
+  ['\u0441', 'c'],
+  ['\u0421', 'c'], // с/С
+  ['\u0443', 'y'],
+  ['\u0423', 'y'], // у/У
+  ['\u0445', 'x'],
+  ['\u0425', 'x'], // х/Х
+  ['\u0410', 'a'], // А
+  ['\u0412', 'b'], // В
+  ['\u0415', 'e'], // Е
+  ['\u041A', 'k'],
+  ['\u043A', 'k'], // К/к
+  ['\u041C', 'm'],
+  ['\u043C', 'm'], // М/м
+  ['\u041D', 'h'],
+  ['\u043D', 'h'], // Н/н
+  ['\u041E', 'o'], // О
+  ['\u0420', 'p'], // Р
+  ['\u0421', 'c'], // С
+  ['\u0422', 't'],
+  ['\u0442', 't'], // Т/т
+  ['\u0423', 'y'], // У
+  ['\u0425', 'x'], // Х
+  // Greek → Latin
+  ['\u03B1', 'a'],
+  ['\u0391', 'a'], // α/Α
+  ['\u03B2', 'b'],
+  ['\u0392', 'b'], // β/Β
+  ['\u03B3', 'g'], // γ (not exact, but close)
+  ['\u03B5', 'e'],
+  ['\u0395', 'e'], // ε/Ε
+  ['\u03B6', 'z'], // ζ
+  ['\u03B7', 'h'], // η
+  ['\u03B9', 'i'],
+  ['\u0399', 'i'], // ι/Ι
+  ['\u03BA', 'k'],
+  ['\u039A', 'k'], // κ/Κ
+  ['\u03BC', 'm'],
+  ['\u039C', 'm'], // μ/Μ
+  ['\u03BD', 'n'],
+  ['\u039D', 'n'], // ν/Ν
+  ['\u03BF', 'o'],
+  ['\u039F', 'o'], // ο/Ο
+  ['\u03C1', 'p'],
+  ['\u03A1', 'p'], // ρ/Ρ
+  ['\u03C4', 't'],
+  ['\u03A4', 't'], // τ/Τ
+  ['\u03C5', 'y'],
+  ['\u03A5', 'y'], // υ/Υ
+  ['\u03C7', 'x'],
+  ['\u03A7', 'x'], // χ/Χ
+  // Fullwidth → ASCII (NFKC should handle these, but include for safety)
+  ['\uFF41', 'a'],
+  ['\uFF21', 'a'],
+  ['\uFF42', 'b'],
+  ['\uFF22', 'b'],
+  ['\uFF43', 'c'],
+  ['\uFF23', 'c'],
+  ['\uFF44', 'd'],
+  ['\uFF24', 'd'],
+  ['\uFF45', 'e'],
+  ['\uFF25', 'e'],
+  ['\uFF46', 'f'],
+  ['\uFF26', 'f'],
+  ['\uFF47', 'g'],
+  ['\uFF27', 'g'],
+  ['\uFF48', 'h'],
+  ['\uFF28', 'h'],
+  ['\uFF49', 'i'],
+  ['\uFF29', 'i'],
+  ['\uFF4A', 'j'],
+  ['\uFF2A', 'j'],
+  ['\uFF4B', 'k'],
+  ['\uFF2B', 'k'],
+  ['\uFF4C', 'l'],
+  ['\uFF2C', 'l'],
+  ['\uFF4D', 'm'],
+  ['\uFF2D', 'm'],
+  ['\uFF4E', 'n'],
+  ['\uFF2E', 'n'],
+  ['\uFF4F', 'o'],
+  ['\uFF2F', 'o'],
+  ['\uFF50', 'p'],
+  ['\uFF30', 'p'],
+  ['\uFF51', 'q'],
+  ['\uFF31', 'q'],
+  ['\uFF52', 'r'],
+  ['\uFF32', 'r'],
+  ['\uFF53', 's'],
+  ['\uFF33', 's'],
+  ['\uFF54', 't'],
+  ['\uFF34', 't'],
+  ['\uFF55', 'u'],
+  ['\uFF35', 'u'],
+  ['\uFF56', 'v'],
+  ['\uFF36', 'v'],
+  ['\uFF57', 'w'],
+  ['\uFF37', 'w'],
+  ['\uFF58', 'x'],
+  ['\uFF38', 'x'],
+  ['\uFF59', 'y'],
+  ['\uFF39', 'y'],
+  ['\uFF5A', 'z'],
+  ['\uFF3A', 'z'],
+])
+
+/**
+ * Replace homoglyph characters with their ASCII equivalents.
+ * Applied after NFKC normalization to catch lookalike characters from
+ * different Unicode scripts that NFKC doesn't map.
+ */
+const replaceHomoglyphs = (text: string): string =>
+  [...text].map((ch) => HOMOGLYPH_MAP.get(ch) ?? ch).join('')
+
 const FIELD_ORDER: ModerationField[] = [
   'prompt',
   'designReferenceNotes',
@@ -121,6 +255,36 @@ const phraseRules: Array<[ModerationCategory, string, string[]]> = [
       'schoolgirl porn',
       'school boy porn',
       'cp site',
+      // ── Non-English phrases (most critical unconditional category) ──
+      // Spanish
+      'pornografia infantil',
+      'porno infantil',
+      'ninos porn',
+      'menores porn',
+      // Portuguese
+      'pornografia infantil',
+      'porno infantil',
+      'criancas porn',
+      'menores porn',
+      // French
+      'pedopornographie',
+      'porno enfant',
+      'mineurs porn',
+      // German
+      'kinderpornographie',
+      'kinder porno',
+      // Chinese (simplified)
+      '儿童色情',
+      '幼童色情',
+      // Arabic
+      'مواد اباحية للاطفال',
+      // Hindi
+      'बाल अश्लीलता',
+      // Russian
+      'детское порно',
+      'порно с несовершеннолетними',
+      // Japanese
+      '児童ポルノ',
     ],
   ],
   [
@@ -193,6 +357,30 @@ const phraseRules: Array<[ModerationCategory, string, string[]]> = [
       'fake paypal login',
       'steal passwords',
       'steal credit cards',
+      // ── Non-English phrases for phishing/fraud ──
+      // Spanish
+      'sitio de phishing',
+      'pagina de phishing',
+      'robo de contrasenas',
+      'estafa web',
+      // Portuguese
+      'site de phishing',
+      'roubo de senhas',
+      'golpe online',
+      // French
+      'site de phishing',
+      'vol de mots de passe',
+      'escroquerie en ligne',
+      // German
+      'phishing seite',
+      'passworter stehlen',
+      'betrug website',
+      // Chinese
+      '钓鱼网站',
+      '窃取密码',
+      // Russian
+      'фишинговый сайт',
+      'кража паролей',
     ],
   ],
   [
@@ -310,6 +498,11 @@ const regexRules: Array<[ModerationCategory, string, RegExp]> = [
   ],
   [
     'fraud_malware',
+    'fraud-phishing-reversed',
+    /\b(login|checkout|bank|paypal|stripe|coinbase|wallet|oauth|2fa|password)\b[\s\S]{0,40}\b(phishing|spoof|fake)\b/i,
+  ],
+  [
+    'fraud_malware',
     'fraud-theft',
     /\b(steal|harvest|collect)\b[\s\S]{0,40}\b(passwords?|credentials?|credit\s*cards?|private\s*keys?|seed\s*phrases?)\b/i,
   ],
@@ -348,7 +541,10 @@ export const normalizePolicyText = (raw: unknown): NormalizedPolicyText => {
     .normalize('NFKC')
     .toLowerCase()
     .replace(ZERO_WIDTH_RE, '')
-  const spaced = text.replace(/\s+/g, ' ').trim()
+  // Replace homoglyphs (Cyrillic/Greek lookalikes) with ASCII equivalents.
+  // This runs after NFKC because NFKC doesn't map cross-script lookalikes.
+  const dehomoglyphed = replaceHomoglyphs(text)
+  const spaced = dehomoglyphed.replace(/\s+/g, ' ').trim()
   const leetSpaced = applyLeet(spaced)
   return {
     spaced,
@@ -367,10 +563,17 @@ const createPhraseRule = (
   matches: ({ spaced, leetSpaced, collapsed }) =>
     phrases.some((phrase) => {
       const normalizedPhrase = normalizePolicyText(phrase)
+      // Skip phrases whose collapsed form is empty (e.g., non-ASCII scripts
+      // like Chinese/Arabic/Hindi that have no [a-z0-9] characters after
+      // collapsing). An empty collapsed string would match every input via
+      // String.includes(''), causing false positives.
+      const collapsedMatch =
+        normalizedPhrase.collapsed.length > 0 &&
+        collapsed.includes(normalizedPhrase.collapsed)
       return (
         spaced.includes(normalizedPhrase.spaced) ||
         leetSpaced.includes(normalizedPhrase.leetSpaced) ||
-        collapsed.includes(normalizedPhrase.collapsed)
+        collapsedMatch
       )
     }),
 })

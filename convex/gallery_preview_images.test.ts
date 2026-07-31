@@ -48,20 +48,15 @@ const readStorageExists = async (
   })
 
 describe('gallery preview image storage', () => {
-  it('requires the dashboard owner before issuing an image upload URL', async () => {
+  it('allows thumbnail generation for public sessions without owner secret (gallery generate-on-miss)', async () => {
     const t = convexTest(schema, modules)
     const sessionId = await insertPublicSession(t, 111)
 
+    // No anonymousOwnerSecret — gallery visitors are not the session owner.
+    // Public sessions allow thumbnail generation so the generate-on-miss
+    // fallback works for any visitor.
     await expect(
       t.mutation(api.gallery_preview_images.generateUploadUrl, {
-        cacheVersion: '111',
-        sessionId,
-      }),
-    ).rejects.toThrow('FORBIDDEN')
-
-    await expect(
-      t.mutation(api.gallery_preview_images.generateUploadUrl, {
-        anonymousOwnerSecret: ownerSecret,
         cacheVersion: '111',
         sessionId,
       }),

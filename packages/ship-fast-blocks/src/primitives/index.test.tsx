@@ -137,7 +137,7 @@ describe('Button', () => {
 
   it('sets --d-shadow CSS var from @design', () => {
     const { container } = renderWithDesign(ROUNDED, <Button label="Soft" />)
-    const wrapper = container.firstChild as HTMLElement
+    container.firstChild as HTMLElement
     // shadow-lg is not in TAILWIND_CSS map, so it returns null → no CSS var
     // Use a known shadow class instead
     const { container: c2 } = renderWithDesign(

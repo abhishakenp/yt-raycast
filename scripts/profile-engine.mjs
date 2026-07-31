@@ -18,15 +18,21 @@ const ctx = {
       chunkCount++
     }
   },
-  setPrompt: () => {}, setTasks: () => {}, updateTask: () => {},
-  signalHomepageReady: () => {}, signalOpenuiReady: () => {},
-  setElapsed: () => {}, setCost: () => {},
+  setPrompt: () => {},
+  setTasks: () => {},
+  updateTask: () => {},
+  signalHomepageReady: () => {},
+  signalOpenuiReady: () => {},
+  setElapsed: () => {},
+  setCost: () => {},
 }
 
 try {
   const r = await runComposition({
-    prompt: 'A cozy neighborhood coffee shop called Brew & Bloom with online ordering, a blog about brewing techniques, and a photo gallery',
-    workspace: ws, sessionCtx: ctx,
+    prompt:
+      'A cozy neighborhood coffee shop called Brew & Bloom with online ordering, a blog about brewing techniques, and a photo gallery',
+    workspace: ws,
+    sessionCtx: ctx,
   })
   const total = Date.now() - t0
   console.log(`total: ${total}ms`)
@@ -35,5 +41,7 @@ try {
   console.log(`source broadcasts: ${chunkCount}`)
   console.log(`post-stream overhead: ${total - (lastChunkTime - t0)}ms`)
   console.log(`raw chars: ${r.raw.length}`)
-} catch(e) { console.error(e.message) }
+} catch (e) {
+  console.error(e.message)
+}
 rmSync(ws, { recursive: true, force: true })

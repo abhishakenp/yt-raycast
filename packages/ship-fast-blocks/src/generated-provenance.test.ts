@@ -30,6 +30,7 @@ describe('generated OpenUI artifact provenance', () => {
     ])
     expect(provenance.outputs).toEqual([
       'src/generated/react-export-sources.json',
+      'src/generated/index.ts',
       'src/generated/react-export-sources.compressed.ts',
       'src/generated/block-source-files.compressed.ts',
       'src/generated/vendor-source-files.compressed.ts',

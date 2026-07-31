@@ -14,7 +14,7 @@ vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => ({ query }),
 }))
 
-const buildOpenUIHtmlExportMock = vi.hoisted(() =>
+const buildOpenUIHtmlThumbnailMock = vi.hoisted(() =>
   vi.fn(async () => ({
     body: '<!doctype html><html><body><main><h1>Preview</h1></main></body></html>',
     contentType: 'text/html; charset=utf-8',
@@ -24,7 +24,7 @@ const buildOpenUIHtmlExportMock = vi.hoisted(() =>
 )
 
 vi.mock('../../exports/services/openui-html-export-builder', () => ({
-  buildOpenUIHtmlExport: buildOpenUIHtmlExportMock,
+  buildOpenUIHtmlThumbnail: buildOpenUIHtmlThumbnailMock,
 }))
 
 const { createSessionPreviewRawResponse } =
@@ -49,7 +49,7 @@ describe('createSessionPreviewRawResponse', () => {
   })
 
   it('serves stored public preview HTML as a standalone document', async () => {
-    buildOpenUIHtmlExportMock.mockResolvedValueOnce({
+    buildOpenUIHtmlThumbnailMock.mockResolvedValueOnce({
       body: '<!doctype html><html><body><main><h1>Preview</h1></main></body></html>',
       contentType: 'text/html; charset=utf-8',
       filename: 'index.html',
@@ -69,7 +69,7 @@ describe('createSessionPreviewRawResponse', () => {
     expect(query).toHaveBeenCalledWith('getPublicGallerySession', {
       sessionId: 'session-1',
     })
-    expect(buildOpenUIHtmlExportMock).toHaveBeenCalledWith(
+    expect(buildOpenUIHtmlThumbnailMock).toHaveBeenCalledWith(
       expect.objectContaining({
         source: 'home = Stack([Hero("Preview")])',
         sessionId: 'session-1',

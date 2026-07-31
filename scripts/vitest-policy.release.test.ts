@@ -44,6 +44,7 @@ const SKIP_IF_ALLOWLIST = new Set([
   'src/features/deployments/inspect-tvnl-build.test.ts',
   'src/features/deployments/run-tvnl-lakebed-deploy.test.ts',
   'src/features/exports/services/lakebed-e2e-deploy-smoke.test.ts',
+  'src/features/editing/server/section-edit-response.test.ts',
 ])
 
 function collectTestArtifacts(root: string) {

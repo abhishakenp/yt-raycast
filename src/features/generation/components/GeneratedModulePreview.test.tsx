@@ -17,7 +17,10 @@ vi.mock('@/island/openui/OpenUIViewer', () => ({
     response: string
     designIntent?: unknown
   }) => (
-    <div data-testid="openui-viewer" data-design={JSON.stringify(designIntent ?? null)}>
+    <div
+      data-testid="openui-viewer"
+      data-design={JSON.stringify(designIntent ?? null)}
+    >
       {response}
     </div>
   ),

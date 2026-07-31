@@ -2,6 +2,11 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { checkRateLimit, exportHits } from '@/lib/rate-limit'
+import {
+  getClientIp,
+  hashClientIp,
+} from '@/features/session/server/session-create-response'
 import {
   isGatewayConfigured,
   resolvePaymentCurrency,
@@ -210,6 +215,16 @@ export async function createCheckoutApiResponse(
   clientOverride?: CheckoutConvexClient,
   gatewayOverride?: unknown,
 ): Promise<Response> {
+  // Rate limit: max 5 checkout requests per 10 minutes per IP. Prevents
+  // Razorpay API abuse from spamming checkout creation.
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, exportHits, 5, 10 * 60 * 1000)) {
+    return json(
+      { error: 'Too many checkout requests. Please wait a few minutes.' },
+      { status: 429 },
+    )
+  }
+
   const token = getBearerToken(request)
   if (token === null) {
     return json({ error: 'Sign in before checkout.' }, { status: 401 })

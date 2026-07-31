@@ -7,6 +7,9 @@ import { createTranslateResponse } from '../src/features/localization/server/tra
 import { api } from './_generated/api'
 import schema from './schema'
 
+const noopModeration = async () => undefined
+const noopEntitlement = async () => ({ allowed: true, code: 'ok' as const })
+
 const modules = import.meta.glob('./**/*.ts')
 
 const originalClerk = process.env.VITE_DISABLE_CLERK
@@ -70,12 +73,16 @@ describe('translation cache route integration', () => {
       translationRequest(),
       translateModel,
       cacheClient,
+      noopEntitlement,
+      noopModeration,
     )
     await modelStarted
     const second = createTranslateResponse(
       translationRequest(),
       translateModel,
       cacheClient,
+      noopEntitlement,
+      noopModeration,
     )
     await new Promise((resolve) => setTimeout(resolve, 50))
     releaseModel?.()
@@ -112,6 +119,8 @@ describe('translation cache route integration', () => {
         return JSON.stringify(['अभी शुरू करें'])
       },
       cacheClient,
+      noopEntitlement,
+      noopModeration,
     )
     const second = await createTranslateResponse(
       translationRequest(),
@@ -120,6 +129,8 @@ describe('translation cache route integration', () => {
         throw new Error('model must not run for a persisted cache hit')
       },
       cacheClient,
+      noopEntitlement,
+      noopModeration,
     )
 
     expect(modelCalls).toBe(1)
@@ -150,6 +161,8 @@ describe('translation cache route integration', () => {
         return JSON.stringify(['LakeBed'])
       },
       cacheClient,
+      noopEntitlement,
+      noopModeration,
     )
     const cached = await createTranslateResponse(
       request(),
@@ -158,6 +171,8 @@ describe('translation cache route integration', () => {
         throw new Error('identity translation must be cached')
       },
       cacheClient,
+      noopEntitlement,
+      noopModeration,
     )
 
     expect(modelCalls).toBe(1)
@@ -178,11 +193,15 @@ describe('translation cache route integration', () => {
         throw new Error('temporary model failure')
       },
       cacheClient,
+      noopEntitlement,
+      noopModeration,
     )
     const retried = await createTranslateResponse(
       translationRequest(),
       async () => JSON.stringify(['अभी शुरू करें']),
       cacheClient,
+      noopEntitlement,
+      noopModeration,
     )
 
     expect(failed.status).toBe(502)

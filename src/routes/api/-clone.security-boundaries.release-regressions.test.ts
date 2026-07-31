@@ -34,6 +34,7 @@ vi.mock(
 import { CONTENT_POLICY_CLIENT_MESSAGE } from '@/lib/content-policy'
 import { ContentModerationError } from '@/features/moderation/server/enforce-user-input-moderation'
 import { CONTENT_MODERATION_UNAVAILABLE_MESSAGE } from '@/features/moderation/server/moderation-classifier'
+import { cloneHits } from '@/lib/rate-limit'
 import { Route } from './clone'
 import { callRouteHandler } from './-route-handler.test-helper'
 
@@ -52,6 +53,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   cloneMocks.moderate.mockResolvedValue(undefined)
   cloneMocks.runCloneJob.mockResolvedValue(undefined)
+  cloneHits.clear()
 })
 
 afterEach(() => {

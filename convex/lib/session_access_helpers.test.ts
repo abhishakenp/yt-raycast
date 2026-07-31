@@ -746,6 +746,10 @@ describe('canReadPrivateSession admin bypass', () => {
 })
 
 describe('claimAnonymousSessionsByIp', () => {
+  beforeEach(() => {
+    vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+  })
+
   it('links all unclaimed anonymous sessions on the IP to the signed-in userId', async () => {
     const { ctx, sessions, patches } = mutationCtxForSessions({
       identity: identityFor({ tokenIdentifier: 'token:user' }),
@@ -767,6 +771,7 @@ describe('claimAnonymousSessionsByIp', () => {
 
     const result = await claimAnonymousSessionsByIp(ctx, {
       clientIpHash: 'ip_a',
+      secret: 'test-secret',
     })
 
     expect(result).toEqual({ claimed: 2 })
@@ -816,6 +821,7 @@ describe('claimAnonymousSessionsByIp', () => {
 
     const result = await claimAnonymousSessionsByIp(ctx, {
       clientIpHash: 'ip_a',
+      secret: 'test-secret',
     })
 
     expect(result).toEqual({ claimed: 1 })
@@ -841,6 +847,7 @@ describe('claimAnonymousSessionsByIp', () => {
 
     const result = await claimAnonymousSessionsByIp(ctx, {
       clientIpHash: 'ip_a',
+      secret: 'test-secret',
     })
 
     expect(result).toEqual({ claimed: 1 })
@@ -854,7 +861,10 @@ describe('claimAnonymousSessionsByIp', () => {
     })
 
     await expect(
-      claimAnonymousSessionsByIp(ctx, { clientIpHash: 'ip_a' }),
+      claimAnonymousSessionsByIp(ctx, {
+        clientIpHash: 'ip_a',
+        secret: 'test-secret',
+      }),
     ).rejects.toMatchObject({
       data: { code: 'AUTH_REQUIRED' },
     })
@@ -873,6 +883,7 @@ describe('claimAnonymousSessionsByIp', () => {
 
     const first = await claimAnonymousSessionsByIp(ctx, {
       clientIpHash: 'ip_a',
+      secret: 'test-secret',
     })
     expect(first).toEqual({ claimed: 1 })
 
@@ -880,6 +891,7 @@ describe('claimAnonymousSessionsByIp', () => {
     // skips it.
     const second = await claimAnonymousSessionsByIp(ctx, {
       clientIpHash: 'ip_a',
+      secret: 'test-secret',
     })
     expect(second).toEqual({ claimed: 0 })
   })

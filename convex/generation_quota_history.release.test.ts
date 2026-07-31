@@ -111,6 +111,7 @@ describe('generation quota checks with long account histories', () => {
     vi.stubEnv('IS_DEV', '')
     vi.stubEnv('OPENUI_HOME_MODEL', 'openai/gpt-oss-120b')
     vi.stubEnv('GROQ_API_KEY', '')
+    vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-server-secret')
   })
 
   afterEach(() => {
@@ -153,6 +154,7 @@ describe('generation quota checks with long account histories', () => {
       t.mutation(api.sessions.create, {
         ...createPayload('anonymous-daily-long-history'),
         clientIpHash,
+        serverSecret: 'test-server-secret',
         anonymousOwnerSecret: 'anonymous-owner-secret',
       }),
     ).rejects.toMatchObject({

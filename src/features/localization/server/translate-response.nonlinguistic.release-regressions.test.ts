@@ -5,6 +5,8 @@ vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
   moderationErrorResponse: vi.fn(() => null),
 }))
 
+import { translateHits } from '@/lib/rate-limit'
+
 import { createTranslateResponse } from './translate-response'
 
 describe('translate response non-linguistic token release gate', () => {
@@ -14,6 +16,7 @@ describe('translate response non-linguistic token release gate', () => {
     // The translate endpoint is now Pro/auth-gated; this suite exercises the
     // model-preservation logic (not auth), so bypass the entitlement gate.
     process.env.VITE_DISABLE_CLERK = 'true'
+    translateHits.clear()
   })
 
   afterEach(() => {

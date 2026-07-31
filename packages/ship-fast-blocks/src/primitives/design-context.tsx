@@ -20,7 +20,6 @@ import {
   mergeDesign,
   designValueToCss,
   isNamedPreset,
-  getAxisRoles,
   AXIS_NAMES,
   type DesignIntent,
   type DesignClasses,
@@ -33,9 +32,19 @@ interface DesignContextValue {
 }
 
 const EMPTY_CLASSES: DesignClasses = {
-  radius: {}, shadow: {}, gradient: {}, density: {}, typography: {},
-  motion: {}, border: {}, tracking: {}, leading: {}, weight: {},
-  transform: {}, image: {}, opacity: {},
+  radius: {},
+  shadow: {},
+  gradient: {},
+  density: {},
+  typography: {},
+  motion: {},
+  border: {},
+  tracking: {},
+  leading: {},
+  weight: {},
+  transform: {},
+  image: {},
+  opacity: {},
 }
 
 const DesignContext = createContext<DesignContextValue>({
@@ -50,7 +59,7 @@ const DesignContext = createContext<DesignContextValue>({
 function buildDataAttrs(intent: DesignIntent): Record<string, string> {
   const attrs: Record<string, string> = {}
   for (const axisName of AXIS_NAMES) {
-    const value = (intent as Record<string, unknown>)[axisName]
+    const value = (intent as unknown as Record<string, unknown>)[axisName]
     if (typeof value === 'string' && value && isNamedPreset(axisName, value)) {
       attrs[`data-${axisName}`] = value
     }
@@ -68,7 +77,7 @@ function buildCustomProperties(intent: DesignIntent): Record<string, string> {
 
   // Global value for each Tailwind axis
   for (const axisName of AXIS_NAMES) {
-    const value = (intent as Record<string, unknown>)[axisName]
+    const value = (intent as unknown as Record<string, unknown>)[axisName]
     if (typeof value !== 'string' || !value) continue
     // Skip named presets — CSS file handles them via data attributes
     if (isNamedPreset(axisName, value)) continue

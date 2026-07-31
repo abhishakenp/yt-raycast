@@ -5,6 +5,8 @@ vi.mock('@/features/moderation/server/enforce-user-input-moderation', () => ({
   moderationErrorResponse: vi.fn(() => null),
 }))
 
+import { translateHits } from '@/lib/rate-limit'
+
 import { createTranslateResponse } from './translate-response'
 
 const SESSION_ID = 's1'
@@ -40,6 +42,7 @@ describe('createTranslateResponse Pro + same-user entitlement gate', () => {
   beforeEach(() => {
     // Clerk enabled => entitlement gate is active.
     delete process.env.VITE_DISABLE_CLERK
+    translateHits.clear()
   })
 
   afterEach(() => {

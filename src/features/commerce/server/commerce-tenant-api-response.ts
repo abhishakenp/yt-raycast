@@ -2,6 +2,7 @@ import type { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { timingSafeEqual } from '@/lib/timingSafeEqual'
 import {
   type GeneratedCommerceProduct,
   normalizeGeneratedCommerceProductInput,
@@ -730,7 +731,10 @@ export async function createDeploymentMedusaWebhookResponse(
     request.headers.get('x-ship-fast-commerce-webhook-secret') ?? undefined,
   )
 
-  if (expectedSecret !== undefined && receivedSecret !== expectedSecret) {
+  if (
+    expectedSecret !== undefined &&
+    !timingSafeEqual(receivedSecret, expectedSecret)
+  ) {
     return json({ error: 'Invalid commerce webhook secret.' }, { status: 401 })
   }
 

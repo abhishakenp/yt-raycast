@@ -55,7 +55,7 @@ const CtaBand = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="cta-band"
-      data-d-role="btn"className={cn(ctaBandVariants({ tone }), className)}
+      className={cn(ctaBandVariants({ tone }), className)}
       {...props}
     />
   )
@@ -76,7 +76,7 @@ const CtaBandInner = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="cta-band-inner"
-      data-d-role="btn"className={cn(ctaBandInnerVariants({ align }), className)}
+      className={cn(ctaBandInnerVariants({ align }), className)}
       {...props}
     />
   )
@@ -95,7 +95,8 @@ const CtaBandEyebrow = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="cta-band-eyebrow"
-      data-d-role="eyebrow"className={cn(
+      data-d-role="eyebrow"
+      className={cn(
         'text-sm font-medium uppercase tracking-wide opacity-80',
         className,
       )}
@@ -117,7 +118,7 @@ const CtaBandTitle = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="cta-band-title"
-      data-d-role="btn"className={cn('text-3xl font-semibold md:text-4xl', className)}
+      className={cn('text-3xl font-semibold md:text-4xl', className)}
       {...props}
     />
   )
@@ -136,7 +137,7 @@ const CtaBandSubtitle = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="cta-band-subtitle"
-      data-d-role="btn"className={cn('max-w-2xl text-base opacity-90 md:text-lg', className)}
+      className={cn('max-w-2xl text-base opacity-90 md:text-lg', className)}
       {...props}
     />
   )
@@ -157,7 +158,7 @@ const CtaBandActions = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="cta-band-actions"
-      data-d-role="btn"className={cn(ctaBandActionsVariants({ align }), className)}
+      className={cn(ctaBandActionsVariants({ align }), className)}
       {...props}
     />
   )
@@ -191,7 +192,8 @@ const CtaAction = React.forwardRef<
       <Comp
         ref={ref as never}
         data-slot="cta-action"
-        data-d-role="btn"className={cn(kitActionClasses(variant, invert), className)}
+        data-d-role="btn"
+        className={cn(kitActionClasses(variant, invert), className)}
         {...props}
       />
     )

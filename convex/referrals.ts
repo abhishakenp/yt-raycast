@@ -3,7 +3,7 @@ import { ConvexError, v } from 'convex/values'
 import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
-import { classifyReferralEmail } from './lib/disposable_email'
+import { timingSafeEqual } from './lib/timingSafeEqual'
 import {
   getOrBackfillAcquisitionAttribution,
   insertAcquisitionAttribution,
@@ -41,7 +41,7 @@ async function requireUserId(ctx: QueryCtx | MutationCtx): Promise<string> {
 
 function requireServerSecret(secret: string) {
   const expected = process.env.BILLING_WEBHOOK_MUTATION_SECRET
-  if (!expected || secret !== expected) {
+  if (!expected || !timingSafeEqual(secret, expected)) {
     throw new ConvexError({
       code: 'FORBIDDEN',
       message: 'Referral server operation is not authorized.',
@@ -240,7 +240,8 @@ export const recordReferralSignup = mutation({
       : args.email
         ? 'client'
         : 'none'
-    const classified = classifyReferralEmail(identityEmail || args.email)
+    const referredEmail =
+      (identityEmail || args.email || '').trim().toLowerCase() || undefined
 
     const now = Date.now()
     await insertAcquisitionAttribution(ctx, {
@@ -253,8 +254,7 @@ export const recordReferralSignup = mutation({
       referrerUserId: owner.userId,
       referredUserId,
       code,
-      referredEmail: classified.email || undefined,
-      emailDisposable: classified.email ? classified.disposable : undefined,
+      referredEmail,
       emailSource,
       status: 'pending',
       createdAt: now,
@@ -262,13 +262,11 @@ export const recordReferralSignup = mutation({
     })
 
     // Edge case: the referred user already pays (e.g. ref captured after
-    // checkout). Qualify immediately so the reward isn't lost, unless their
-    // email is disposable. If this qualification pushes the referrer over the
-    // threshold, return the referrer's id so the API route can apply the
-    // provider discount (Stripe coupon attaches to the next invoice; Razorpay
-    // applies at the referrer's next checkout).
+    // checkout). Qualify immediately so the reward isn't lost. If this
+    // qualification pushes the referrer over the threshold, return the
+    // referrer's id so the API route can apply the provider discount.
     let referrerJustUnlocked: string | null = null
-    if (classified.acceptable) {
+    {
       const subscription = await getActiveSubscriptionForUser(
         ctx,
         referredUserId,

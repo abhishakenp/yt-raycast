@@ -21,6 +21,14 @@ export type OpenUIExportInput = {
   isDark?: boolean
   locale?: string
   includeBadge?: boolean
+  /**
+   * Force Google Fonts `<link>` tags in the standalone HTML even when
+   * `includeBadge` is false. The export download path passes
+   * `includeBadge: false` for offline isolation (no external stylesheets);
+   * the gallery preview path passes `includeFonts: true` so the captured
+   * screenshot matches the dashboard's font rendering.
+   */
+  includeFonts?: boolean
   selectedBrandLogo?: BrandLogoSelection | null
   /**
    * Real catalog rows to seed the deployed Lakebed DB with, keyed by table name

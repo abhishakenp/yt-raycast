@@ -61,6 +61,30 @@ describe('Logo', () => {
     expect(screen.getByText('Acme')).toBeTruthy()
   })
 
+  it('does not tag the wordmark wrapper or text label as data-d-role="image"', () => {
+    // Regression: Logo wrapper and LogoLabel (text) used to carry
+    // data-d-role="image", which made the design-presets.css rule
+    // [data-d-role="image"] { box-shadow: var(--d-shadow-image, ...) }
+    // stamp a brutalist hard shadow onto the wordmark text. Only the
+    // actual <img> (LogoImage) should carry the image role.
+    render(
+      <BrandLogoProvider value={selectedLogo}>
+        <Logo brand="Acme">
+          <LogoImage fallback={<span data-testid="fallback-mark">A</span>} />
+          <LogoLabel />
+        </Logo>
+      </BrandLogoProvider>,
+    )
+
+    const label = screen.getByText('Acme')
+    expect(label.getAttribute('data-d-role')).toBeNull()
+    const wrapper = label.closest('[data-slot="logo"]')
+    expect(wrapper?.getAttribute('data-d-role')).toBeNull()
+    // LogoImage keeps the image role so real images still get shadow/radius/filter
+    const imageSlot = document.querySelector('[data-slot="logo-image"]')
+    expect(imageSlot?.getAttribute('data-d-role')).toBe('image')
+  })
+
   it('patches legacy capsule brand marks that have not migrated to Logo yet', async () => {
     const { rerender } = render(
       <BrandLogoProvider value={selectedLogo}>

@@ -9,6 +9,7 @@ import type {
   ModerationSurface,
 } from './lib/content_moderation_policy'
 import { hashOwnerSecret } from './lib/session_access_helpers'
+import { timingSafeEqual } from './lib/timingSafeEqual'
 import {
   contentModerationBlockedEvent,
   sendSharedNotification,
@@ -140,7 +141,7 @@ export const recordBlockedAttempt = mutation({
   },
   handler: async (ctx, args) => {
     const expectedSecret = process.env.CONTENT_MODERATION_MUTATION_SECRET
-    if (!expectedSecret || args.secret !== expectedSecret) {
+    if (!expectedSecret || !timingSafeEqual(args.secret, expectedSecret)) {
       throw new ConvexError({
         code: 'FORBIDDEN',
         message: 'Invalid content moderation mutation secret.',

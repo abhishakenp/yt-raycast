@@ -387,9 +387,14 @@ describe('translateHtml', () => {
 
     expect(groqCalls.length).toBeGreaterThan(0)
     expect(cacheClient.setBatch).toHaveBeenCalledTimes(1)
-    const setBatchArg = cacheClient.setBatch.mock.calls[0][0]
-    expect(setBatchArg.locale).toBe('fr')
-    const entries = setBatchArg.entries as Array<{
+    const setBatchArg = (
+      cacheClient.setBatch.mock.calls[0] as unknown[]
+    )[0] as {
+      locale: string
+      entries: Array<{ text: string; translation: string }>
+    }
+    expect(setBatchArg!.locale).toBe('fr')
+    const entries = setBatchArg!.entries as Array<{
       text: string
       translation: string
     }>

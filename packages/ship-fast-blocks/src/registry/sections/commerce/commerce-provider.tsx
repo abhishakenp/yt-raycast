@@ -167,8 +167,6 @@ export const CommerceProvider = ({
   fallbackProducts,
   mode,
   regionId,
-  scope,
-  tenant,
 }: CommerceProviderProps) => {
   const enabled = mode !== 'disabled' && adapter !== undefined
   const [cart, setCart] = useState<CommerceRuntimeCart | undefined>()

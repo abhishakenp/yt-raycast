@@ -247,6 +247,24 @@ describe('ChromeSystem — brutalist', () => {
     const brutalistCards = container.querySelectorAll('.border-2')
     expect(brutalistCards.length).toBeGreaterThan(0)
   })
+
+  it('chromeBorderClass locks border/shadow/radius so design-presets CSS does not strip them', () => {
+    // Regression: [data-d-role="card"] CSS rule overrides border-width via
+    // var(--d-border, 0px). When --d-border is unset, this strips Tailwind
+    // border classes (e.g. brutalist's border-2). chromeBorderClass must
+    // include d-border-lock (and d-shadow-lock, d-radius-lock for brutalist)
+    // so the CSS rule is skipped and Tailwind classes apply.
+    const { container } = renderCapsule(CardGrid, {
+      heading: 'Features',
+      chrome: 'brutalist',
+      cards: [{ title: 'A', description: 'B' }],
+    })
+    const card = container.querySelector('[data-d-role="card"]')
+    expect(card).toBeTruthy()
+    expect(card!.className).toContain('d-border-lock')
+    expect(card!.className).toContain('d-shadow-lock')
+    expect(card!.className).toContain('d-radius-lock')
+  })
 })
 
 describe('ChromeSystem — editorial', () => {
@@ -544,7 +562,7 @@ describe('ChromeSystem — subscriber forms', () => {
   })
 
   it('NewsletterCta with chrome:editorial renders extralight heading with watermark', () => {
-    const { container } = renderCapsule(NewsletterCta, {
+    renderCapsule(NewsletterCta, {
       heading: 'Subscribe',
       chrome: 'editorial',
       watermark: '§',

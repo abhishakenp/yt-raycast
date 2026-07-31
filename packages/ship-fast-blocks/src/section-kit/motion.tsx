@@ -166,7 +166,12 @@ export function Reveal(props: {
         }
 
   return (
-    <div data-d-role="container" ref={ref} className={props.className} style={style}>
+    <div
+      data-d-role="container"
+      ref={ref}
+      className={props.className}
+      style={style}
+    >
       {props.children}
     </div>
   )
@@ -343,7 +348,11 @@ export function Float(props: {
   const delay = finiteOr(props.delay, 0)
 
   if (reduced) {
-    return <div data-d-role="container" className={props.className}>{props.children}</div>
+    return (
+      <div data-d-role="container" className={props.className}>
+        {props.children}
+      </div>
+    )
   }
 
   return (
@@ -426,7 +435,11 @@ export function Drift(props: {
   const delay = finiteOr(props.delay, 0)
 
   if (reduced) {
-    return <div data-d-role="container" className={props.className}>{props.children}</div>
+    return (
+      <div data-d-role="container" className={props.className}>
+        {props.children}
+      </div>
+    )
   }
 
   return (
@@ -522,14 +535,20 @@ export function Marquee(props: {
 
   if (!armed) {
     return (
-      <div data-d-role="container" className={cn('flex overflow-hidden', props.className)}>
+      <div
+        data-d-role="container"
+        className={cn('flex overflow-hidden', props.className)}
+      >
         {copy(false)}
       </div>
     )
   }
 
   return (
-    <div data-d-role="container" className={cn('flex overflow-hidden', props.className)}>
+    <div
+      data-d-role="container"
+      className={cn('flex overflow-hidden', props.className)}
+    >
       <motion.div
         className="flex shrink-0 items-stretch"
         animate={{ x: props.reverse ? ['-50%', '0%'] : ['0%', '-50%'] }}
@@ -709,7 +728,12 @@ export function ParallaxLayer(props: {
   }
 
   return (
-    <motion.div data-d-role="container" ref={ref} style={{ y }} className={props.className}>
+    <motion.div
+      data-d-role="container"
+      ref={ref}
+      style={{ y }}
+      className={props.className}
+    >
       {props.children}
     </motion.div>
   )

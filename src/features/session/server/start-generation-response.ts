@@ -1,5 +1,10 @@
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { startVpsGeneration } from '@/features/generation/server/vps-generation-handler'
+import { checkRateLimit, generationHits } from '@/lib/rate-limit'
+import {
+  getClientIp,
+  hashClientIp,
+} from '@/features/session/server/session-create-response'
 
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -30,6 +35,15 @@ export async function createStartGenerationResponse(
   request: Request,
   sessionIdParam: string,
 ): Promise<Response> {
+  // Rate limit: max 5 generation starts per 10 minutes per IP.
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, generationHits, 5, 10 * 60 * 1000)) {
+    return json(
+      { error: 'Too many generation requests. Please wait a few minutes.' },
+      { status: 429 },
+    )
+  }
+
   const sessionId = sessionIdParam as Id<'sessions'>
 
   try {
@@ -40,10 +54,7 @@ export async function createStartGenerationResponse(
     })
 
     if (result.status === 'skipped') {
-      return json(
-        { status: 'skipped', reason: result.reason },
-        { status: 200 },
-      )
+      return json({ status: 'skipped', reason: result.reason }, { status: 200 })
     }
 
     if (result.status === 'failed') {

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useState } from 'react'
 
 import { GlassPillButton } from '@/features/home/components/GlassPill'
 import { ShareBonusPanel } from '@/features/home/components/ShareBonusPanel'
@@ -55,23 +55,27 @@ type FaqItemProps = {
   controlsId: string
 }
 
-const FaqItem = ({ question, answer, controlsId }: FaqItemProps) => (
-  <div className="faq-item" data-faq-item>
-    <button
-      type="button"
-      className="faq-question"
-      aria-expanded="false"
-      aria-controls={controlsId}
-      data-faq-trigger
-    >
-      {question}
-      <ChevronIcon />
-    </button>
-    <p id={controlsId} hidden>
-      {answer}
-    </p>
-  </div>
-)
+const FaqItem = ({ question, answer, controlsId }: FaqItemProps) => {
+  const [isOpen, setIsOpen] = useState(false)
+  return (
+    <div className="faq-item" data-faq-item data-open={isOpen || undefined}>
+      <button
+        type="button"
+        className="faq-question"
+        aria-expanded={isOpen}
+        aria-controls={controlsId}
+        data-faq-trigger
+        onClick={() => setIsOpen((v) => !v)}
+      >
+        {question}
+        <ChevronIcon />
+      </button>
+      <p id={controlsId} hidden={!isOpen}>
+        {answer}
+      </p>
+    </div>
+  )
+}
 
 type PricingContentProps = {
   onCheckoutClick: () => void
@@ -86,49 +90,17 @@ export const PricingContent = ({
   onShareClick,
   referralCode,
 }: PricingContentProps) => {
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const content = contentRef.current
-    if (content === null) return
-
-    const faqTriggers = Array.from(
-      content.querySelectorAll<HTMLButtonElement>('[data-faq-trigger]'),
-    )
-    const handleFaqClick = (event: MouseEvent) => {
-      const trigger = event.currentTarget as HTMLButtonElement
-      const item = trigger.closest<HTMLElement>('[data-faq-item]')
-      const panelId = trigger.getAttribute('aria-controls')
-      const panel = panelId === null ? null : document.getElementById(panelId)
-      const nextExpanded = trigger.getAttribute('aria-expanded') !== 'true'
-
-      trigger.setAttribute('aria-expanded', String(nextExpanded))
-      item?.toggleAttribute('data-open', nextExpanded)
-      if (panel !== null) panel.hidden = !nextExpanded
-    }
-
-    for (const trigger of faqTriggers) {
-      trigger.addEventListener('click', handleFaqClick)
-    }
-
-    return () => {
-      for (const trigger of faqTriggers) {
-        trigger.removeEventListener('click', handleFaqClick)
-      }
-    }
-  }, [])
-
   return (
-    <div ref={contentRef} className="page">
+    <div className="page">
       <section
         className="pricing-hero section-gap"
         aria-labelledby="pricing-heading"
       >
         <span className="kicker">Pricing</span>
         <h1 id="pricing-heading">
-          One plan.
+          Start free.
           <br />
-          Everything included.
+          Upgrade when you ship.
         </h1>
         <p>
           Generate, iterate, export, and keep shipping with the full Ship Fast
@@ -140,11 +112,42 @@ export const PricingContent = ({
         <h2 id="plans-heading" className="sr-only">
           Plans
         </h2>
-        <div className="pricing-grid single-plan">
+        <div className="pricing-grid">
           <div className="pricing-card featured">
             <div className="popular-badge" aria-label="Most popular plan">
               Most Popular
             </div>
+            <p className="plan-label">Free</p>
+            <div className="plan-price-row">
+              <span className="plan-price">₹0</span>
+              <span className="plan-period">/forever</span>
+            </div>
+            <p className="plan-desc">
+              Try the generator without logging in. The first ones are on us —
+              no credit card required.
+            </p>
+            <div className="plan-divider" />
+            <ul className="plan-features">
+              <li>
+                <CheckIcon /> 2 generations/day without login
+              </li>
+              <li>
+                <CheckIcon /> 5 generations/day when logged in
+              </li>
+              <li>
+                <CheckIcon /> 10 free generations/month
+              </li>
+            </ul>
+            <GlassPillButton
+              className="plan-btn"
+              onClick={onShareClick}
+              disabled={isCheckoutStarting}
+            >
+              Start Free
+            </GlassPillButton>
+            <p className="seats-note">No credit card required.</p>
+          </div>
+          <div className="pricing-card">
             <p className="plan-label">Pro</p>
             <div className="plan-price-row">
               <span className="plan-price">₹999</span>
@@ -245,6 +248,11 @@ export const PricingContent = ({
           <h2 id="faq-heading">Questions answered.</h2>
         </div>
         <div className="faq-list">
+          <FaqItem
+            question="What is included in Free?"
+            answer="Free gives you 2 generations per day without even logging in, 5 per day when signed in, and 10 free generations per month. No credit card required."
+            controlsId="pricing-faq-free"
+          />
           <FaqItem
             question="What is included in Pro?"
             answer="Pro includes website generation, ZIP export, the full template library, AI iteration, community access, and monthly template drops."

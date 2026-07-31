@@ -14,7 +14,7 @@ import {
   resolveLakebedExportDependenciesForTest,
 } from './openui-lakebed-export-builder'
 
-const benchmarkComponentNames = ['AuthNavbar', 'AuthHero', 'AuthFeatures']
+const benchmarkComponentNames = ['Navbar', 'SplitHero', 'FeatureList']
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -41,16 +41,16 @@ describe('generated Lakebed export dependencies', () => {
       throw new Error('Invalid generated manifest shape')
     }
 
-    const authNavbar = generated.components.AuthNavbar
-    expect(isRecord(authNavbar)).toBe(true)
-    if (!isRecord(authNavbar)) {
-      throw new Error('Missing AuthNavbar generated dependency entry')
+    const navbar = generated.components.Navbar
+    expect(isRecord(navbar)).toBe(true)
+    if (!isRecord(navbar)) {
+      throw new Error('Missing Navbar generated dependency entry')
     }
-    expect(authNavbar.clientComponent).not.toBeNull()
-    const filePaths = authNavbar.filePaths
+    expect(navbar.clientComponent).not.toBeNull()
+    const filePaths = navbar.filePaths
     expect(Array.isArray(filePaths)).toBe(true)
     if (!Array.isArray(filePaths)) {
-      throw new Error('Invalid AuthNavbar dependency file paths')
+      throw new Error('Invalid Navbar dependency file paths')
     }
     expect(filePaths.length).toBeGreaterThan(100)
     expect(Object.keys(generated.files).length).toBeGreaterThan(500)
@@ -90,7 +90,7 @@ describe('generated Lakebed export dependencies', () => {
   it('does not leak OpenUI names into exported Lakebed files', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source: `root = PageSwitch(["Home"], [home])
-home = Stack([AuthNavbar(), AuthHero(), AuthFeatures()])`,
+home = Stack([Navbar(), SplitHero(), FeatureList()])`,
       siteSpecJson: JSON.stringify({ projectName: 'Neutral Export' }),
       sessionId: 'neutral-export',
       target: 'lakebed',

@@ -714,7 +714,8 @@ describe('sendSharedNotification', () => {
       mockFetch,
     )
 
-    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+    const fetchCall = mockFetch.mock.calls[0][1] as { body?: string }
+    const requestBody = JSON.parse(fetchCall.body ?? '{}')
     expect(requestBody.text).toBe('🎉 [DEV] Test Event')
   })
 
@@ -737,7 +738,8 @@ describe('sendSharedNotification', () => {
       mockFetch,
     )
 
-    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+    const fetchCall = mockFetch.mock.calls[0][1] as { body?: string }
+    const requestBody = JSON.parse(fetchCall.body ?? '{}')
     expect(requestBody.text).toBe('🎉 Test Event')
   })
 })

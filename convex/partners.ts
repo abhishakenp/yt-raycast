@@ -8,6 +8,7 @@ import {
   getOrBackfillAcquisitionAttribution,
   insertAcquisitionAttribution,
 } from './lib/acquisition_attribution'
+import { timingSafeEqual } from './lib/timingSafeEqual'
 import { getDubRetryDelayMs } from './lib/dub_outbox'
 
 const OUTBOX_LEASE_MS = 60_000
@@ -44,10 +45,8 @@ function requirePartnersEnabled(): void {
 }
 
 function requireBillingSecret(secret: string): void {
-  if (
-    !process.env.BILLING_WEBHOOK_MUTATION_SECRET ||
-    secret !== process.env.BILLING_WEBHOOK_MUTATION_SECRET
-  ) {
+  const expected = process.env.BILLING_WEBHOOK_MUTATION_SECRET
+  if (!expected || !timingSafeEqual(secret, expected)) {
     throw new ConvexError({
       code: 'FORBIDDEN',
       message: 'Partner billing operation is not authorized.',

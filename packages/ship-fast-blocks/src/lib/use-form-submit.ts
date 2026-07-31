@@ -74,7 +74,9 @@ export function useFormSubmit(options?: {
       } catch (err) {
         setStatus('error')
         setErrorMessage(
-          err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+          err instanceof Error
+            ? err.message
+            : 'Something went wrong. Please try again.',
         )
       }
     },

@@ -137,7 +137,11 @@ export async function getUserGenerationQuota(
       const today = new Date().toISOString().slice(0, 10)
       shareBonusClaimed = await getConvexClient().query(
         'shareBonus:getShareBonusStatus',
-        { clientIpHash, date: today },
+        {
+          clientIpHash,
+          date: today,
+          secret: process.env.SHARE_BONUS_MUTATION_SECRET,
+        },
       )
     } catch {
       // Convex unavailable; default to no bonus
@@ -208,7 +212,7 @@ export const getEarlyAdopterStatus = async () => {
   }
 }
 
-const FREE_PLAN = {
+export const FREE_PLAN = {
   name: 'Free',
   priceId: '',
   features: [
@@ -343,6 +347,7 @@ export async function hasActiveSubscription(
   try {
     return await getConvexClient().query('billing:hasActiveSubscription', {
       userId: uid,
+      secret: process.env.BILLING_WEBHOOK_MUTATION_SECRET,
     })
   } catch (err: unknown) {
     console.error(
@@ -366,6 +371,7 @@ export async function getUserCredits(
   try {
     return await getConvexClient().query('billing:getUserCredits', {
       userId: uid,
+      secret: process.env.BILLING_WEBHOOK_MUTATION_SECRET,
     })
   } catch (err: unknown) {
     console.error('[payments] getUserCredits error:', (err as Error)?.message)

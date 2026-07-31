@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@tanstack/ai-isolate-node', () => ({
+  createNodeIsolateDriver: () => ({}),
+}))
+
 vi.mock(
   '@/features/moderation/server/enforce-user-input-moderation',
   async (importOriginal) => {

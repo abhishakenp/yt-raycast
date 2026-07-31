@@ -236,7 +236,7 @@ describe('preview image URL resolution', () => {
     expect(rewritten).toContain('https://images.pexels.test/max-large.jpg')
   })
 
-  it('resolves deployed preview images with the Vite Pexels key used by app environments', async () => {
+  it('does NOT use VITE_PEXELS_API_KEY fallback (security: prevents client bundle leakage)', async () => {
     delete process.env.PEXELS_API_KEY
     process.env.VITE_PEXELS_API_KEY = 'vite-pexels-key'
     const fetchMock = vi.fn(async () =>
@@ -259,16 +259,10 @@ describe('preview image URL resolution', () => {
       '<img alt="Glass showroom" src="/api/pexels?query=glass+showroom&w=800&h=600&seed=hero">',
     )
 
-    const calls = fetchMock.mock.calls as unknown as Array<
-      [RequestInfo | URL, RequestInit | undefined]
-    >
-    expect(String(calls[0]?.[0])).toBe(
-      'https://api.pexels.com/v1/search?query=glass+showroom&per_page=15&orientation=landscape',
-    )
-    expect(calls[0]?.[1]).toEqual({
-      headers: { Authorization: 'vite-pexels-key' },
-    })
-    expect(rewritten).toContain('https://images.pexels.test/vite-large.jpg')
-    expect(rewritten).not.toContain('picsum.photos')
+    // The Pexels API should NOT be called with the VITE_ key — it must fall
+    // back to picsum since PEXELS_API_KEY is not set.
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(rewritten).toContain('picsum.photos')
+    expect(rewritten).not.toContain('images.pexels.test')
   })
 })

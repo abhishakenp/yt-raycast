@@ -26,7 +26,8 @@ const CollectionGrid = React.forwardRef<
   return (
     <Comp
       data-slot="collection-grid"
-      data-d-role="grid"className={cn(collectionGridVariants({ cols }), className)}
+      data-d-role="grid"
+      className={cn(collectionGridVariants({ cols }), className)}
       ref={ref}
       {...props}
     />
@@ -42,7 +43,8 @@ const CollectionCard = React.forwardRef<
   return (
     <Comp
       data-slot="collection-card"
-      data-d-role="card"className={cn('group flex flex-col', className)}
+      data-d-role="card"
+      className={cn('group flex flex-col', className)}
       ref={ref}
       {...props}
     />

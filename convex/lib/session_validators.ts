@@ -90,6 +90,7 @@ export const createGenerationSessionArgs = {
   anonymousOwnerSecret: v.optional(v.string()),
   anonymousClientId: v.optional(v.string()),
   clientIpHash: v.optional(v.string()),
+  serverSecret: v.optional(v.string()),
   designReferenceUrls: v.optional(v.array(v.string())),
   designReferenceNotes: v.optional(v.string()),
   cloneUrl: v.optional(v.string()),
@@ -113,6 +114,7 @@ export const claimAnonymousByClientIdArgs = {
 
 export const claimAnonymousByIpArgs = {
   clientIpHash: v.string(),
+  secret: v.optional(v.string()),
 }
 
 export const publishPreviewArgs = {

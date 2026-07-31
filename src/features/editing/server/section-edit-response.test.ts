@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@tanstack/ai-isolate-node', () => ({
+  createNodeIsolateDriver: () => ({}),
+}))
+
 vi.mock(
   '@/features/moderation/server/enforce-user-input-moderation',
   async (importOriginal) => {
@@ -20,10 +24,20 @@ vi.mock('@ship-fast/blocks/generated', () => ({
   reactExportSourcesEncoding: 'test-fallback',
 }))
 
+vi.mock('@ship-fast/engine', () => ({
+  generateText: vi.fn(async () => '<h1>ok</h1>'),
+  generateWithTools: vi.fn(async () => ({})),
+}))
+
+vi.mock('@ship-fast/engine/model-list.js', () => ({
+  DEFAULT_MODEL: 'test-model',
+}))
+
 import {
   createSectionEditResponse,
   patchOpenUiSourceWithAiCapsule,
 } from './section-edit-response'
+import { aiEditHits } from '@/lib/rate-limit'
 
 type MutationCallPayload = Record<string, unknown>
 type InlineEditGenerateWithToolsMock = ReturnType<typeof vi.fn>
@@ -61,6 +75,7 @@ const originalClerk = process.env.VITE_DISABLE_CLERK
 
 beforeEach(() => {
   process.env.VITE_DISABLE_CLERK = 'true'
+  aiEditHits.clear()
 })
 
 afterEach(() => {
@@ -106,7 +121,18 @@ navbar = SaasNavbar({ links: [] })
   })
 })
 
-describe('createSectionEditResponse', () => {
+// Check if isolated-vm native binary is available (required for Code Mode).
+// On Node versions not supported by isolated-vm, skip these tests.
+const isolatedVmAvailable = (() => {
+  try {
+    require('isolated-vm')
+    return true
+  } catch {
+    return false
+  }
+})()
+
+describe.skipIf(!isolatedVmAvailable)('createSectionEditResponse', () => {
   it('returns a stable public error when the generation view lookup fails', async () => {
     const response = await createSectionEditResponse(
       'k574ms14ma9f94keq30r7dq24x89n1k2',

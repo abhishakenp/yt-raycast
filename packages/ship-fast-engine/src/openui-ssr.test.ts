@@ -94,7 +94,7 @@ home = TestimonialRow("Praise", null)`)
 
   it('TestimonialRow renders when a testimonial omits optional nested fields', async () => {
     const html = await renderOpenUIToHTML(`$page = "Home"
-home = TestimonialRow("Praise", [{quote: "Loved it", author: "Sam"}])`)
+home = TestimonialRow("Praise", null, [{quote: "Loved it", author: "Sam"}])`)
 
     expect(html).not.toContain('openui-error')
     expect(html).toContain('Praise')

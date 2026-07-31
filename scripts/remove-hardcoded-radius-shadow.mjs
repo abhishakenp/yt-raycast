@@ -43,7 +43,8 @@ const report = []
 
 for (const dir of DIRS) {
   const files = readdirSync(dir).filter(
-    (f) => f.endsWith('.tsx') && !f.includes('.test.') && !f.includes('.registry.'),
+    (f) =>
+      f.endsWith('.tsx') && !f.includes('.test.') && !f.includes('.registry.'),
   )
 
   for (const file of files) {

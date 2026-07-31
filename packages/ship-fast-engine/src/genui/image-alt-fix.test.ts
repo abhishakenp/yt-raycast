@@ -10,13 +10,15 @@ import type { CompositionSection } from './composition-parser.ts'
 // Minimal helper to build a fake section for testing
 function makeSection(
   motif: string,
-  props: Record<string, unknown>,
+  props: Record<string, string>,
 ): CompositionSection {
   return {
     motif,
     props,
     nested: {},
-    design: null,
+    design: undefined,
+    line: 1,
+    page: 'home',
   }
 }
 
@@ -26,7 +28,14 @@ describe('image alt text placeholder fix', () => {
     const motif = 'SplitHero'
     const props = { imageAlt: 'imageAlt', heading: 'Test' }
     const PLACEHOLDER_VALUES = new Set([
-      'imagealt', 'image', 'photo', 'picture', 'placeholder', 'img', 'alt', 'src',
+      'imagealt',
+      'image',
+      'photo',
+      'picture',
+      'placeholder',
+      'img',
+      'alt',
+      'src',
     ])
     const FALLBACK: Record<string, string> = {
       SplitHero: 'Modern product hero shot on clean background',
@@ -46,7 +55,14 @@ describe('image alt text placeholder fix', () => {
   it('replaces generic "image" with fallback', () => {
     const props = { imageAlt: 'image' }
     const PLACEHOLDER_VALUES = new Set([
-      'imagealt', 'image', 'photo', 'picture', 'placeholder', 'img', 'alt', 'src',
+      'imagealt',
+      'image',
+      'photo',
+      'picture',
+      'placeholder',
+      'img',
+      'alt',
+      'src',
     ])
 
     if (
@@ -63,7 +79,14 @@ describe('image alt text placeholder fix', () => {
   it('preserves real descriptive alt text', () => {
     const props = { imageAlt: 'Modern office with natural light' }
     const PLACEHOLDER_VALUES = new Set([
-      'imagealt', 'image', 'photo', 'picture', 'placeholder', 'img', 'alt', 'src',
+      'imagealt',
+      'image',
+      'photo',
+      'picture',
+      'placeholder',
+      'img',
+      'alt',
+      'src',
     ])
 
     if (
@@ -86,7 +109,14 @@ describe('image alt text placeholder fix', () => {
       ],
     }
     const PLACEHOLDER_VALUES = new Set([
-      'imagealt', 'image', 'photo', 'picture', 'placeholder', 'img', 'alt', 'src',
+      'imagealt',
+      'image',
+      'photo',
+      'picture',
+      'placeholder',
+      'img',
+      'alt',
+      'src',
     ])
 
     for (const value of Object.values(props)) {

@@ -419,6 +419,25 @@ describe('forkSessionForOwner', () => {
       },
     })
   })
+
+  it('prevents forking a private session the caller does not own', async () => {
+    const { ctx } = ctxFor({
+      userId: 'attacker-user',
+      sessions: [sessionDoc({ userId: 'owner-user', isPrivate: true })],
+      previews: [previewDoc()],
+      generatedModules: [generatedModuleDoc()],
+      siteSpecs: [siteSpecDoc()],
+    })
+
+    await expect(
+      forkSessionForOwner(ctx, { sourceSessionId }, notifyFunction),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'FORBIDDEN',
+        message: 'You do not have access to this session',
+      },
+    })
+  })
 })
 
 describe('forkSession delegation', () => {

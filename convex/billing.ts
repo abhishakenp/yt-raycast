@@ -9,6 +9,7 @@ import {
   getGenerationQuotaForUser,
 } from './lib/billing_generation_quota'
 import { qualifyReferralOnPayment } from './lib/referral_qualification'
+import { timingSafeEqual } from './lib/timingSafeEqual'
 
 async function getUserId(ctx: QueryCtx | MutationCtx): Promise<string> {
   const identity = await ctx.auth.getUserIdentity()
@@ -44,13 +45,31 @@ async function getCredits(ctx: QueryCtx | MutationCtx, userId: string) {
 async function requireBillingReadAccess(
   ctx: QueryCtx,
   requestedUserId: string,
+  serverSecret?: string,
 ): Promise<void> {
-  // Historical server callers use opaque, non-Clerk user ids. Clerk user ids
-  // include the issuer separator and must always be bound to the caller.
-  if (!requestedUserId.includes('|')) return
+  // Server-side callers pass the BILLING_WEBHOOK_MUTATION_SECRET. This allows
+  // the Node.js server (which uses ConvexHttpClient without Clerk auth) to
+  // query billing info for any userId, including opaque non-Clerk ids.
+  const expectedSecret = process.env.BILLING_WEBHOOK_MUTATION_SECRET
+  if (
+    expectedSecret !== undefined &&
+    serverSecret !== undefined &&
+    timingSafeEqual(serverSecret, expectedSecret)
+  ) {
+    return
+  }
 
+  // Clerk user ids include the issuer separator (|). The caller MUST be that
+  // user — no bypasses for non-Clerk ids without a server secret.
   const identity = await ctx.auth.getUserIdentity()
   if (identity?.tokenIdentifier === requestedUserId) return
+
+  // Admin users can query any billing info.
+  if (identity !== null) {
+    const isAdmin =
+      identity.system_role === 'admin' || identity.systemRole === 'admin'
+    if (isAdmin) return
+  }
 
   throw new ConvexError({
     code: identity === null ? 'UNAUTHENTICATED' : 'FORBIDDEN',
@@ -138,9 +157,10 @@ export const getBillingOverview = query({
 export const hasActiveSubscription = query({
   args: {
     userId: v.string(),
+    secret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireBillingReadAccess(ctx, args.userId)
+    await requireBillingReadAccess(ctx, args.userId, args.secret)
     return (await getActiveSubscription(ctx, args.userId)) !== null
   },
 })
@@ -148,9 +168,10 @@ export const hasActiveSubscription = query({
 export const getUserCredits = query({
   args: {
     userId: v.string(),
+    secret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireBillingReadAccess(ctx, args.userId)
+    await requireBillingReadAccess(ctx, args.userId, args.secret)
     return await getCredits(ctx, args.userId)
   },
 })
@@ -263,8 +284,17 @@ export const confirmCheckoutSubscription = mutation({
       .first()
 
     if (existing !== null) {
+      // Prevent IDOR: only the original owner can update their subscription
+      // record. Without this check, an authenticated attacker could call this
+      // mutation with a known providerSubscriptionId and steal another user's
+      // subscription by patching the userId to their own.
+      if (existing.userId !== userId) {
+        throw new ConvexError({
+          code: 'FORBIDDEN',
+          message: 'Subscription does not belong to this user.',
+        })
+      }
       await ctx.db.patch(existing._id, {
-        userId,
         provider: args.provider,
         status: args.status,
         planId: args.planId,
@@ -358,10 +388,11 @@ export const consumeCreditForExport = internalMutation({
 export const getCreditLedger = query({
   args: {
     userId: v.string(),
+    secret: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    await requireBillingReadAccess(ctx, args.userId)
+    await requireBillingReadAccess(ctx, args.userId, args.secret)
     const limit = Math.min(args.limit ?? 50, 100)
     const transactions = await ctx.db
       .query('creditLedger')
@@ -407,7 +438,7 @@ export const applyBillingWebhook = mutation({
   },
   handler: async (ctx, args) => {
     const expectedSecret = process.env.BILLING_WEBHOOK_MUTATION_SECRET
-    if (!expectedSecret || args.secret !== expectedSecret) {
+    if (!expectedSecret || !timingSafeEqual(args.secret, expectedSecret)) {
       throw new ConvexError({
         code: 'FORBIDDEN',
         message: 'Webhook mutation is not authorized.',

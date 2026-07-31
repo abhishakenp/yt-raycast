@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { checkoutConfirmHits } from '@/lib/rate-limit'
 import { createCheckoutConfirmApiResponse } from './checkout-confirm-api-response'
 
 const env = {
@@ -34,6 +35,7 @@ const hmacSha256 = async (message: string, secret: string): Promise<string> => {
 describe('createCheckoutConfirmApiResponse', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    checkoutConfirmHits.clear()
     client.setAuth.mockReset()
     client.query.mockReset().mockResolvedValue({ userId: 'user_123' })
     client.mutation.mockReset().mockResolvedValue({

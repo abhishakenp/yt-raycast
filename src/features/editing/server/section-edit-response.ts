@@ -28,6 +28,11 @@ import {
   type InlineEditPersistenceCommand,
 } from '@/features/editing/lib/inline-edit-commands'
 import { INLINE_EDIT_TOOL_DEFINITIONS } from '@/features/editing/lib/inline-edit-tool-definitions'
+import { checkRateLimit, aiEditHits } from '@/lib/rate-limit'
+import {
+  getClientIp,
+  hashClientIp,
+} from '@/features/session/server/session-create-response'
 
 type SectionEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 
@@ -877,7 +882,33 @@ async function compileTsx(tsxSource: string): Promise<CompileResult> {
       // Keep react external — we'll rewrite the import statements to use
       // global React (available in the browser) so the compiled JS can be
       // loaded via Blob URL without an import map.
-      external: ['react', 'react/jsx-runtime'],
+      // Also keep Node.js built-ins external so LLM-generated code can't
+      // bundle server-side modules (fs, path, crypto, etc.) into the
+      // client-facing compiled output.
+      external: [
+        'react',
+        'react/jsx-runtime',
+        /^node:/,
+        'fs',
+        'path',
+        'os',
+        'crypto',
+        'http',
+        'https',
+        'net',
+        'dns',
+        'child_process',
+        'worker_threads',
+        'stream',
+        'zlib',
+        'url',
+        'querystring',
+        'events',
+        'util',
+        'assert',
+        'buffer',
+        'process',
+      ],
     })
     const output = result.outputFiles[0]
     if (!output) {
@@ -1091,6 +1122,16 @@ export async function createSectionEditResponse(
     moderate?: typeof enforceUserInputModeration
   } = {},
 ): Promise<Response> {
+  // Rate limit: max 10 AI edits per 10 minutes per IP. Prevents LLM API
+  // cost abuse from spamming inline edit requests.
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, aiEditHits, 10, 10 * 60 * 1000)) {
+    return json(
+      { error: 'Too many edit requests. Please wait a few minutes.' },
+      { status: 429 },
+    )
+  }
+
   let body: JsonBody
   try {
     body = await readJsonBody(request)

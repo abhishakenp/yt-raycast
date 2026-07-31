@@ -91,7 +91,7 @@ function readLastFetchBody(): Record<string, unknown> {
   return parsed
 }
 
-function fillAdminCredentials(): void {
+export function fillAdminCredentials(): void {
   fireEvent.change(screen.getByLabelText('Admin email'), {
     target: { value: 'admin@store.test' },
   })

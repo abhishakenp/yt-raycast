@@ -2,6 +2,11 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { checkRateLimit, downloadHits, exportHits } from '@/lib/rate-limit'
+import {
+  getClientIp,
+  hashClientIp,
+} from '@/features/session/server/session-create-response'
 import { createExportResponse } from './create-export-response'
 
 type ExportApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'> &
@@ -73,6 +78,16 @@ export async function createSessionExportResponse(
   request: Request,
   clientOverride?: ExportApiClient,
 ): Promise<Response> {
+  // Rate limit: max 10 export requests per 10 minutes per IP. Prevents
+  // compute exhaustion from spamming export build requests.
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, exportHits, 10, 10 * 60 * 1000)) {
+    return json(
+      { error: 'Too many export requests. Please wait a few minutes.' },
+      { status: 429 },
+    )
+  }
+
   let body: Record<string, unknown>
   try {
     body = await readJsonBody(request)
@@ -117,6 +132,19 @@ export async function createSessionDownloadResponse(
       status: 400,
       headers: { 'content-type': 'text/plain' },
     })
+  }
+
+  // Rate limit downloads: max 20 per 10 minutes per IP.
+  if (requestOrClient instanceof Request) {
+    const ipHash = hashClientIp(getClientIp(requestOrClient))
+    if (!checkRateLimit(ipHash, downloadHits, 20, 10 * 60 * 1000)) {
+      return new Response(
+        JSON.stringify({
+          error: 'Too many downloads. Please wait a few minutes.',
+        }),
+        { status: 429, headers: { 'Content-Type': 'application/json' } },
+      )
+    }
   }
 
   return await createExportResponse(

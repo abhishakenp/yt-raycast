@@ -353,23 +353,6 @@ describe('qualifyReferralOnPayment', () => {
     expect(patches).toHaveLength(0)
   })
 
-  it('disqualifies a disposable-email referral and returns null', async () => {
-    const existing = referralDoc({
-      referrerUserId: REFERRER,
-      referredUserId: 'user_burner',
-      status: 'pending',
-      emailDisposable: true,
-    })
-    const { ctx, patches } = mockCtx({ referrals: [existing] })
-
-    const result = await qualifyReferralOnPayment(ctx, 'user_burner')
-
-    expect(result).toBeNull()
-    expect(patches).toHaveLength(1)
-    expect(patches[0].id).toBe(existing._id)
-    expect(patches[0].patch).toMatchObject({ status: 'disqualified' })
-  })
-
   it('qualifies a pending referral and patches it with paidAt', async () => {
     const existing = referralDoc({
       referrerUserId: REFERRER,

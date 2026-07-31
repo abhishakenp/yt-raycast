@@ -36,7 +36,6 @@ export function buildModelOptions(modelId: string): Record<string, unknown> {
   return opts
 }
 
-
 /**
  * Harmony prefill that forces the model to skip the analysis (reasoning)
  * channel and output directly into the final channel. gpt-oss models use
@@ -61,7 +60,10 @@ export function buildMessages(
   const msgs: Array<{ role: 'user' | 'assistant'; content: string }> = [
     { role: 'user', content: user },
   ]
-  if (supportsReasoningEffort(modelId) && process.env.DISABLE_HARMONY_PREFILL !== '1') {
+  if (
+    supportsReasoningEffort(modelId) &&
+    process.env.DISABLE_HARMONY_PREFILL !== '1'
+  ) {
     msgs.push({ role: 'assistant', content: HARMONY_NO_THINK_PREFILL })
   }
   return msgs

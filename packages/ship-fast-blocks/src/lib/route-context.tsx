@@ -99,10 +99,6 @@ export function slugifyRoute(value: string): string {
   )
 }
 
-function routePath(page: string, routes: string[]): string {
-  return page === routes[0] ? '/' : `/${slugifyRoute(page)}`
-}
-
 function fallbackHref(target: string): string {
   return target.startsWith('/') ? target : `#${slugifyRoute(target)}`
 }
@@ -137,12 +133,13 @@ export function resolveRouteHref(
 
   const resolved = resolveRouteTarget(rawTarget, routes)
   if (!resolved) return fallbackHref(rawTarget)
+  const resolvedPage = resolved.page
 
   function isResolvedPage(route: string) {
-    return normalizeTarget(route) === normalizeTarget(resolved.page)
+    return normalizeTarget(route) === normalizeTarget(resolvedPage)
   }
 
-  const page = routes.find(isResolvedPage) ?? resolved.page
+  const page = routes.find(isResolvedPage) ?? resolvedPage
   if (!page || !routes.includes(page)) return fallbackHref(rawTarget)
 
   // Use page ID slug when available (stable identifier), fall back to

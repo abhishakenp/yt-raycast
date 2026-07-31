@@ -22,11 +22,28 @@
 // ─── Named-concept presets (only for axes with no Tailwind equivalent) ────
 
 export const DENSITY_PRESETS = ['compact', 'balanced', 'airy'] as const
-export const TYPOGRAPHY_PRESETS = ['editorial', 'technical', 'display', 'humanist'] as const
+export const TYPOGRAPHY_PRESETS = [
+  'editorial',
+  'technical',
+  'display',
+  'humanist',
+] as const
 export const GRADIENT_PRESETS = ['none', 'subtle', 'vibrant', 'mesh'] as const
 export const MOTION_PRESETS = ['none', 'subtle', 'lively'] as const
-export const CHROME_PRESETS = ['none', 'hairline', 'brutalist', 'terminal', 'editorial', 'gradient'] as const
-export const DECOR_PRESETS = ['none', 'dot-grid', 'graph-paper', 'glow'] as const
+export const CHROME_PRESETS = [
+  'none',
+  'hairline',
+  'brutalist',
+  'terminal',
+  'editorial',
+  'gradient',
+] as const
+export const DECOR_PRESETS = [
+  'none',
+  'dot-grid',
+  'graph-paper',
+  'glow',
+] as const
 
 // ─── Design intent (serializable — flows through DSL → parser → compiler) ──
 
@@ -82,9 +99,19 @@ export interface DesignClasses {
 }
 
 const EMPTY_CLASSES: DesignClasses = {
-  radius: {}, shadow: {}, gradient: {}, density: {}, typography: {},
-  motion: {}, border: {}, tracking: {}, leading: {}, weight: {},
-  transform: {}, image: {}, opacity: {},
+  radius: {},
+  shadow: {},
+  gradient: {},
+  density: {},
+  typography: {},
+  motion: {},
+  border: {},
+  tracking: {},
+  leading: {},
+  weight: {},
+  transform: {},
+  image: {},
+  opacity: {},
 }
 
 /** @deprecated CSS handles styling now. Returns empty shape for backward compat. */
@@ -111,7 +138,16 @@ const AXIS_REGISTRY: readonly AxisDef[] = [
   {
     name: 'radius',
     cssProperty: 'border-radius',
-    roles: ['btn', 'card', 'input', 'badge', 'container', 'link', 'image', 'icon'],
+    roles: [
+      'btn',
+      'card',
+      'input',
+      'badge',
+      'container',
+      'link',
+      'image',
+      'icon',
+    ],
     tailwindMatch: /^rounded(-(\[.+\]|[a-z0-9]+)|\[.+\])?$/,
   },
   {
@@ -140,7 +176,8 @@ const AXIS_REGISTRY: readonly AxisDef[] = [
     keyAliases: ['fontweight', 'font-weight'],
     cssProperty: 'font-weight',
     roles: ['display', 'heading', 'body', 'eyebrow'],
-    tailwindMatch: /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/,
+    tailwindMatch:
+      /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/,
   },
   {
     name: 'transform',
@@ -190,18 +227,33 @@ const AXIS_REGISTRY: readonly AxisDef[] = [
   {
     name: 'motion',
     presets: MOTION_PRESETS,
-    valueAliases: { static: 'none', gentle: 'subtle', kinetic: 'lively', animated: 'lively' },
+    valueAliases: {
+      static: 'none',
+      gentle: 'subtle',
+      kinetic: 'lively',
+      animated: 'lively',
+    },
     roles: ['card', 'btn'],
   },
   {
     name: 'chrome',
     presets: CHROME_PRESETS,
-    valueAliases: { minimal: 'hairline', bold: 'brutalist', mono: 'terminal', magazine: 'editorial' },
+    valueAliases: {
+      minimal: 'hairline',
+      bold: 'brutalist',
+      mono: 'terminal',
+      magazine: 'editorial',
+    },
   },
   {
     name: 'decor',
     presets: DECOR_PRESETS,
-    valueAliases: { dots: 'dot-grid', grid: 'graph-paper', paper: 'graph-paper', orbs: 'glow' },
+    valueAliases: {
+      dots: 'dot-grid',
+      grid: 'graph-paper',
+      paper: 'graph-paper',
+      orbs: 'glow',
+    },
   },
 ] as const
 
@@ -209,45 +261,88 @@ const KEY_TO_AXIS: Map<string, string> = (() => {
   const m = new Map<string, string>()
   for (const axis of AXIS_REGISTRY) {
     m.set(axis.name.toLowerCase(), axis.name)
-    for (const alias of axis.keyAliases ?? []) m.set(alias.toLowerCase(), axis.name)
+    for (const alias of axis.keyAliases ?? [])
+      m.set(alias.toLowerCase(), axis.name)
   }
   return m
 })()
 
-const AXIS_BY_NAME: Map<string, AxisDef> = new Map(AXIS_REGISTRY.map((a) => [a.name, a]))
+const AXIS_BY_NAME: Map<string, AxisDef> = new Map(
+  AXIS_REGISTRY.map((a) => [a.name, a]),
+)
 
 const ALL_ROLES: Set<string> = (() => {
   const s = new Set<string>()
-  for (const axis of AXIS_REGISTRY) for (const role of axis.roles ?? []) s.add(role)
+  for (const axis of AXIS_REGISTRY)
+    for (const role of axis.roles ?? []) s.add(role)
   return s
 })()
 
 // ─── Tailwind class → CSS value (static facts, not design decisions) ──────
 
 const TAILWIND_CSS: Record<string, string> = {
-  'rounded-none': '0px', 'rounded-sm': '0.25rem', 'rounded-md': '0.375rem',
-  'rounded-lg': '0.5rem', 'rounded-xl': '0.75rem', 'rounded-2xl': '1rem',
-  'rounded-3xl': '1.5rem', 'rounded-full': '9999px',
+  'rounded-none': '0px',
+  'rounded-sm': '0.25rem',
+  'rounded-md': '0.375rem',
+  'rounded-lg': '0.5rem',
+  'rounded-xl': '0.75rem',
+  'rounded-2xl': '1rem',
+  'rounded-3xl': '1.5rem',
+  'rounded-full': '9999px',
   'shadow-none': 'none',
   'shadow-sm': '0 1px 3px 0 rgb(0 0 0 / 0.07)',
-  'shadow-md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-  'shadow-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-  'shadow-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+  'shadow-md':
+    '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+  'shadow-lg':
+    '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+  'shadow-xl':
+    '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
   'shadow-2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-  'font-thin': '100', 'font-extralight': '200', 'font-light': '300',
-  'font-normal': '400', 'font-medium': '500', 'font-semibold': '600',
-  'font-bold': '700', 'font-extrabold': '800', 'font-black': '900',
-  'tracking-tighter': '-0.05em', 'tracking-tight': '-0.025em', 'tracking-normal': '0',
-  'tracking-wide': '0.025em', 'tracking-wider': '0.05em', 'tracking-widest': '0.1em',
-  'leading-none': '1', 'leading-tight': '1.25', 'leading-snug': '1.375',
-  'leading-normal': '1.5', 'leading-relaxed': '1.625', 'leading-loose': '2',
-  'uppercase': 'uppercase', 'lowercase': 'lowercase', 'normal-case': 'none', 'capitalize': 'capitalize',
-  'grayscale': 'grayscale(1)',
-  'opacity-0': '0', 'opacity-5': '0.05', 'opacity-10': '0.1', 'opacity-20': '0.2',
-  'opacity-25': '0.25', 'opacity-30': '0.3', 'opacity-40': '0.4', 'opacity-50': '0.5',
-  'opacity-60': '0.6', 'opacity-70': '0.7', 'opacity-75': '0.75', 'opacity-80': '0.8',
-  'opacity-90': '0.9', 'opacity-95': '0.95', 'opacity-100': '1',
-  'border': '1px', 'border-2': '2px', 'border-4': '4px', 'border-8': '8px',
+  'font-thin': '100',
+  'font-extralight': '200',
+  'font-light': '300',
+  'font-normal': '400',
+  'font-medium': '500',
+  'font-semibold': '600',
+  'font-bold': '700',
+  'font-extrabold': '800',
+  'font-black': '900',
+  'tracking-tighter': '-0.05em',
+  'tracking-tight': '-0.025em',
+  'tracking-normal': '0',
+  'tracking-wide': '0.025em',
+  'tracking-wider': '0.05em',
+  'tracking-widest': '0.1em',
+  'leading-none': '1',
+  'leading-tight': '1.25',
+  'leading-snug': '1.375',
+  'leading-normal': '1.5',
+  'leading-relaxed': '1.625',
+  'leading-loose': '2',
+  uppercase: 'uppercase',
+  lowercase: 'lowercase',
+  'normal-case': 'none',
+  capitalize: 'capitalize',
+  grayscale: 'grayscale(1)',
+  'opacity-0': '0',
+  'opacity-5': '0.05',
+  'opacity-10': '0.1',
+  'opacity-20': '0.2',
+  'opacity-25': '0.25',
+  'opacity-30': '0.3',
+  'opacity-40': '0.4',
+  'opacity-50': '0.5',
+  'opacity-60': '0.6',
+  'opacity-70': '0.7',
+  'opacity-75': '0.75',
+  'opacity-80': '0.8',
+  'opacity-90': '0.9',
+  'opacity-95': '0.95',
+  'opacity-100': '1',
+  border: '1px',
+  'border-2': '2px',
+  'border-4': '4px',
+  'border-8': '8px',
 }
 
 // ─── Tailwind class → axis matching (derived from registry) ──────────────
@@ -366,16 +461,23 @@ export function parseDesignOverride(input: string): Partial<DesignIntent> {
   return override as Partial<DesignIntent>
 }
 
-export function mergeDesign(parent: DesignIntent, override: Partial<DesignIntent>): DesignIntent {
+export function mergeDesign(
+  parent: DesignIntent,
+  override: Partial<DesignIntent>,
+): DesignIntent {
   const merged: DesignIntent = { ...parent }
   for (const [key, val] of Object.entries(override)) {
-    if (val !== undefined && val !== null) (merged as Record<string, unknown>)[key] = val
+    if (val !== undefined && val !== null)
+      (merged as unknown as Record<string, unknown>)[key] = val
   }
   if (parent.roles || override.roles) {
     merged.roles = { ...(parent.roles ?? {}), ...(override.roles ?? {}) }
     for (const axis of Object.keys(parent.roles ?? {})) {
       if (override.roles?.[axis]) {
-        merged.roles[axis] = { ...(parent.roles?.[axis] ?? {}), ...override.roles[axis] }
+        merged.roles[axis] = {
+          ...(parent.roles?.[axis] ?? {}),
+          ...override.roles[axis],
+        }
       }
     }
   }
@@ -390,7 +492,8 @@ export function serializeDesignIntent(intent: DesignIntent): string {
   }
   if (intent.roles) {
     for (const [, roleMap] of Object.entries(intent.roles)) {
-      for (const [role, val] of Object.entries(roleMap)) parts.push(`${role}:${val}`)
+      for (const [role, val] of Object.entries(roleMap))
+        parts.push(`${role}:${val}`)
     }
   }
   return parts.join(' ')
@@ -408,7 +511,13 @@ export function designValueToCss(value: string): string | null {
   // Standard Tailwind class lookup
   if (TAILWIND_CSS[value]) return TAILWIND_CSS[value]
   // Raw CSS value
-  if (/^[\d.]/.test(value) || value.includes('px') || value.includes('rem') || value.includes('em')) return value
+  if (
+    /^[\d.]/.test(value) ||
+    value.includes('px') ||
+    value.includes('rem') ||
+    value.includes('em')
+  )
+    return value
   return null // named preset — CSS file handles via data attributes
 }
 

@@ -313,36 +313,6 @@ export const PricingPage = () => {
     }
   }, [billingOverview, isCheckoutStarting])
 
-  useEffect(() => {
-    const content = pricingContentRef.current
-    if (content === null) return
-
-    const faqTriggers = Array.from(
-      content.querySelectorAll<HTMLButtonElement>('[data-faq-trigger]'),
-    )
-    const handleFaqClick = (event: MouseEvent) => {
-      const trigger = event.currentTarget as HTMLButtonElement
-      const item = trigger.closest<HTMLElement>('[data-faq-item]')
-      const panelId = trigger.getAttribute('aria-controls')
-      const panel = panelId === null ? null : document.getElementById(panelId)
-      const nextExpanded = trigger.getAttribute('aria-expanded') !== 'true'
-
-      trigger.setAttribute('aria-expanded', String(nextExpanded))
-      item?.toggleAttribute('data-open', nextExpanded)
-      if (panel !== null) panel.hidden = !nextExpanded
-    }
-
-    for (const trigger of faqTriggers) {
-      trigger.addEventListener('click', handleFaqClick)
-    }
-
-    return () => {
-      for (const trigger of faqTriggers) {
-        trigger.removeEventListener('click', handleFaqClick)
-      }
-    }
-  }, [])
-
   const onShareClick = (platform: string) => {
     void handleShareClick(platform, async () => {}, referralCode)
   }

@@ -220,7 +220,9 @@ describe('parseDesignLine — named-concept presets', () => {
 
 describe('parseDesignLine — mixed formats', () => {
   it('accepts mixed bare classes + named presets', () => {
-    const d = parseDesignLine('@design rounded-xl shadow-lg density:airy typography:display')
+    const d = parseDesignLine(
+      '@design rounded-xl shadow-lg density:airy typography:display',
+    )
     expect(d.radius).toBe('rounded-xl')
     expect(d.shadow).toBe('shadow-lg')
     expect(d.density).toBe('airy')
@@ -228,7 +230,9 @@ describe('parseDesignLine — mixed formats', () => {
   })
 
   it('accepts mixed bare classes + arbitrary + role override', () => {
-    const d = parseDesignLine('@design rounded-xl shadow-[4px_4px_0_0] btn:rounded-full')
+    const d = parseDesignLine(
+      '@design rounded-xl shadow-[4px_4px_0_0] btn:rounded-full',
+    )
     expect(d.radius).toBe('rounded-xl')
     expect(d.shadow).toBe('shadow-[4px_4px_0_0]')
     expect(d.roles?.radius?.btn).toBe('rounded-full')
@@ -260,7 +264,12 @@ describe('resolveDesign — returns empty objects (backward compat)', () => {
   })
 
   it('returns empty objects even when intent has values set', () => {
-    const d = resolveDesign({ ...DEFAULT_DESIGN, radius: 'rounded-xl', shadow: 'shadow-lg', border: 'border-2' })
+    const d = resolveDesign({
+      ...DEFAULT_DESIGN,
+      radius: 'rounded-xl',
+      shadow: 'shadow-lg',
+      border: 'border-2',
+    })
     expect(d.radius).toEqual({})
     expect(d.shadow).toEqual({})
     expect(d.border).toEqual({})
@@ -313,16 +322,26 @@ describe('parseDesignLine — all axes', () => {
 
   describe('tracking axis (Tailwind)', () => {
     it('parses bare Tailwind tracking classes', () => {
-      expect(parseDesignLine('@design tracking-tight').tracking).toBe('tracking-tight')
-      expect(parseDesignLine('@design tracking-wide').tracking).toBe('tracking-wide')
-      expect(parseDesignLine('@design tracking-widest').tracking).toBe('tracking-widest')
+      expect(parseDesignLine('@design tracking-tight').tracking).toBe(
+        'tracking-tight',
+      )
+      expect(parseDesignLine('@design tracking-wide').tracking).toBe(
+        'tracking-wide',
+      )
+      expect(parseDesignLine('@design tracking-widest').tracking).toBe(
+        'tracking-widest',
+      )
     })
   })
 
   describe('leading axis (Tailwind)', () => {
     it('parses bare Tailwind leading classes', () => {
-      expect(parseDesignLine('@design leading-tight').leading).toBe('leading-tight')
-      expect(parseDesignLine('@design leading-relaxed').leading).toBe('leading-relaxed')
+      expect(parseDesignLine('@design leading-tight').leading).toBe(
+        'leading-tight',
+      )
+      expect(parseDesignLine('@design leading-relaxed').leading).toBe(
+        'leading-relaxed',
+      )
     })
   })
 
@@ -581,9 +600,21 @@ describe('isNamedPreset', () => {
 describe('AXIS_REGISTRY completeness', () => {
   it('includes all expected axes', () => {
     const expected = [
-      'radius', 'shadow', 'gradient', 'density', 'typography', 'motion',
-      'border', 'tracking', 'leading', 'weight', 'transform', 'image',
-      'opacity', 'chrome', 'decor',
+      'radius',
+      'shadow',
+      'gradient',
+      'density',
+      'typography',
+      'motion',
+      'border',
+      'tracking',
+      'leading',
+      'weight',
+      'transform',
+      'image',
+      'opacity',
+      'chrome',
+      'decor',
     ]
     expect(AXIS_NAMES).toEqual(expect.arrayContaining(expected))
     expect(AXIS_NAMES.length).toBeGreaterThanOrEqual(expected.length)

@@ -2,7 +2,7 @@ import { api } from '../../../../convex/_generated/api'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import type { PublicGallerySession } from '../../../../convex/lib/session_gallery_helpers'
 import { createRuntimeConvexHttpClient } from '../../../shared/convex/http-client'
-import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export-builder'
+import { buildOpenUIHtmlThumbnail } from '../../exports/services/openui-html-export-builder'
 
 export async function resolveGalleryPreviewHtml(
   sessionId: string,
@@ -34,7 +34,7 @@ const renderOpenUiHtml = async (
   source: string,
 ): Promise<string | null> => {
   try {
-    const rendered = await buildOpenUIHtmlExport({
+    const rendered = await buildOpenUIHtmlThumbnail({
       source,
       previewHtml: undefined,
       prompt: session.prompt ?? undefined,

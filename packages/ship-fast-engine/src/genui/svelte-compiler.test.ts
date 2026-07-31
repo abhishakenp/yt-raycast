@@ -3,9 +3,7 @@ import { validateSvelteSource } from './svelte-compiler.ts'
 
 describe('validateSvelteSource XSS blocking', () => {
   it('blocks {@html} which bypasses Svelte escaping', () => {
-    const result = validateSvelteSource(
-      '<div>{@html userInput}</div>',
-    )
+    const result = validateSvelteSource('<div>{@html userInput}</div>')
     expect(result.valid).toBe(false)
     expect(result.errors.some((e) => e.includes('{@html}'))).toBe(true)
   })
@@ -19,9 +17,7 @@ describe('validateSvelteSource XSS blocking', () => {
   })
 
   it('blocks inline onerror handler', () => {
-    const result = validateSvelteSource(
-      '<img src="x" onerror="alert(1)" />',
-    )
+    const result = validateSvelteSource('<img src="x" onerror="alert(1)" />')
     expect(result.valid).toBe(false)
     expect(result.errors.some((e) => e.includes('event handler'))).toBe(true)
   })
@@ -51,27 +47,27 @@ describe('validateSvelteSource XSS blocking', () => {
   })
 
   it('blocks <iframe> tags', () => {
-    const result = validateSvelteSource(
-      '<iframe src="evil.com"></iframe>',
-    )
+    const result = validateSvelteSource('<iframe src="evil.com"></iframe>')
     expect(result.valid).toBe(false)
     expect(result.errors.some((e) => e.includes('<iframe>'))).toBe(true)
   })
 
   it('blocks document.cookie access', () => {
-    const result = validateSvelteSource(
-      '<div>{document.cookie}</div>',
-    )
+    const result = validateSvelteSource('<div>{document.cookie}</div>')
     expect(result.valid).toBe(false)
-    expect(result.errors.some((e) => e.includes('document.cookie') || e.includes('DOM access'))).toBe(true)
+    expect(
+      result.errors.some(
+        (e) => e.includes('document.cookie') || e.includes('DOM access'),
+      ),
+    ).toBe(true)
   })
 
   it('blocks eval()', () => {
-    const result = validateSvelteSource(
-      '<div>{eval("alert(1)")}</div>',
-    )
+    const result = validateSvelteSource('<div>{eval("alert(1)")}</div>')
     expect(result.valid).toBe(false)
-    expect(result.errors.some((e) => e.includes('eval') || e.includes('DOM access'))).toBe(true)
+    expect(
+      result.errors.some((e) => e.includes('eval') || e.includes('DOM access')),
+    ).toBe(true)
   })
 
   it('allows safe Svelte with on: directive (not inline onclick)', () => {
@@ -84,9 +80,7 @@ describe('validateSvelteSource XSS blocking', () => {
   })
 
   it('allows safe Svelte with text interpolation', () => {
-    const result = validateSvelteSource(
-      '<div>Hello {name}!</div>',
-    )
+    const result = validateSvelteSource('<div>Hello {name}!</div>')
     const xssErrors = result.errors.filter((e) => e.startsWith('Security:'))
     expect(xssErrors).toHaveLength(0)
   })

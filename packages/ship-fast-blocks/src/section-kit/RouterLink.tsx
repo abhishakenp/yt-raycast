@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Link, useRouter } from '@tanstack/react-router'
 
-type RouterLinkProps = Omit<React.ComponentProps<'a'>, 'href'> & {
+export type RouterLinkProps = Omit<React.ComponentProps<'a'>, 'href'> & {
   href: string
   /** When true, suppresses TanStack Router's auto aria-current on sub-routes. */
   exactActive?: boolean

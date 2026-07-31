@@ -13,6 +13,7 @@ import {
 import { createDefaultStoreUpdate } from './bootstrap-default-store'
 
 const DEFAULT_COUNTRY = 'us'
+const DEFAULT_CURRENCY = 'usd'
 const DEFAULT_REGION_NAME = 'United States'
 const DEFAULT_SALES_CHANNEL_NAME = 'Ship Fast Default Sales Channel'
 const DEFAULT_STOCK_LOCATION_NAME = 'Ship Fast Warehouse'

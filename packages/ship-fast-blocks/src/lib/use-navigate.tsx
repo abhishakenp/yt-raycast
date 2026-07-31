@@ -127,12 +127,13 @@ export function resolveRouteHref(
 
   const resolved = resolveRouteTarget(rawTarget, routes)
   if (!resolved) return rawTarget.startsWith('/') ? rawTarget : undefined
+  const resolvedPage = resolved.page
 
   function isResolvedPage(route: string) {
-    return normalizeTarget(route) === normalizeTarget(resolved.page)
+    return normalizeTarget(route) === normalizeTarget(resolvedPage)
   }
 
-  const page = routes.find(isResolvedPage) ?? resolved.page
+  const page = routes.find(isResolvedPage) ?? resolvedPage
   if (!page || !routes.includes(page)) return undefined
 
   const path = routePath(page, routes)
@@ -214,14 +215,15 @@ export function useNavigate() {
       console.warn(`[ShipFast] Unresolved navigation target: ${target ?? ''}`)
       return
     }
+    const resolvedPage = resolved.page
 
     function isResolvedPage(route: string) {
-      return normalizeTarget(route) === normalizeTarget(resolved.page)
+      return normalizeTarget(route) === normalizeTarget(resolvedPage)
     }
 
-    const nextPage = routing.routes.find(isResolvedPage) ?? resolved.page
+    const nextPage = routing.routes.find(isResolvedPage) ?? resolvedPage
     if (!nextPage || !routing.routes.includes(nextPage)) {
-      console.warn(`[ShipFast] Unresolved navigation page: ${resolved.page}`)
+      console.warn(`[ShipFast] Unresolved navigation page: ${resolvedPage}`)
       return
     }
 

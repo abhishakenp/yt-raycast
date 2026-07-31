@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ContentModerationError } from '@/features/moderation/server/enforce-user-input-moderation'
+import { translateHits } from '@/lib/rate-limit'
+
 import { createTranslateResponse } from './translate-response'
 
 const createRequest = (
@@ -29,6 +31,7 @@ describe('createTranslateResponse moderation boundary', () => {
 
   beforeEach(() => {
     process.env.VITE_DISABLE_CLERK = 'true'
+    translateHits.clear()
   })
 
   afterEach(() => {

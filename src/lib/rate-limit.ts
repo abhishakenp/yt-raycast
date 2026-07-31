@@ -5,6 +5,16 @@ export const anonIpDailyHits: Map<string, number[]> = new Map()
 export const exportHits: Map<string, number[]> = new Map()
 export const ipMonthlyHits: Map<string, number[]> = new Map()
 export const activeGenerations: Map<string, number> = new Map()
+export const downloadHits: Map<string, number[]> = new Map()
+export const checkoutConfirmHits: Map<string, number[]> = new Map()
+export const aiEditHits: Map<string, number[]> = new Map()
+export const translateHits: Map<string, number[]> = new Map()
+export const cloneHits: Map<string, number[]> = new Map()
+export const generationHits: Map<string, number[]> = new Map()
+export const sessionCreateHits: Map<string, number[]> = new Map()
+export const githubConnectHits: Map<string, number[]> = new Map()
+export const referralHits: Map<string, number[]> = new Map()
+export const previewHtmlHits: Map<string, number[]> = new Map()
 
 export function checkRateLimit(
   key: string,
@@ -38,4 +48,43 @@ export function cleanupMap(map: Map<string, number[]>, windowMs: number): void {
     if (valid.length === 0) map.delete(key)
     else map.set(key, valid)
   }
+}
+
+/** Standard 10-minute window in milliseconds. */
+const TEN_MINUTES = 10 * 60 * 1000
+
+/**
+ * Reusable IP-based rate limit guard for HTTP route handlers. Returns a 429
+ * Response if the caller's IP has exceeded `max` requests in `windowMs`, or
+ * `null` if the request is allowed. Uses a hashed IP so the raw IP is never
+ * stored in the hits map.
+ */
+export function rateLimitByIp(
+  request: Request,
+  hitsMap: Map<string, number[]>,
+  max: number,
+  windowMs = TEN_MINUTES,
+): Response | null {
+  // Lazy import to avoid circular dependency in environments where
+  // session-create-response imports from rate-limit.
+  const {
+    getClientIp,
+    hashClientIp,
+  } = require('@/features/session/server/session-create-response')
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, hitsMap, max, windowMs)) {
+    return new Response(
+      JSON.stringify({
+        error: 'Too many requests. Please wait a few minutes.',
+      }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
+      },
+    )
+  }
+  return null
 }

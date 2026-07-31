@@ -11,7 +11,12 @@ import { createExportResponse } from './create-export-response'
 
 const queryMock = vi.fn()
 const setAuthMock = vi.fn()
-const fakeClient = { query: queryMock, setAuth: setAuthMock }
+const mutationMock = vi.fn()
+const fakeClient = {
+  query: queryMock,
+  mutation: mutationMock,
+  setAuth: setAuthMock,
+}
 
 describe('stored HTML export integrity release gate', () => {
   beforeEach(() => {

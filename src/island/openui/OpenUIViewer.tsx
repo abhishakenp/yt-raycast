@@ -7,7 +7,6 @@ import {
   QueryClientProvider,
   Renderer,
   DesignSystemProvider,
-  parseDesignLine,
   DEFAULT_DESIGN,
   type DesignIntent,
   getOpenUIRuntimeLibraryCacheKey,
@@ -521,7 +520,9 @@ export default function OpenUIViewer({
                   <T>
                     <BrandLogoProvider value={selectedBrandLogo}>
                       <ImageContextProvider value={imageContext}>
-                        <DesignSystemProvider intent={designIntent ?? DEFAULT_DESIGN}>
+                        <DesignSystemProvider
+                          intent={designIntent ?? DEFAULT_DESIGN}
+                        >
                           {runtimeLibrary ? (
                             <Renderer
                               response={preparedResponse}

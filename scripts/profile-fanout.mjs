@@ -14,15 +14,21 @@ const ctx = {
       events.push({ t: Date.now() - t0, type: 'source' })
     }
   },
-  setPrompt: () => {}, setTasks: () => {}, updateTask: () => {},
-  signalHomepageReady: () => {}, signalOpenuiReady: () => {},
-  setElapsed: () => {}, setCost: () => {},
+  setPrompt: () => {},
+  setTasks: () => {},
+  updateTask: () => {},
+  signalHomepageReady: () => {},
+  signalOpenuiReady: () => {},
+  setElapsed: () => {},
+  setCost: () => {},
 }
 
 try {
   const r = await runComposition({
-    prompt: 'A cozy neighborhood coffee shop called Brew & Bloom with online ordering, a blog about brewing techniques, and a photo gallery',
-    workspace: ws, sessionCtx: ctx,
+    prompt:
+      'A cozy neighborhood coffee shop called Brew & Bloom with online ordering, a blog about brewing techniques, and a photo gallery',
+    workspace: ws,
+    sessionCtx: ctx,
   })
   const total = Date.now() - t0
   console.log(`total: ${total}ms`)
@@ -32,7 +38,9 @@ try {
   console.log(`source broadcasts: ${events.length}`)
   if (events.length > 0) {
     console.log(`first broadcast: ${events[0].t}ms`)
-    console.log(`last broadcast: ${events[events.length-1].t}ms`)
+    console.log(`last broadcast: ${events[events.length - 1].t}ms`)
   }
-} catch(e) { console.error(e.message) }
+} catch (e) {
+  console.error(e.message)
+}
 rmSync(ws, { recursive: true, force: true })

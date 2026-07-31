@@ -10,6 +10,28 @@ const DEPLOYMENT_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/
 const MAX_OWNER_SECRET_LENGTH = 1024
 const MAX_BEARER_LENGTH = 8192
 
+function isPrivateIpv4Address(hostname: string): boolean {
+  const parts = hostname.split('.').map(Number)
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false
+  }
+  const [first = 0, second = 0] = parts
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    first >= 224
+  )
+}
+
 export type CommerceScope = 'sessions' | 'deployments'
 
 export type ResolvedCommerceTenant = {
@@ -156,6 +178,23 @@ function normalizeResolvedTenant(
     parsedBackendUrl.password.length > 0 ||
     publishableKey.length === 0 ||
     publishableKey.length > 512
+  ) {
+    throw failure(correlationId, {
+      code: 'COMMERCE_CONFIG_UNAVAILABLE',
+      message: 'Commerce tenant configuration is unavailable.',
+      retryable: true,
+      status: 503,
+    })
+  }
+
+  // SSRF defense-in-depth: block private IPs except localhost (used for
+  // app-provisioned Medusa containers). The Convex mutation already
+  // validates this, but we check again at the fetch boundary.
+  const backendHostname = parsedBackendUrl.hostname.toLowerCase()
+  if (
+    backendHostname !== 'localhost' &&
+    !backendHostname.endsWith('.localhost') &&
+    isPrivateIpv4Address(backendHostname)
   ) {
     throw failure(correlationId, {
       code: 'COMMERCE_CONFIG_UNAVAILABLE',

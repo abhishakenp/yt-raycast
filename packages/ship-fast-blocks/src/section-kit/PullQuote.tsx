@@ -63,7 +63,8 @@ const PullQuoteText = React.forwardRef<
   return (
     <Comp
       data-slot="pull-quote-text"
-      data-d-role="body"className={cn(
+      data-d-role="body"
+      className={cn(
         'text-balance text-xl font-medium leading-snug text-foreground sm:text-2xl',
         className,
       )}
@@ -98,7 +99,8 @@ const PullQuoteAvatar = React.forwardRef<
   return (
     <Comp
       data-slot="pull-quote-avatar"
-      data-d-role="image"className={cn(
+      data-d-role="image"
+      className={cn(
         'grid size-12 shrink-0 place-items-center rounded-full d-radius-lock bg-gradient-to-br from-primary to-accent text-base font-bold text-primary-foreground',
         className,
       )}
@@ -117,7 +119,8 @@ const PullQuoteName = React.forwardRef<
   return (
     <Comp
       data-slot="pull-quote-name"
-      data-d-role="heading"className={cn('text-[0.95rem] font-bold text-foreground', className)}
+      data-d-role="heading"
+      className={cn('text-[0.95rem] font-bold text-foreground', className)}
       ref={ref}
       {...props}
     />
@@ -133,7 +136,8 @@ const PullQuoteRole = React.forwardRef<
   return (
     <Comp
       data-slot="pull-quote-role"
-      data-d-role="body"className={cn('text-sm text-muted-foreground', className)}
+      data-d-role="body"
+      className={cn('text-sm text-muted-foreground', className)}
       ref={ref}
       {...props}
     />

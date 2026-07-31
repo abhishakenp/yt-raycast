@@ -121,6 +121,7 @@ describe('billing webhook state mutation', () => {
 
     const ledger = await t.query(api.billing.getCreditLedger, {
       userId,
+      secret: 'billing-secret',
       limit: 10,
     })
     expect(ledger.current).toBe(2)
@@ -141,5 +142,37 @@ describe('billing webhook state mutation', () => {
         }),
       ]),
     )
+  })
+})
+
+describe('confirmCheckoutSubscription IDOR protection', () => {
+  it('prevents a different user from updating another user subscription', async () => {
+    vi.stubEnv('CLERK_JWT_ISSUER', 'https://clerk.test')
+    const t = convexTest(schema, modules)
+    const subscriptionId = 'sub_existing_abc'
+
+    // Owner creates their subscription
+    await t
+      .withIdentity({ tokenIdentifier: 'owner-user' })
+      .mutation(api.billing.confirmCheckoutSubscription, {
+        provider: 'razorpay',
+        status: 'active',
+        planId: 'pro',
+        providerSubscriptionId: subscriptionId,
+        providerCheckoutId: 'pay_abc',
+      })
+
+    // Attacker tries to claim the same subscription
+    await expect(
+      t
+        .withIdentity({ tokenIdentifier: 'attacker-user' })
+        .mutation(api.billing.confirmCheckoutSubscription, {
+          provider: 'razorpay',
+          status: 'active',
+          planId: 'pro',
+          providerSubscriptionId: subscriptionId,
+          providerCheckoutId: 'pay_abc',
+        }),
+    ).rejects.toThrow(/does not belong/)
   })
 })

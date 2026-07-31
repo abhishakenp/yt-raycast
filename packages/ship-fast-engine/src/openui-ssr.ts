@@ -11,10 +11,13 @@ import {
   Renderer,
   ImageContextProvider,
   BrandLogoProvider,
+  DesignSystemProvider,
+  DEFAULT_DESIGN,
   extractOpenUIRuntimeComponentNames,
   loadOpenUIRuntimeLibrary,
   type ImageContext,
   type BrandLogoSelection,
+  type DesignIntent,
 } from '@ship-fast/blocks/runtime'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
@@ -54,13 +57,23 @@ Object.defineProperty(ssrConvexStub, 'connectionState', {
 })
 
 /**
- * Wrap a render tree with the SSR-safe providers (image context + inert
- * lakebed/convex stubs) so any capsule renders without throwing on the server.
+ * Wrap a render tree with the SSR-safe providers (image context + design
+ * system + inert lakebed/convex stubs) so any capsule renders without
+ * throwing on the server.
+ *
+ * `DesignSystemProvider` is included so the SSR output carries the same
+ * `data-density`/`data-typography`/`data-gradient`/`data-motion` wrapper
+ * attributes and `--d-radius`/`--d-shadow`/... CSS custom properties that the
+ * dashboard's live preview sets. Without it, the 416-line `design-presets.css`
+ * (imported via `src/styles.css`) matches zero DOM nodes and the entire
+ * @design axis system is dead CSS — causing visual disparity between the
+ * dashboard preview and gallery/export SSR output.
  */
 function withSSRProviders(
   tree: ReactNode,
   imageContext: ImageContext | null | undefined,
   brandLogo: BrandLogoSelection | null | undefined,
+  designIntent: DesignIntent | null | undefined,
 ) {
   const withImage = createElement(
     ImageContextProvider,
@@ -71,12 +84,16 @@ function withSSRProviders(
     brandLogo && typeof brandLogo === 'object'
       ? createElement(BrandLogoProvider, { value: brandLogo }, withImage)
       : withImage
+  const withDesign = createElement(DesignSystemProvider, {
+    intent: designIntent ?? DEFAULT_DESIGN,
+    children: withBrandLogo,
+  })
   return createElement(
     ConvexProvider,
     { client: ssrConvexStub },
     createElement(LakebedSessionProvider, {
       sessionId: 'ssr-preview',
-      children: withBrandLogo,
+      children: withDesign,
     }),
   )
 }
@@ -117,6 +134,7 @@ function openUiRenderDiagnostics(source: string, preprocessed: string | null) {
  * @param {object} integrations - Integration configs (medusa)
  * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
  * @param {any} brandLogo - Selected brand logo selection for SSR
+ * @param {DesignIntent} designIntent - @design axis intent (defaults to DEFAULT_DESIGN for parity with dashboard)
  * @returns {string} Rendered HTML
  */
 export async function renderOpenUIToHTML(
@@ -126,6 +144,7 @@ export async function renderOpenUIToHTML(
   _integrations: Record<string, unknown> | null = null,
   imageContext: ImageContext | null | undefined = null,
   brandLogo: BrandLogoSelection | null | undefined = null,
+  designIntent: DesignIntent | null | undefined = null,
 ) {
   let preprocessed = null
   try {
@@ -143,6 +162,7 @@ export async function renderOpenUIToHTML(
         }),
         imageContext,
         brandLogo,
+        designIntent,
       ),
     )
 
@@ -164,6 +184,7 @@ export async function renderOpenUIToHTML(
  * @param {string} locale - Locale code
  * @param {object} integrations - Integration configs
  * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
+ * @param {DesignIntent} designIntent - @design axis intent (defaults to DEFAULT_DESIGN for parity with dashboard)
  * @returns {object} { html: string, cssVars: string }
  */
 export async function renderOpenUIToHTMLWithTheme(
@@ -173,6 +194,7 @@ export async function renderOpenUIToHTMLWithTheme(
   integrations: Record<string, unknown> | null = null,
   imageContext: ImageContext | null | undefined = null,
   brandLogo: BrandLogoSelection | null | undefined = null,
+  designIntent: DesignIntent | null | undefined = null,
 ) {
   const html = await renderOpenUIToHTML(
     source,
@@ -181,6 +203,7 @@ export async function renderOpenUIToHTMLWithTheme(
     integrations,
     imageContext,
     brandLogo,
+    designIntent,
   )
 
   // Convert theme tokens to CSS variables

@@ -47,7 +47,8 @@ const MenuCategoryTitle = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="menu-category-title"
-      data-d-role="heading"className={cn(
+      data-d-role="heading"
+      className={cn(
         'font-serif text-2xl font-medium text-foreground',
         className,
       )}
@@ -66,7 +67,8 @@ const MenuCategoryDivider = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="menu-category-divider"
-      data-d-role="divider"className={cn('h-px flex-1 bg-border', className)}
+      data-d-role="divider"
+      className={cn('h-px flex-1 bg-border', className)}
       {...props}
     />
   )

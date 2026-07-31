@@ -6,6 +6,7 @@ import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import {
   assertCanMutateSession,
   assertCanReadOwnedSession,
+  assertCanReadPrivateSession,
   isSessionOwner,
   isUserAdmin,
 } from './session_access_helpers'
@@ -455,6 +456,12 @@ export async function assertLakebedDeploymentEntitlement(
   ctx: Pick<QueryCtx, 'db' | 'auth'>,
   session: Doc<'sessions'>,
 ) {
+  // Verify the caller owns or can read this session before checking entitlement.
+  // Without this check, any authenticated user could probe whether another
+  // user's session owner has an active subscription by calling this mutation
+  // with arbitrary session IDs.
+  await assertCanReadPrivateSession(ctx, session, undefined)
+
   const isAdmin = await isUserAdmin(ctx)
   const userId = session.userId ?? undefined
   const entitlement = await checkExportEntitlementReadOnly(ctx, userId, isAdmin)

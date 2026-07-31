@@ -123,17 +123,17 @@ describe('referral qualification on payment', () => {
     vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', SECRET)
   })
 
-  it('disqualifies disposable-email referrals and never unlocks', async () => {
+  it('qualifies all paying referrals (Clerk blocks disposable emails at sign-up)', async () => {
     const t = convexTest(schema, modules)
     const { code } = await asUser(t, 'alice').mutation(
       api.referrals.getOrCreateMyReferralCode,
       {},
     )
-    await asUser(t, 'bob', 'bob@mailinator.com').mutation(
+    await asUser(t, 'bob', 'bob@gmail.com').mutation(
       api.referrals.recordReferralSignup,
       { code },
     )
-    await asUser(t, 'carol', 'carol@yopmail.com').mutation(
+    await asUser(t, 'carol', 'carol@yahoo.com').mutation(
       api.referrals.recordReferralSignup,
       { code },
     )
@@ -141,17 +141,15 @@ describe('referral qualification on payment', () => {
     const pay1 = await paySubscription(t, 'bob', 'sub_bob', 'evt_bob')
     const pay2 = await paySubscription(t, 'carol', 'sub_carol', 'evt_carol')
     expect(pay1.referralUnlock).toBeNull()
-    expect(pay2.referralUnlock).toBeNull()
+    expect(pay2.referralUnlock).toEqual({ referrerUserId: id('alice') })
 
     const status = await asUser(t, 'alice').query(
       api.referrals.getMyReferralStatus,
       {},
     )
-    expect(status.qualifiedCount).toBe(0)
-    expect(status.unlocked).toBe(false)
-    expect(status.referrals.every((r) => r.status === 'disqualified')).toBe(
-      true,
-    )
+    expect(status.qualifiedCount).toBe(2)
+    expect(status.unlocked).toBe(true)
+    expect(status.referrals.every((r) => r.status === 'qualified')).toBe(true)
   })
 
   it('qualifies a real-email referral on payment', async () => {

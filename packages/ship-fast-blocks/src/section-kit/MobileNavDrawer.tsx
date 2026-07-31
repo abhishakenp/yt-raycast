@@ -108,7 +108,8 @@ const MobileNavDrawer = React.forwardRef<
               ref={ref}
               aria-label={label}
               data-slot="mobile-nav-drawer"
-              data-d-role="nav"className={cn(buttonClassName, className)}
+              data-d-role="btn"
+              className={cn(buttonClassName, className)}
               {...props}
             >
               {children ?? <MenuIcon className="size-5" aria-hidden="true" />}
@@ -119,7 +120,8 @@ const MobileNavDrawer = React.forwardRef<
               type="button"
               aria-label={label}
               data-slot="mobile-nav-drawer"
-              data-d-role="nav"className={cn(buttonClassName, className)}
+              data-d-role="btn"
+              className={cn(buttonClassName, className)}
               {...props}
             >
               {children ?? <MenuIcon className="size-5" aria-hidden="true" />}
@@ -129,11 +131,12 @@ const MobileNavDrawer = React.forwardRef<
         <SheetContent
           side={side}
           data-slot="mobile-nav-drawer-content"
-          data-d-role="nav"className="w-[min(100%,22rem)] rounded-none border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
+          data-d-role="nav"
+          className="w-[min(100%,22rem)] rounded-none border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
         >
           <SheetHeader
             data-slot="mobile-nav-drawer-header"
-            data-d-role="nav"className="gap-2 border-b border-border px-5 py-4 text-left"
+            className="gap-2 border-b border-border px-5 py-4 text-left"
           >
             <span
               aria-hidden="true"
@@ -148,7 +151,8 @@ const MobileNavDrawer = React.forwardRef<
           </SheetHeader>
           <div
             data-slot="mobile-nav-drawer-nav"
-            data-d-role="nav"className="flex flex-col gap-1 px-3 py-4"
+            data-d-role="nav"
+            className="flex flex-col gap-1 px-3 py-4"
           >
             <MobileNavAnchor
               target={targetHome}

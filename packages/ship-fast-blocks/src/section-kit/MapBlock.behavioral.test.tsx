@@ -46,13 +46,15 @@ describe('MapOverlay', () => {
     let ref: HTMLDivElement | null = null
     render(
       <MapOverlay
-        ref={(r) => {
-          ref = r
-        }}
+        ref={
+          ((r: unknown) => {
+            ref = r as HTMLDivElement | null
+          }) as never
+        }
       />,
     )
     expect(ref).not.toBeNull()
-    expect(ref?.tagName).toBe('DIV')
+    expect((ref as HTMLElement | null)?.tagName).toBe('DIV')
   })
 })
 
@@ -124,12 +126,14 @@ describe('MapPin', () => {
     let ref: HTMLSpanElement | null = null
     render(
       <MapPin
-        ref={(r) => {
-          ref = r
-        }}
+        ref={
+          ((r: unknown) => {
+            ref = r as HTMLDivElement | null
+          }) as never
+        }
       />,
     )
     expect(ref).not.toBeNull()
-    expect(ref?.tagName).toBe('SPAN')
+    expect((ref as HTMLElement | null)?.tagName).toBe('SPAN')
   })
 })

@@ -2,6 +2,7 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { timingSafeEqual } from '@/lib/timingSafeEqual'
 import { applyReferralDiscountForUser } from '@/features/referrals/server/referral-discount'
 import {
   sendBusinessNotification,
@@ -74,15 +75,6 @@ async function hmacSha256(secret: string, payload: string): Promise<string> {
   return toHex(
     await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload)),
   )
-}
-
-function timingSafeEqual(left: string, right: string): boolean {
-  if (left.length !== right.length) return false
-  let diff = 0
-  for (let i = 0; i < left.length; i += 1) {
-    diff |= left.charCodeAt(i) ^ right.charCodeAt(i)
-  }
-  return diff === 0
 }
 
 async function verifyStripeSignature(

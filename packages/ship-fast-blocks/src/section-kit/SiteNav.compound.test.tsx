@@ -246,6 +246,7 @@ describe('NavbarNavLink', () => {
       <RoutesContext.Provider
         value={{
           routes: ['Home', 'Pricing'],
+          pageIds: [],
           currentPage: 'Home',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
@@ -298,6 +299,7 @@ describe('NavbarNavLink', () => {
       <RoutesContext.Provider
         value={{
           routes: ['Home', 'Pricing'],
+          pageIds: [],
           currentPage: 'Pricing',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
@@ -335,6 +337,7 @@ describe('NavbarNavLink', () => {
       <RoutesContext.Provider
         value={{
           routes: ['Home', 'Pricing'],
+          pageIds: [],
           currentPage: 'Home',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
@@ -363,6 +366,7 @@ describe('NavbarNavLink', () => {
       <RoutesContext.Provider
         value={{
           routes: ['Home', 'Pricing'],
+          pageIds: [],
           currentPage: 'Home',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
@@ -403,6 +407,7 @@ describe('NavbarNavLink', () => {
       <RoutesContext.Provider
         value={{
           routes: ['Home', 'Pricing'],
+          pageIds: [],
           currentPage: 'Pricing',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
@@ -440,6 +445,7 @@ describe('NavbarNavLink', () => {
       <RoutesContext.Provider
         value={{
           routes: ['Home', 'Pricing'],
+          pageIds: [],
           currentPage: 'Pricing',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
@@ -480,6 +486,7 @@ describe('NavbarNavLink', () => {
           <RoutesContext.Provider
             value={{
               routes: ['Home', 'Gallery'],
+              pageIds: [],
               currentPage: 'Gallery',
               setCurrentPage,
               pendingSectionId: null,

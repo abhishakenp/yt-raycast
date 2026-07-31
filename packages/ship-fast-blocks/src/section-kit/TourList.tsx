@@ -18,7 +18,8 @@ const TourList = React.forwardRef<
   return (
     <Comp
       data-slot="tour-list"
-      data-d-role="list"className={cn(TourListVariants({}), className)}
+      data-d-role="list"
+      className={cn(TourListVariants({}), className)}
       ref={ref}
       {...props}
     />
@@ -34,7 +35,8 @@ const TourItem = React.forwardRef<
   return (
     <Comp
       data-slot="tour-list-item"
-      data-d-role="list"className={cn('flex flex-col', className)}
+      data-d-role="list"
+      className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />

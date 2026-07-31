@@ -66,7 +66,12 @@ const readyDownload: ReadyDownloadFactory = (options = {}) => {
 
 const queryMock = vi.fn()
 const setAuthMock = vi.fn()
-const client = { query: queryMock, setAuth: setAuthMock }
+const mutationMock = vi.fn()
+const client = {
+  query: queryMock,
+  mutation: mutationMock,
+  setAuth: setAuthMock,
+}
 
 function fetchResponse(body: BodyInit | null, init?: ResponseInit) {
   const fetchMock = vi.fn(async () => new Response(body, init))

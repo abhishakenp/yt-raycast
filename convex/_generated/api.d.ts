@@ -66,6 +66,7 @@ import type * as lib_session_section_edit_helpers from "../lib/session_section_e
 import type * as lib_session_serialization_helpers from "../lib/session_serialization_helpers.js";
 import type * as lib_session_task_helpers from "../lib/session_task_helpers.js";
 import type * as lib_session_translation_cache_helpers from "../lib/session_translation_cache_helpers.js";
+import type * as lib_session_ttl_constants from "../lib/session_ttl_constants.js";
 import type * as lib_session_usage_metrics_helpers from "../lib/session_usage_metrics_helpers.js";
 import type * as lib_session_user_image_helpers from "../lib/session_user_image_helpers.js";
 import type * as lib_session_validators from "../lib/session_validators.js";
@@ -73,7 +74,9 @@ import type * as lib_session_workspace_helpers from "../lib/session_workspace_he
 import type * as lib_slack_business_notifications from "../lib/slack_business_notifications.js";
 import type * as lib_slack_notifications_shared from "../lib/slack_notifications_shared.js";
 import type * as lib_testHelpers from "../lib/testHelpers.js";
+import type * as lib_timingSafeEqual from "../lib/timingSafeEqual.js";
 import type * as lib_translation_entitlement_helpers from "../lib/translation_entitlement_helpers.js";
+import type * as linkforty from "../linkforty.js";
 import type * as moderation from "../moderation.js";
 import type * as openui_ssr_health from "../openui_ssr_health.js";
 import type * as partners from "../partners.js";
@@ -150,6 +153,7 @@ declare const fullApi: ApiFromModules<{
   "lib/session_serialization_helpers": typeof lib_session_serialization_helpers;
   "lib/session_task_helpers": typeof lib_session_task_helpers;
   "lib/session_translation_cache_helpers": typeof lib_session_translation_cache_helpers;
+  "lib/session_ttl_constants": typeof lib_session_ttl_constants;
   "lib/session_usage_metrics_helpers": typeof lib_session_usage_metrics_helpers;
   "lib/session_user_image_helpers": typeof lib_session_user_image_helpers;
   "lib/session_validators": typeof lib_session_validators;
@@ -157,7 +161,9 @@ declare const fullApi: ApiFromModules<{
   "lib/slack_business_notifications": typeof lib_slack_business_notifications;
   "lib/slack_notifications_shared": typeof lib_slack_notifications_shared;
   "lib/testHelpers": typeof lib_testHelpers;
+  "lib/timingSafeEqual": typeof lib_timingSafeEqual;
   "lib/translation_entitlement_helpers": typeof lib_translation_entitlement_helpers;
+  linkforty: typeof linkforty;
   moderation: typeof moderation;
   openui_ssr_health: typeof openui_ssr_health;
   partners: typeof partners;

@@ -47,6 +47,10 @@ vi.mock('@ship-fast/blocks/runtime', () => ({
     state.commerceProps.push(props)
     return <>{children}</>
   },
+  DesignSystemProvider: ({ children }: { children: ReactNode }) => (
+    <>{children}</>
+  ),
+  DEFAULT_DESIGN: {},
   ImageContextProvider: ({ children }: { children: ReactNode }) => (
     <>{children}</>
   ),

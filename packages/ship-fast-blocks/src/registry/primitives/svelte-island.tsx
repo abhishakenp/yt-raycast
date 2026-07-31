@@ -1,6 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { createElement, useRef, useEffect, type ReactNode } from 'react'
+import { createElement, useRef, useEffect } from 'react'
 
 // ── SvelteIsland capsule ────────────────────────────────────────────────────
 //
@@ -63,7 +63,7 @@ export const SvelteIsland = defineCapsule({
           if (!Component) return
 
           // Svelte 4 mount: new Component({ target })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @script-eslint/no-explicit-any
           const instance = new (Component as any)({
             target: containerRef.current,
             hydrate: true,
@@ -72,7 +72,7 @@ export const SvelteIsland = defineCapsule({
 
           cleanup = () => {
             try {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              // eslint-disable-next-line @script-eslint/no-explicit-any
               ;(instance as any)?.$destroy?.()
             } catch {
               // non-fatal

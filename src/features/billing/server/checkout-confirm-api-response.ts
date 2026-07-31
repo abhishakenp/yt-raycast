@@ -2,6 +2,11 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { checkRateLimit, checkoutConfirmHits } from '@/lib/rate-limit'
+import {
+  getClientIp,
+  hashClientIp,
+} from '@/features/session/server/session-create-response'
 
 type CheckoutConfirmConvexClient = Pick<
   ConvexHttpClient,
@@ -82,6 +87,15 @@ export const createCheckoutConfirmApiResponse = async (
   env: CheckoutConfirmEnv = process.env,
   clientOverride?: CheckoutConfirmConvexClient,
 ): Promise<Response> => {
+  // Rate limit: max 5 checkout confirmations per 10 minutes per IP.
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, checkoutConfirmHits, 5, 10 * 60 * 1000)) {
+    return json(
+      { error: 'Too many checkout attempts. Please wait a few minutes.' },
+      { status: 429 },
+    )
+  }
+
   const token = getBearerToken(request)
   if (token === null) {
     return json({ error: 'Sign in before checkout.' }, { status: 401 })

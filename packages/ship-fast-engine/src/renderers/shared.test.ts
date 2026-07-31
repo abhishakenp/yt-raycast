@@ -99,7 +99,7 @@ async function compileExactCloneComponent(
           pluginBuild.onResolve(
             {
               filter:
-                /^(react-router-dom|next\/navigation|\.\.\/lib\/clone-runtime)$/,
+                /^(react-router-dom|next\/navigation|\.\.\/lib\/clone-runtime|\.\.\/lib\/sanitize-clone-html)$/,
             },
             (args) => ({ path: args.path, namespace: 'exact-clone-test' }),
           )
@@ -124,6 +124,12 @@ async function compileExactCloneComponent(
                 return {
                   contents:
                     'export const useRouter = () => ({ push: globalThis.__exactClonePush })',
+                  loader: 'js',
+                }
+              }
+              if (args.path.endsWith('sanitize-clone-html')) {
+                return {
+                  contents: 'export const sanitizeCloneHtml = (html) => html',
                   loader: 'js',
                 }
               }

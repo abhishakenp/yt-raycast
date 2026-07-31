@@ -2,7 +2,11 @@ import { ConvexError } from 'convex/values'
 
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
-import { getUserId, hashOwnerSecret } from './session_access_helpers'
+import {
+  canReadPrivateSession,
+  getUserId,
+  hashOwnerSecret,
+} from './session_access_helpers'
 import { cloneCachedGeneratedArtifacts } from './session_artifact_helpers'
 import {
   applySessionEdit,
@@ -34,6 +38,21 @@ export async function forkSessionForOwner(
         message: 'Session not found',
       })
     })()
+
+  // Access control: the caller must be able to read the source session.
+  // Without this check, any authenticated user could fork a private session
+  // they don't own and get a copy of its OpenUI source, siteSpec, and preview.
+  const canRead = await canReadPrivateSession(
+    ctx,
+    source,
+    args.anonymousOwnerSecret,
+  )
+  if (!canRead) {
+    throw new ConvexError({
+      code: 'FORBIDDEN',
+      message: 'You do not have access to this session',
+    })
+  }
 
   const userId = await getUserId(ctx)
   const anonOwnerSecretHash =

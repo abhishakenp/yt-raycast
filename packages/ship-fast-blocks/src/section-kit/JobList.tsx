@@ -18,7 +18,8 @@ const JobList = React.forwardRef<
   return (
     <Comp
       data-slot="job-list"
-      data-d-role="list"className={cn(JobListVariants({}), className)}
+      data-d-role="list"
+      className={cn(JobListVariants({}), className)}
       ref={ref}
       {...props}
     />
@@ -34,7 +35,8 @@ const JobItem = React.forwardRef<
   return (
     <Comp
       data-slot="job-list-item"
-      data-d-role="list"className={cn('flex flex-col', className)}
+      data-d-role="list"
+      className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />

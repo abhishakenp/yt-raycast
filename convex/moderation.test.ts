@@ -284,9 +284,10 @@ describe('content moderation flag persistence', () => {
 
       expect(fetchMock).toHaveBeenCalled()
       expect(
-        fetchMock.mock.calls.some(([, init]) =>
-          String(init?.body).includes(blockedAttempt.prompt),
-        ),
+        fetchMock.mock.calls.some((call) => {
+          const init = (call as unknown[])[1] as { body?: string } | undefined
+          return String(init?.body).includes(blockedAttempt.prompt)
+        }),
       ).toBe(true)
       await expect(moderationState(t)).resolves.toMatchObject({
         scheduled: [expect.objectContaining({ state: { kind: 'success' } })],

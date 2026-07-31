@@ -330,9 +330,9 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 
 let __mockIsAdmin = true
 vi.mock('@/shared/auth/use-optional-auth', async () => {
-  const actual = await vi.importActual<typeof import('@/shared/auth/use-optional-auth')>(
-    '@/shared/auth/use-optional-auth',
-  )
+  const actual = await vi.importActual<
+    typeof import('@/shared/auth/use-optional-auth')
+  >('@/shared/auth/use-optional-auth')
   return {
     ...actual,
     useIsAdmin: () => __mockIsAdmin,
@@ -1840,8 +1840,8 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     }
   })
 
-  // 4. Ready session -> last prompt persisted to localStorage
-  it('persists the last prompt to localStorage when session is ready', () => {
+  // 4. Ready session -> prompt must NOT be persisted to localStorage
+  it('does not persist the prompt to localStorage when session is ready', () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
 
@@ -1851,8 +1851,12 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
       ),
     ).toBeNull()
 
-    // The last prompt should be persisted for restoration on return.
-    expect(window.localStorage.getItem('ship-fast:last-prompt')).not.toBeNull()
+    // The Dashboard must NOT write the prompt — the home page clears the
+    // unified prompt-session cache on Generate, and re-writing here would
+    // cause the old prompt to reappear on Back.
+    expect(
+      window.localStorage.getItem('ship-fast:prompt-session-cache'),
+    ).toBeNull()
   })
 
   // 5. Progress: 50% tasks → progress bar shows 50%

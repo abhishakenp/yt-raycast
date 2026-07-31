@@ -64,7 +64,24 @@ function normalizeWebUrl(value: string, field: string): string {
     ) {
       throw new Error('Unsupported URL')
     }
-  } catch {
+    // SSRF protection: block private IPs and link-local addresses except
+    // localhost (which is used for app-provisioned Medusa containers).
+    // This prevents a session owner from setting the backend URL to
+    // cloud metadata endpoints (e.g. 169.254.169.254) or internal
+    // services that the server would then fetch on their behalf.
+    const hostname = url.hostname.toLowerCase()
+    if (
+      hostname !== 'localhost' &&
+      !hostname.endsWith('.localhost') &&
+      isPrivateIpv4Address(hostname)
+    ) {
+      throw new ConvexError({
+        code: 'INVALID_ARGUMENT',
+        message: `${field} must not point to a private IP address`,
+      })
+    }
+  } catch (error) {
+    if (error instanceof ConvexError) throw error
     throw new ConvexError({
       code: 'INVALID_ARGUMENT',
       message: `${field} must be a valid HTTP(S) URL without credentials`,
@@ -72,6 +89,28 @@ function normalizeWebUrl(value: string, field: string): string {
   }
 
   return normalized
+}
+
+function isPrivateIpv4Address(hostname: string): boolean {
+  const parts = hostname.split('.').map(Number)
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false
+  }
+  const [first = 0, second = 0] = parts
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    first >= 224
+  )
 }
 
 function normalizeOptionalWebUrl(

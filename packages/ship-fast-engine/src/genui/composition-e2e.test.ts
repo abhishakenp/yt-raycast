@@ -395,7 +395,7 @@ describe('E2E: All 40 motifs compile', () => {
     it(`compiles ${motif}`, async () => {
       const input = `@section ${motif}`
       const parsed = parseComposition(input)
-      const compiled = await compileComposition(parsed)
+      const compiled = await compileComposition(parsed, { brand: 'TestBrand' })
       expect(compiled.source).toContain(motif)
     })
   }
@@ -494,7 +494,8 @@ describe('E2E: @page directive — sub-pages get unique content', () => {
 
 describe('E2E: [hl] tags stripped in PosterHero and CenteredHero', () => {
   it('PosterHero strips [hl] tags from heading', async () => {
-    const input = `@section PosterHero
+    const input = `@brand TestBrand
+@section PosterHero
   heading Sip [hl]Warmth[/hl] in Seattle
 `
     const parsed = parseComposition(input)
@@ -507,7 +508,8 @@ describe('E2E: [hl] tags stripped in PosterHero and CenteredHero', () => {
   })
 
   it('CenteredHero strips [hl] tags from heading', async () => {
-    const input = `@section CenteredHero
+    const input = `@brand TestBrand
+@section CenteredHero
   heading Build [hl]faster[/hl] with us
 `
     const parsed = parseComposition(input)

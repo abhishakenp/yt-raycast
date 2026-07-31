@@ -9,6 +9,7 @@ import {
   MAX_ANON_PER_DAY_WITH_BONUS,
   MAX_ANON_PER_MONTH,
   MAX_FREE_AUTH_PER_DAY,
+  MAX_FREE_PER_IP_MONTHLY,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   MONTHLY_WINDOW_MS,
@@ -25,6 +26,7 @@ import { isAuthDisabled } from './session_export_helpers'
 import { cloneCachedGeneratedArtifacts } from './session_artifact_helpers'
 import { reserveDefaultDeploymentSlug } from './session_deployment_helpers'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
+import { timingSafeEqual } from './timingSafeEqual'
 import {
   assertPrompt,
   assertContentPolicyFields,
@@ -33,6 +35,7 @@ import {
   normalizePromptCacheKey,
   normalizeSpaces,
 } from './session_prompt_helpers'
+import { DRAFT_SESSION_TTL_MS } from './session_ttl_constants'
 
 type SessionCreationCtx = Pick<MutationCtx, 'db'>
 type ScheduledFunctionReference = Parameters<
@@ -46,7 +49,7 @@ type GenerationLimitEnv = {
 
 export const SHORT_WINDOW_LIMIT = 5
 export const PROMPT_CACHE_LOOKBACK_LIMIT = 12
-export const DRAFT_SESSION_TTL_MS = 15 * 60 * 1_000
+export { DRAFT_SESSION_TTL_MS }
 
 export function areGenerationLimitsDisabled(
   env: GenerationLimitEnv = process.env,
@@ -128,6 +131,7 @@ export type GenerationAdmissionInput = {
   userId?: string
   anonymousClientIdHash?: string
   clientIpHash?: string
+  serverSecret?: string
   now: number
   disableLimits: boolean
   isAdmin?: boolean
@@ -144,10 +148,20 @@ export async function loadGenerationAdmission(
   ctx: SessionCreationCtx,
   args: GenerationAdmissionInput,
 ): Promise<GenerationAdmission> {
+  // Validate server secret: if the caller is a direct Convex client (not the
+  // API route), clientIpHash is client-supplied and forgeable. Ignore it so
+  // quota can't be bypassed by rotating fake IP hashes.
+  const expectedSecret = process.env.SHARE_BONUS_MUTATION_SECRET
+  const isServerCaller =
+    expectedSecret !== undefined &&
+    args.serverSecret !== undefined &&
+    timingSafeEqual(args.serverSecret, expectedSecret)
+  const trustedClientIpHash = isServerCaller ? args.clientIpHash : undefined
+
   if (
     !args.disableLimits &&
     args.userId === undefined &&
-    args.clientIpHash === undefined
+    trustedClientIpHash === undefined
   ) {
     throw new ConvexError({
       code: 'CLIENT_IP_REQUIRED',
@@ -171,11 +185,11 @@ export async function loadGenerationAdmission(
   // Together they form the effective identity for quota. Anonymous requests
   // only have the IP bucket; authenticated requests have both.
   const ipSessions =
-    args.clientIpHash !== undefined
+    trustedClientIpHash !== undefined
       ? await ctx.db
           .query('sessions')
           .withIndex('by_clientIpHash_createdAt', (index) =>
-            index.eq('clientIpHash', args.clientIpHash),
+            index.eq('clientIpHash', trustedClientIpHash),
           )
           .order('desc')
           .take(lookback)
@@ -226,15 +240,42 @@ export async function loadGenerationAdmission(
         ? userActiveSubscriptionCount * MAX_PAID_PER_MONTH
         : MAX_FREE_PER_MONTH
 
+  // Per-IP monthly cap for authenticated free users. Checked BEFORE the
+  // per-user monthly cap so it fires with a specific error when the IP
+  // is saturated from multiple accounts. Blocks the multi-account-on-same-IP
+  // bypass. Paid users are exempt. Anonymous users are already capped by
+  // MAX_ANON_PER_MONTH.
+  if (
+    args.userId !== undefined &&
+    !isPaid &&
+    trustedClientIpHash !== undefined
+  ) {
+    const ipMonthlyCount = ipSessions.filter(
+      (session) =>
+        session.isDraft !== true && session.createdAt >= monthlyCutoff,
+    ).length
+
+    ipMonthlyCount < MAX_FREE_PER_IP_MONTHLY ||
+      args.disableLimits ||
+      args.isAdmin ||
+      (() => {
+        throw new ConvexError({
+          code: 'IP_QUOTA_EXCEEDED',
+          message:
+            'Monthly generation limit reached for this network. Upgrade for unlimited generations.',
+        })
+      })()
+  }
+
   // Check whether the anonymous user has claimed the share bonus today.
   // This is the only way to get the 3rd daily generation.
   const today = new Date(args.now).toISOString().slice(0, 10)
   const shareBonus =
-    args.userId === undefined && args.clientIpHash !== undefined
+    args.userId === undefined && trustedClientIpHash !== undefined
       ? await ctx.db
           .query('shareBonuses')
           .withIndex('by_clientIpHash_date', (q) =>
-            q.eq('clientIpHash', args.clientIpHash!).eq('date', today),
+            q.eq('clientIpHash', trustedClientIpHash!).eq('date', today),
           )
           .first()
       : null
@@ -306,6 +347,7 @@ export type CreateGenerationSessionInput = {
   anonymousOwnerSecret?: string
   anonymousClientId?: string
   clientIpHash?: string
+  serverSecret?: string
   designReferenceUrls?: string[]
   designReferenceNotes?: string
   cloneUrl?: string
@@ -347,6 +389,7 @@ export async function createGenerationSession(
   const userId = await getUserId(ctx)
   const ownerEmail = userId === undefined ? undefined : await getUserEmail(ctx)
   const isAdmin = userId !== undefined && (await isUserAdmin(ctx))
+
   const anonOwnerSecretHash =
     userId === undefined && args.anonymousOwnerSecret !== undefined
       ? await hashOwnerSecret(args.anonymousOwnerSecret)
@@ -453,6 +496,7 @@ export async function createGenerationSession(
     userId,
     anonymousClientIdHash,
     clientIpHash,
+    serverSecret: args.serverSecret,
     now,
     disableLimits,
     isAdmin,

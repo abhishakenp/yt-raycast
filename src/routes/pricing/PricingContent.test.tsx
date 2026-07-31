@@ -22,7 +22,7 @@ describe('PricingContent', () => {
 
     const question = getByRole('button', { name: 'What is included in Pro?' })
     const answer = getByText(
-      'Pro includes website generation, CMS, ZIP export, the full template library, AI iteration, better image generation, community access, and monthly template drops.',
+      'Pro includes website generation, ZIP export, the full template library, AI iteration, community access, and monthly template drops.',
     )
 
     expect(question.getAttribute('aria-expanded')).toBe('false')
@@ -38,7 +38,7 @@ describe('PricingContent', () => {
   })
 
   it('renders the Free plan with Most Popular badge', () => {
-    const { getByText, getByLabelText } = render(
+    const { container, getByLabelText, getByText } = render(
       <PricingContent
         onCheckoutClick={() => {}}
         isCheckoutStarting={false}
@@ -46,12 +46,32 @@ describe('PricingContent', () => {
       />,
     )
 
-    expect(getByLabelText('Most popular plan')).toBeDefined()
+    const badge = getByLabelText('Most popular plan')
+    const freeCard = container.querySelector('.pricing-card.featured')
+    expect(freeCard).not.toBeNull()
+    expect(freeCard?.contains(badge)).toBe(true)
+    expect(freeCard?.querySelector('.plan-label')?.textContent).toBe('Free')
     expect(getByText('Free')).toBeDefined()
     expect(getByText('₹0')).toBeDefined()
-    expect(getByText('3 generations/day without login')).toBeDefined()
+    expect(getByText('2 generations/day without login')).toBeDefined()
     expect(getByText('5 generations/day when logged in')).toBeDefined()
     expect(getByText('10 free generations/month')).toBeDefined()
+  })
+
+  it('does not mark the Pro plan as featured', () => {
+    const { container, getByText } = render(
+      <PricingContent
+        onCheckoutClick={() => {}}
+        isCheckoutStarting={false}
+        onShareClick={() => {}}
+      />,
+    )
+
+    const proLabel = getByText('Pro')
+    const proCard = proLabel.closest('.pricing-card')
+    expect(proCard).not.toBeNull()
+    expect(proCard?.classList.contains('featured')).toBe(false)
+    expect(proCard?.querySelector('.popular-badge')).toBeNull()
   })
 
   it('renders the Free FAQ item', () => {
@@ -65,7 +85,7 @@ describe('PricingContent', () => {
 
     const question = getByRole('button', { name: 'What is included in Free?' })
     const answer = getByText(
-      'Free gives you 3 generations per day without even logging in, 5 per day when signed in, and 10 free generations per month. No credit card required.',
+      'Free gives you 2 generations per day without even logging in, 5 per day when signed in, and 10 free generations per month. No credit card required.',
     )
 
     expect(question).toBeDefined()

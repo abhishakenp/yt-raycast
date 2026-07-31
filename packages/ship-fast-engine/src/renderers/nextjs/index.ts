@@ -17,6 +17,7 @@ import {
 import { renderGeneratedSiteLlmsTxt } from '../llms-txt'
 import { shouldUseSwiper } from '../../lib/swiper-policy'
 import { SHIP_FAST_SITE_URL } from '../../marketing'
+import { sanitizeSvg } from '../../lib/sanitize-svg'
 import type { SiteSpecLike, SitePageLike } from '@ship-fast/aeo'
 
 type SiteSpec = SiteSpecLike & {
@@ -1374,7 +1375,7 @@ function NavbarSection({ section, siteSpec }) {
                 <img src={brandLogo.src} alt={brandLogo.alt || 'Company logo'} decoding="async" loading="eager" />
               </span>
             ) : brandLogo?.kind === 'svg' && brandLogo.svg ? (
-              <span className="brand-logo" aria-hidden={false} dangerouslySetInnerHTML={{ __html: brandLogo.svg }} />
+              <span className="brand-logo" aria-hidden={false} dangerouslySetInnerHTML={{ __html: sanitizeSvg(brandLogo.svg) }} />
             ) : null}
             <span className="brand-name">{section.headline || 'Site'}</span>
           </SmartLink>
@@ -1629,7 +1630,7 @@ function FooterSection({ section }) {
                 <span
                   className="brand-logo"
                   aria-hidden={false}
-                  dangerouslySetInnerHTML={{ __html: brandLogo.svg }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeSvg(brandLogo.svg) }}
                 />
               ) : null}
               <strong>{section.headline}</strong>

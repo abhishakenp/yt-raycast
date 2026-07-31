@@ -42,6 +42,10 @@ const state = vi.hoisted(() => ({
 vi.mock('@ship-fast/blocks/runtime', () => ({
   BrandLogoProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
   CommerceProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DesignSystemProvider: ({ children }: { children: ReactNode }) => (
+    <>{children}</>
+  ),
+  DEFAULT_DESIGN: {},
   ImageContextProvider: ({
     children,
     value,

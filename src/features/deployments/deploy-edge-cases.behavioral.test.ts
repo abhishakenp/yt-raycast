@@ -85,6 +85,20 @@ async function executeAnonymousDeployClientBundle(
       }),
   })
 
+  // Polyfill requestAnimationFrame — JSDOM doesn't provide it, but some
+  // generated client bundles (e.g. framer-motion) expect it to exist.
+  if (!dom.window.requestAnimationFrame) {
+    dom.window.requestAnimationFrame = ((cb: FrameRequestCallback) =>
+      dom.window.setTimeout(
+        () => cb(Date.now()),
+        16,
+      )) as typeof requestAnimationFrame
+  }
+  if (!dom.window.cancelAnimationFrame) {
+    dom.window.cancelAnimationFrame = ((id: number) =>
+      dom.window.clearTimeout(id)) as typeof cancelAnimationFrame
+  }
+
   let evalError: unknown
   try {
     dom.window.eval(executable.code)

@@ -34,7 +34,7 @@ if (typeof ResizeObserver === 'undefined') {
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
-const { SiteNav } = await import('./SiteNav.tsx')
+const { SiteNav, NavbarBrand } = await import('./SiteNav.tsx')
 const { BrandLogoProvider } = await import('./Logo.tsx')
 const { RoutesContext } = await import('../lib/route-context.tsx')
 
@@ -89,9 +89,9 @@ describe('SiteNav', () => {
     expect(
       screen.getByRole('link', { name: 'Northridge' }).getAttribute('href'),
     ).toBe('/preview/release-preview')
-    expect(screen.getAllByRole('link', { name: 'Pricing' })[0]?.href).toContain(
-      '/preview/release-preview/pricing',
-    )
+    expect(
+      screen.getAllByRole('link', { name: 'Pricing' })[0]?.getAttribute('href'),
+    ).toContain('/preview/release-preview/pricing')
     expect(
       screen
         .getByRole('link', { name: 'Schedule Consultation' })
@@ -283,5 +283,26 @@ describe('SiteNav variant layouts', () => {
     expect(nav).toBeTruthy()
     // Default has justify-between on the nav
     expect(nav?.className).toContain('justify-between')
+  })
+
+  it('brand link has data-d-role="link" not "nav"', () => {
+    renderWithRoutes(<NavbarBrand href="/">Brand</NavbarBrand>)
+    const brand = document.querySelector('[data-slot="navbar-brand"]')
+    expect(brand).toBeTruthy()
+    expect(brand?.getAttribute('data-d-role')).toBe('link')
+  })
+
+  it('split variant header has data-d-role="nav"', () => {
+    renderWithRoutes(
+      <SiteNav
+        brand="Acme"
+        nav={['About']}
+        cta={{ label: 'Sign Up' }}
+        variant="split"
+      />,
+    )
+    const header = document.querySelector('header')
+    expect(header).toBeTruthy()
+    expect(header?.getAttribute('data-d-role')).toBe('nav')
   })
 })

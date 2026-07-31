@@ -121,7 +121,7 @@ describe('public gallery preview cards', () => {
     expect(image).not.toBeNull()
     expect(image?.getAttribute('alt')).toBe('')
     expect(image?.getAttribute('src')).toBe(
-      '/api/images/session_image_preview?v=12345.preview-html-export-v6',
+      '/api/images/session_image_preview?v=12345',
     )
     expect(image?.getAttribute('loading')).toBe('lazy')
     expect(image?.getAttribute('decoding')).toBe('async')
@@ -170,13 +170,13 @@ describe('public gallery preview cards', () => {
     )
 
     expect(container.querySelector('img')?.getAttribute('src')).toBe(
-      '/api/images/session_theme_changed?v=111.preview-html-export-v6',
+      '/api/images/session_theme_changed?v=111',
     )
 
     rerender(<GalleryGrid gallery={makeGallery(222)} />)
 
     expect(container.querySelector('img')?.getAttribute('src')).toBe(
-      '/api/images/session_theme_changed?v=222.preview-html-export-v6',
+      '/api/images/session_theme_changed?v=222',
     )
   })
 

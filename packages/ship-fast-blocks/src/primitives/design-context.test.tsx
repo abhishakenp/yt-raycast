@@ -259,7 +259,10 @@ describe('useDesignCompositional()', () => {
         <CompositionalConsumer />
       </DesignSystemProvider>,
     )
-    expect(capturedCompositional).toEqual({ chrome: 'brutalist', decor: 'dot-grid' })
+    expect(capturedCompositional).toEqual({
+      chrome: 'brutalist',
+      decor: 'dot-grid',
+    })
   })
 
   it('returns undefined for unset chrome/decor', () => {
@@ -268,7 +271,10 @@ describe('useDesignCompositional()', () => {
         <CompositionalConsumer />
       </DesignSystemProvider>,
     )
-    expect(capturedCompositional).toEqual({ chrome: undefined, decor: undefined })
+    expect(capturedCompositional).toEqual({
+      chrome: undefined,
+      decor: undefined,
+    })
   })
 })
 
@@ -299,7 +305,8 @@ describe('DesignOverride — cascade merging', () => {
     // Find the innermost wrapper with --d-radius (the override wrapper)
     const wrappers = container.querySelectorAll('[style*="--d-radius"]')
     expect(wrappers.length).toBeGreaterThanOrEqual(1)
-    const nestedStyle = wrappers[wrappers.length - 1]?.getAttribute('style') ?? ''
+    const nestedStyle =
+      wrappers[wrappers.length - 1]?.getAttribute('style') ?? ''
     expect(nestedStyle).toMatch(/--d-radius:\s*9999px/)
   })
 

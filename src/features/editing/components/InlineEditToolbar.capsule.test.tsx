@@ -406,7 +406,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
   describe('Capsule controls button visibility', () => {
     it('opens from a closed render without changing hook order', () => {
-      const child = makeChildInsideCapsule('CoworkingPricing', 'home_pricing')
+      const child = makeChildInsideCapsule('PricingTable', 'home_pricing')
       const consoleError = vi
         .spyOn(console, 'error')
         .mockImplementation(() => undefined)
@@ -463,7 +463,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     })
 
     it('shows the button when activeElement is inside a capsule section', () => {
-      const child = makeChildInsideCapsule('CoworkingPricing', 'home_pricing')
+      const child = makeChildInsideCapsule('PricingTable', 'home_pricing')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
       expect(
@@ -472,7 +472,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     })
 
     it('shows the button when activeElement IS the capsule section element', () => {
-      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      const section = makeCapsuleSectionEl('SplitHero', 'home_hero')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       expect(
@@ -490,7 +490,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     })
 
     it('does NOT show the button for Navbar capsules (not realtime-editable)', () => {
-      const section = makeCapsuleSectionEl('CoworkingNavbar', 'home_navbar')
+      const section = makeCapsuleSectionEl('Navbar', 'home_navbar')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       expect(
@@ -499,7 +499,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     })
 
     it('does NOT show the button for Footer capsules (not realtime-editable)', () => {
-      const section = makeCapsuleSectionEl('CoworkingFooter', 'home_footer')
+      const section = makeCapsuleSectionEl('Footer', 'home_footer')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       expect(
@@ -508,7 +508,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     })
 
     it('does NOT show the button when sessionId is missing', () => {
-      const section = makeCapsuleSectionEl('CoworkingPricing', 'home_pricing')
+      const section = makeCapsuleSectionEl('PricingTable', 'home_pricing')
       renderToolbar({ activeElement: section })
 
       expect(
@@ -529,7 +529,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
     it('does NOT show the button when data-openui-var is missing', () => {
       const section = document.createElement('section')
-      section.setAttribute('data-openui-component', 'CoworkingPricing')
+      section.setAttribute('data-openui-component', 'PricingTable')
       // No data-openui-var
       section.textContent = 'Pricing'
       document.body.appendChild(section)
@@ -541,7 +541,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     })
 
     it('finds capsule via closest() when clicking a deeply nested child', () => {
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       // Create a deeply nested child: section > div > div > span
       const div1 = document.createElement('div')
       const div2 = document.createElement('div')
@@ -563,8 +563,8 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
   describe('Capsule panel open/close', () => {
     it('clicking the button opens the capsule panel', () => {
-      mockActions.sectionData = { columns: 3, images: [] }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      mockActions.sectionData = { chrome: 'editorial', images: [] }
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       const btn = screen.getByRole('button', { name: 'Capsule controls' })
@@ -574,12 +574,12 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
       expect(btn.getAttribute('aria-expanded')).toBe('true')
       // Panel should render capsule fields (columns variant label)
-      expect(screen.getByText('columns')).toBeTruthy()
+      expect(screen.getByText('chrome')).toBeTruthy()
     })
 
     it('clicking the button again closes the capsule panel', () => {
-      mockActions.sectionData = { columns: 3, images: [] }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      mockActions.sectionData = { chrome: 'editorial', images: [] }
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       const btn = screen.getByRole('button', { name: 'Capsule controls' })
@@ -591,8 +591,8 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     })
 
     it('opening capsule panel closes other panels (AI edit)', () => {
-      mockActions.sectionData = { columns: 3, images: [] }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      mockActions.sectionData = { chrome: 'editorial', images: [] }
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       // Open AI edit panel first
@@ -613,11 +613,11 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
   // ── Panel renders correct capsule fields ─────────────────────────────────
 
   describe('Panel renders correct capsule schema', () => {
-    it('renders CoworkingPricing tiers collection', () => {
+    it('renders PricingTable tiers collection', () => {
       mockActions.sectionData = {
         tiers: [{ name: 'Basic', price: '$10' }],
       }
-      const section = makeCapsuleSectionEl('CoworkingPricing', 'home_pricing')
+      const section = makeCapsuleSectionEl('PricingTable', 'home_pricing')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
@@ -628,35 +628,34 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       expect(screen.getByText('Basic')).toBeTruthy()
     })
 
-    it('renders CoworkingGallery columns variant + images collection', () => {
+    it('renders ImageGallery chrome variant + images collection', () => {
       mockActions.sectionData = {
         columns: 3,
         images: [{ alt: 'Photo' }],
       }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
 
       // Variant label
-      expect(screen.getByText('columns')).toBeTruthy()
+      expect(screen.getByText('chrome')).toBeTruthy()
       // Collection label
       expect(screen.getAllByText(/Images/).length).toBeGreaterThan(0)
     })
 
-    it('renders CoworkingHero scalar fields', () => {
+    it('renders SplitHero scalar fields', () => {
       mockActions.sectionData = {
-        eyebrow: 'Flexible Workspaces',
-        headingLead: 'Work',
+        badge: 'Flexible Workspaces',
       }
-      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      const section = makeCapsuleSectionEl('SplitHero', 'home_hero')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
 
       // Scalar field inputs should be present (placeholder-based labels)
-      expect(screen.getByPlaceholderText('Eyebrow')).toBeTruthy()
-      expect(screen.getByPlaceholderText('Heading Lead')).toBeTruthy()
+      expect(screen.getByPlaceholderText('Badge')).toBeTruthy()
+      expect(screen.getByPlaceholderText('Primary Cta')).toBeTruthy()
     })
 
     it('hides Capsule controls button for unknown capsule name', () => {
@@ -675,31 +674,30 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
   describe('Panel interactions call hook actions', () => {
     it('clicking variant option in Manage Section Content does not persist before Apply', () => {
-      mockActions.sectionData = { columns: 2 }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      mockActions.sectionData = { chrome: 'hairline' }
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
-      fireEvent.click(screen.getByRole('button', { name: '4' }))
+      fireEvent.click(screen.getByRole('button', { name: 'brutalist' }))
 
       expect(mockActions.setProp).not.toHaveBeenCalled()
     })
 
     it('closing Manage Section Content discards scalar edits without persisting', async () => {
       mockActions.sectionData = {
-        eyebrow: 'Old eyebrow',
-        headingLead: 'Work',
+        badge: 'Old badge',
       }
-      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      const section = makeCapsuleSectionEl('SplitHero', 'home_hero')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
-      const eyebrowInput = screen.getByPlaceholderText(
-        'Eyebrow',
+      const badgeInput = screen.getByPlaceholderText(
+        'Badge',
       ) as HTMLInputElement
 
       await act(async () => {
-        fireEvent.change(eyebrowInput, { target: { value: 'New eyebrow' } })
+        fireEvent.change(badgeInput, { target: { value: 'New badge' } })
       })
       fireEvent.click(screen.getByRole('button', { name: 'Close' }))
 
@@ -710,7 +708,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       mockActions.sectionData = {
         images: [{ alt: 'A' }, { alt: 'B' }],
       }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
@@ -722,19 +720,18 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
     it('pressing Escape discards Manage Section Content scalar edits without persisting', async () => {
       mockActions.sectionData = {
-        eyebrow: 'Old eyebrow',
-        headingLead: 'Work',
+        badge: 'Old badge',
       }
-      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      const section = makeCapsuleSectionEl('SplitHero', 'home_hero')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
-      const eyebrowInput = screen.getByPlaceholderText(
-        'Eyebrow',
+      const badgeInput = screen.getByPlaceholderText(
+        'Badge',
       ) as HTMLInputElement
 
       await act(async () => {
-        fireEvent.change(eyebrowInput, { target: { value: 'Escape draft' } })
+        fireEvent.change(badgeInput, { target: { value: 'Escape draft' } })
       })
       fireEvent.keyDown(document, { key: 'Escape' })
 
@@ -743,19 +740,18 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
     it('clicking outside discards Manage Section Content scalar edits without persisting', async () => {
       mockActions.sectionData = {
-        eyebrow: 'Old eyebrow',
-        headingLead: 'Work',
+        badge: 'Old badge',
       }
-      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      const section = makeCapsuleSectionEl('SplitHero', 'home_hero')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
-      const eyebrowInput = screen.getByPlaceholderText(
-        'Eyebrow',
+      const badgeInput = screen.getByPlaceholderText(
+        'Badge',
       ) as HTMLInputElement
 
       await act(async () => {
-        fireEvent.change(eyebrowInput, { target: { value: 'Outside draft' } })
+        fireEvent.change(badgeInput, { target: { value: 'Outside draft' } })
       })
       fireEvent.mouseDown(document.body)
 
@@ -766,7 +762,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       mockActions.sectionData = {
         images: [{ alt: 'A' }, { alt: 'B' }],
       }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
@@ -778,45 +774,41 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
     it('Manage Section Content scalar edits persist only after Apply', async () => {
       mockActions.sectionData = {
-        eyebrow: 'Old eyebrow',
-        headingLead: 'Work',
+        badge: 'Old badge',
       }
-      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      const section = makeCapsuleSectionEl('SplitHero', 'home_hero')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
-      const eyebrowInput = screen.getByPlaceholderText(
-        'Eyebrow',
+      const badgeInput = screen.getByPlaceholderText(
+        'Badge',
       ) as HTMLInputElement
 
       await act(async () => {
-        fireEvent.change(eyebrowInput, { target: { value: 'Applied eyebrow' } })
+        fireEvent.change(badgeInput, { target: { value: 'Applied badge' } })
       })
       expect(mockActions.setProp).not.toHaveBeenCalled()
 
       fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
-      expect(mockActions.setProp).toHaveBeenCalledWith(
-        'eyebrow',
-        'Applied eyebrow',
-      )
+      expect(mockActions.setProp).toHaveBeenCalledWith('badge', 'Applied badge')
     })
 
     it('Manage Section Content variant changes persist only after Apply', () => {
-      mockActions.sectionData = { columns: 2, images: [] }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      mockActions.sectionData = { chrome: 'hairline', images: [] }
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
-      fireEvent.click(screen.getByRole('button', { name: '4' }))
+      fireEvent.click(screen.getByRole('button', { name: 'brutalist' }))
       expect(mockActions.setProp).not.toHaveBeenCalled()
 
       fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
-      expect(mockActions.setProp).toHaveBeenCalledWith('columns', 4)
+      expect(mockActions.setProp).toHaveBeenCalledWith('chrome', 'brutalist')
     })
 
     it('clicking Add button calls addItem', async () => {
       mockActions.sectionData = { images: [] }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
@@ -832,7 +824,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
       expect(mockActions.addItem).toHaveBeenCalledWith('images', {
         alt: '',
-        caption: '',
+        src: '',
       })
     })
 
@@ -840,7 +832,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       mockActions.sectionData = {
         images: [{ alt: 'A' }, { alt: 'B' }],
       }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
@@ -865,7 +857,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     it('shows loading text when canEdit is false', () => {
       mockActions.canEdit = false
       mockActions.sectionData = null
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
@@ -878,8 +870,8 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
   describe('anonymousOwnerSecret passthrough', () => {
     it('renders without error when anonymousOwnerSecret is provided', () => {
-      mockActions.sectionData = { columns: 3, images: [] }
-      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      mockActions.sectionData = { chrome: 'editorial', images: [] }
+      const section = makeCapsuleSectionEl('ImageGallery', 'home_gallery')
       // Just verify it doesn't crash — the secret is consumed by
       // LakebedSessionProvider which is mocked as a pass-through.
       expect(() =>
@@ -896,64 +888,64 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
   describe('Capsule inline controls auto-open', () => {
     it('auto-opens the capsule-inline panel when element is inside a capsule', () => {
-      mockActions.sectionData = { columns: 3, features: [] }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      mockActions.sectionData = { chrome: 'editorial', features: [] }
+      const child = makeChildInsideCapsule('FeatureList', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
       // The inline variant switcher should be visible without clicking
       // the "Capsule controls" button.
-      expect(screen.getByText('columns')).toBeTruthy()
+      expect(screen.getByText('chrome')).toBeTruthy()
     })
 
     it('shows variant switcher buttons in the inline panel', () => {
-      mockActions.sectionData = { columns: 3, features: [] }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      mockActions.sectionData = { chrome: 'editorial', features: [] }
+      const child = makeChildInsideCapsule('FeatureList', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
-      expect(screen.getByRole('button', { name: '2' })).toBeTruthy()
-      expect(screen.getByRole('button', { name: '3' })).toBeTruthy()
-      expect(screen.getByRole('button', { name: '4' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'hairline' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'editorial' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'brutalist' })).toBeTruthy()
     })
 
     it('shows collection Add button in the inline panel', () => {
       mockActions.sectionData = {
-        features: [{ title: 'Hot Desks', description: 'Pick any desk' }],
+        features: [{ heading: 'Hot Desks', description: 'Pick any desk' }],
       }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      const child = makeChildInsideCapsule('FeatureList', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
       expect(screen.getByRole('button', { name: /Add/ })).toBeTruthy()
     })
 
     it('inline panel variant changes wait for Apply before persisting', () => {
-      mockActions.sectionData = { columns: 3, features: [] }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      mockActions.sectionData = { chrome: 'editorial', features: [] }
+      const child = makeChildInsideCapsule('FeatureList', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
-      fireEvent.click(screen.getByRole('button', { name: '4' }))
+      fireEvent.click(screen.getByRole('button', { name: 'brutalist' }))
       expect(mockActions.setProp).not.toHaveBeenCalled()
 
       fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
-      expect(mockActions.setProp).toHaveBeenCalledWith('columns', 4)
+      expect(mockActions.setProp).toHaveBeenCalledWith('chrome', 'brutalist')
     })
 
     it('inline panel variant changes are discarded on Escape before Apply', () => {
-      mockActions.sectionData = { columns: 3, features: [] }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      mockActions.sectionData = { chrome: 'editorial', features: [] }
+      const child = makeChildInsideCapsule('FeatureList', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
-      fireEvent.click(screen.getByRole('button', { name: '4' }))
+      fireEvent.click(screen.getByRole('button', { name: 'brutalist' }))
       fireEvent.keyDown(document, { key: 'Escape' })
 
       expect(mockActions.setProp).not.toHaveBeenCalled()
     })
 
     it('inline panel variant changes are discarded on outside click before Apply', () => {
-      mockActions.sectionData = { columns: 3, features: [] }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      mockActions.sectionData = { chrome: 'editorial', features: [] }
+      const child = makeChildInsideCapsule('FeatureList', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
-      fireEvent.click(screen.getByRole('button', { name: '4' }))
+      fireEvent.click(screen.getByRole('button', { name: 'brutalist' }))
       fireEvent.mouseDown(document.body)
 
       expect(mockActions.setProp).not.toHaveBeenCalled()
@@ -961,7 +953,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
     it('inline panel Add waits for Apply before persisting a new collection item', () => {
       mockActions.sectionData = { features: [] }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      const child = makeChildInsideCapsule('FeatureList', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: /Add/ }))
@@ -969,38 +961,40 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
       expect(mockActions.addItem).toHaveBeenCalledWith('features', {
-        title: '',
+        heading: '',
         description: '',
+        imageAlt: '',
+        imageSrc: '',
       })
     })
 
     it('does not auto-open inline panel for Navbar capsules', () => {
       mockActions.sectionData = {}
-      const child = makeChildInsideCapsule('CoworkingNavbar', 'home_nav')
+      const child = makeChildInsideCapsule('Navbar', 'home_nav')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
       // Navbar is excluded — no inline variant switcher should appear
-      expect(screen.queryByText('columns')).toBeNull()
+      expect(screen.queryByText('chrome')).toBeNull()
     })
 
     it('does not auto-open inline panel for Footer capsules', () => {
       mockActions.sectionData = {}
-      const child = makeChildInsideCapsule('CoworkingFooter', 'home_footer')
+      const child = makeChildInsideCapsule('Footer', 'home_footer')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
-      expect(screen.queryByText('columns')).toBeNull()
+      expect(screen.queryByText('chrome')).toBeNull()
     })
 
     it('does not auto-open inline panel for Stack capsule', () => {
       const section = makeCapsuleSectionEl('Stack', 'page_root')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
-      expect(screen.queryByText('columns')).toBeNull()
+      expect(screen.queryByText('chrome')).toBeNull()
     })
 
     it('still allows opening the full Capsule controls panel alongside inline', () => {
-      mockActions.sectionData = { columns: 3, features: [] }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      mockActions.sectionData = { chrome: 'editorial', features: [] }
+      const child = makeChildInsideCapsule('FeatureList', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
       // The "Capsule controls" button should still be present

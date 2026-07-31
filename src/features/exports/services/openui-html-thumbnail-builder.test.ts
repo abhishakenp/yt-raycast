@@ -30,7 +30,7 @@ const input: OpenUIExportInput = {
 }
 
 describe('buildOpenUIHtmlThumbnail', () => {
-  it('renders only the landing page and omits runtime-only document work', async () => {
+  it('renders only the landing page with JS runtime for visual parity', async () => {
     const thumbnail = await buildOpenUIHtmlThumbnail(input)
     const html = String(thumbnail.body)
 
@@ -38,10 +38,33 @@ describe('buildOpenUIHtmlThumbnail', () => {
     expect(html.match(/data-sf-export-page=/g)).toHaveLength(1)
     expect(html).toContain('data-sf-export-page="Home"')
     expect(html).toContain('data-rendered-page="true"')
-    expect(html).not.toContain('<script')
+    // JS runtime is included for visual parity (nav scroll effects, etc.)
+    expect(html).toContain('<script')
+    expect(html).toContain('__STATIC_SITE__')
+    // No title (thumbnails are never indexed)
     expect(html).not.toContain('<title>')
-    expect(html).not.toContain('fonts.googleapis.com')
+    // Font parity: the thumbnail includes Google Fonts links so gallery
+    // thumbnails match the dashboard preview's fonts.
+    expect(html).toContain('fonts.googleapis.com')
     expect(html).not.toContain('data-ship-fast-export-badge')
+  })
+
+  it('includes global CSS custom properties from styles/index.css for parity', async () => {
+    const thumbnail = await buildOpenUIHtmlThumbnail(input)
+    const html = String(thumbnail.body)
+
+    // The compiled Tailwind CSS has its own defaults for --ease-out and
+    // --radius-lg. The global styles/index.css :root block must be appended
+    // AFTER the compiled CSS so custom values override Tailwind defaults.
+    // This ensures nav scroll easing, radii, glass effects, etc. match the
+    // dashboard preview.
+    const easeOutMatches = html.match(/--ease-out:\s*([^;]+);/g) ?? []
+    expect(easeOutMatches.length).toBeGreaterThanOrEqual(2)
+    expect(html).toContain('--ease-out: cubic-bezier(0.22, 1, 0.36, 1)')
+    expect(html).toContain('--radius-lg: 16px')
+    expect(html).toContain('--glass-bg:')
+    expect(html).toContain('--glow:')
+    expect(html).toContain('--text-muted:')
   })
 
   it('does one render instead of full export’s page-count-plus-one renders', async () => {

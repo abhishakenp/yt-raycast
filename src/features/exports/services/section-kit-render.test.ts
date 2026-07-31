@@ -17,7 +17,7 @@ const renderSource = async (source: string) => {
     : new TextDecoder().decode(result.body)
 }
 
-const createStaticDom = (html: string) => {
+const createStaticDom = (html: string): JSDOM => {
   const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1]
   if (!script) throw new Error('Expected exported HTML to include runtime')
   const dom = new JSDOM(html.replace(/<style>[\s\S]*?<\/style>/g, ''), {
@@ -81,14 +81,16 @@ lookbook = Stack([Text("Lookbook page")])`),
     )
     await new Promise((resolve) => dom.window.setTimeout(resolve, 0))
 
-    const pages = Array.from(
+    const pages: HTMLElement[] = Array.from(
       dom.window.document.querySelectorAll('[data-sf-export-page]'),
     )
     const homePage = pages.find(
-      (page) => page.getAttribute('data-sf-export-page') === 'Home',
+      (page: HTMLElement) =>
+        page.getAttribute('data-sf-export-page') === 'Home',
     )
     const lookbookPage = pages.find(
-      (page) => page.getAttribute('data-sf-export-page') === 'Lookbook',
+      (page: HTMLElement) =>
+        page.getAttribute('data-sf-export-page') === 'Lookbook',
     )
     const trigger = dom.window.document.querySelector(
       '[aria-label="Open menu"]',
@@ -99,16 +101,20 @@ lookbook = Stack([Text("Lookbook page")])`),
 
     trigger.click()
     await new Promise((resolve) => dom.window.setTimeout(resolve, 20))
-    const drawerButton = Array.from(
-      dom.window.document.querySelectorAll('[role="dialog"] button'),
+    const drawerButton: HTMLElement | undefined = (
+      Array.from(
+        dom.window.document.querySelectorAll('[role="dialog"] button'),
+      ) as HTMLElement[]
     ).find((button) => button.textContent === 'Explore Full Lookbook')
     if (!(drawerButton instanceof dom.window.HTMLButtonElement)) {
       throw new Error('Expected static drawer to include semantic nav item')
     }
-    drawerButton.click()
+    drawerButton?.click()
     await new Promise((resolve) => dom.window.setTimeout(resolve, 20))
 
-    expect(homePage?.hasAttribute('hidden')).toBe(true)
-    expect(lookbookPage?.hasAttribute('hidden')).toBe(false)
+    expect((homePage as Element | undefined)?.hasAttribute('hidden')).toBe(true)
+    expect((lookbookPage as Element | undefined)?.hasAttribute('hidden')).toBe(
+      false,
+    )
   })
 })

@@ -5,6 +5,8 @@ import {
 } from '@openuidev/lang-core'
 import {
   loadOpenUIRuntimeLibrary,
+  parseDesignLine,
+  type DesignIntent,
   type ImageContext,
 } from '@ship-fast/blocks/runtime'
 import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
@@ -18,7 +20,10 @@ import {
   buildExportSeoBundle,
   extractDescriptionFromMarkup,
 } from './export-seo'
-import { buildCompiledTailwindCssForMarkup } from './export-tailwind-css'
+import {
+  buildCompiledTailwindCssForMarkup,
+  readAppLocalCssImports,
+} from './export-tailwind-css'
 import { buildExportFontLinkTags } from './export-theme-fonts'
 import type {
   BuiltExport,
@@ -331,6 +336,27 @@ function parseSiteSpec(
     return isPlainObjectValue(parsed) ? parsed : {}
   } catch {
     return {}
+  }
+}
+
+/**
+ * Parse the @design intent from the site-spec JSON.
+ * Mirrors `GeneratedModulePreview.tsx`'s `parseSiteSpecDesignIntent` so the
+ * SSR render path receives the same `DesignIntent` the dashboard's live
+ * `DesignSystemProvider` receives. The composition runner stores it as a
+ * serialized `@design radius:rounded-none ...` string.
+ */
+function parseSiteSpecDesignIntent(
+  siteSpecJson: string | undefined,
+): DesignIntent | null {
+  if (!siteSpecJson) return null
+  try {
+    const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
+    const design = parsed?.design
+    if (typeof design !== 'string' || !design.trim()) return null
+    return parseDesignLine(design)
+  } catch {
+    return null
   }
 }
 
@@ -1290,6 +1316,7 @@ async function renderPageHtml(
   locale: string,
   imageContext: ImageContext | null,
   brandLogo?: BrandLogoSelection | null,
+  designIntent?: DesignIntent | null,
 ): Promise<string> {
   const pageSource = jsonToOpenUI(page, library)
   const { html } = await renderOpenUIToHTMLWithTheme(
@@ -1299,6 +1326,7 @@ async function renderPageHtml(
     undefined,
     imageContext,
     brandLogo,
+    designIntent,
   )
   return html
 }
@@ -1308,12 +1336,13 @@ async function buildPagesMarkup(
   locale: string,
   imageContext: ImageContext | null,
   brandLogo?: BrandLogoSelection | null,
+  designIntent?: DesignIntent | null,
 ): Promise<string> {
   return (
     await Promise.all(
       parsed.pages.map(async (page, index) => {
         const label = parsed.routes[index] ?? `Page ${index + 1}`
-        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page, parsed.library, locale, imageContext, brandLogo)}</section>`
+        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page, parsed.library, locale, imageContext, brandLogo, designIntent)}</section>`
       }),
     )
   ).join('\n')
@@ -1335,6 +1364,7 @@ export async function buildOpenUIRenderedPreviewMarkup(
       input.locale ?? 'en',
       buildExportImageContext(input),
       input.selectedBrandLogo,
+      parseSiteSpecDesignIntent(input.siteSpecJson),
     ),
   )
 }
@@ -1351,11 +1381,17 @@ async function buildStandaloneHtmlDocument(
     resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
   const themeStyle = buildThemeStyle(themeStyles, isDark)
   const themeStylesheet = buildThemeStylesheet(themeStyles)
+  // Font parity: the dashboard injects Google Fonts via `injectThemeFonts`
+  // regardless of badge visibility. The export download path passes
+  // `includeBadge: false` for offline isolation (no external stylesheets).
+  // The gallery preview path passes `includeFonts: true` to force font links
+  // so the captured screenshot matches the dashboard's font rendering.
   const themeFontLinks =
-    input.includeBadge === false
+    input.includeBadge === false && input.includeFonts !== true
       ? ''
       : buildExportFontLinkTags(themeStyles, themeStylesheet)
   const imageContext = buildExportImageContext(input)
+  const designIntent = parseSiteSpecDesignIntent(input.siteSpecJson)
   const { cssVars } = await renderOpenUIToHTMLWithTheme(
     input.source,
     undefined,
@@ -1363,6 +1399,7 @@ async function buildStandaloneHtmlDocument(
     undefined,
     imageContext,
     input.selectedBrandLogo,
+    designIntent,
   )
   const hasPreviewMarkup = isUsablePreviewHtml(input.previewHtml)
   const pagesMarkup = hasPreviewMarkup
@@ -1373,6 +1410,7 @@ async function buildStandaloneHtmlDocument(
           locale,
           imageContext,
           input.selectedBrandLogo,
+          designIntent,
         ),
       )
   const previewMarkup = hasPreviewMarkup
@@ -1423,6 +1461,10 @@ async function buildStandaloneHtmlDocument(
   const htmlLang =
     input.locale?.trim() || seoBundle?.homeSeo?.seo.htmlLang || locale
   const htmlDirection = localeTextDirection(htmlLang)
+  // Global CSS parity: append local CSS imports (styles/index.css :root
+  // block with --ease-out, --radius-lg, --glass-bg, etc.) AFTER compiled
+  // Tailwind CSS so custom values override Tailwind @theme defaults.
+  const appLocalCss = readAppLocalCssImports()
 
   return buildHtmlExport(
     `<!doctype html>
@@ -1430,6 +1472,7 @@ async function buildStandaloneHtmlDocument(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; object-src 'none'; base-uri 'self'" />
   <title>${escapeHtml(seoBundle?.homeSeo?.seo.title ?? parsed.projectName)}</title>
   ${seoHeadMarkup}
   ${themeFontLinks}
@@ -1438,6 +1481,7 @@ ${css}
     ${themeStylesheet}
     #${rootId} { ${cssVars || ''} ${themeStyle} }
     html, body { min-height: 100%; margin: 0; background: var(--background); color: var(--foreground); }
+${appLocalCss}
   </style>
 </head>
 <body class="min-h-screen bg-background text-foreground">
@@ -1504,6 +1548,7 @@ async function buildFirstPageMarkup(
   locale: string,
   imageContext: ImageContext | null,
   brandLogo?: BrandLogoSelection | null,
+  designIntent?: DesignIntent | null,
 ): Promise<string> {
   const firstPage = parsed.pages[0]
   if (!firstPage) return ''
@@ -1513,6 +1558,7 @@ async function buildFirstPageMarkup(
     locale,
     imageContext,
     brandLogo,
+    designIntent,
   )
   return `<section data-sf-export-page="${escapeHtml(parsed.routes[0] ?? 'Home')}">${pageHtml}</section>`
 }
@@ -1580,6 +1626,7 @@ export async function buildOpenUIHtmlThumbnail(
     resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
   const themeStyle = buildThemeStyle(themeStyles, isDark)
   const imageContext = buildExportImageContext(input)
+  const designIntent = parseSiteSpecDesignIntent(input.siteSpecJson)
 
   const pagesMarkup = await rewritePreviewImageUrls(
     await buildFirstPageMarkup(
@@ -1587,6 +1634,7 @@ export async function buildOpenUIHtmlThumbnail(
       locale,
       imageContext,
       input.selectedBrandLogo,
+      designIntent,
     ),
   )
 
@@ -1602,6 +1650,22 @@ export async function buildOpenUIHtmlThumbnail(
 
   const css = await readPreviewCss(rootMarkup)
   const rootId = 'openui-root'
+  // Font parity: the dashboard injects Google Fonts via `injectThemeFonts`. The
+  // thumbnail originally skipped fonts to avoid stalling Playwright's
+  // network-idle grace window, but that caused visible font disparity between
+  // the dashboard preview and the gallery thumbnail. Use the non-blocking
+  // `media="print" onload="this.media='all'"` pattern so fonts load without
+  // blocking the capture's network-idle wait.
+  const themeFontLinks = buildExportFontLinkTags(themeStyles, css)
+  const routes = [parsed.routes[0] ?? 'Home']
+  // Global CSS parity: the dashboard loads src/styles.css which imports
+  // styles/index.css, defining :root custom properties (--ease-out,
+  // --radius-lg, --glass-bg, --glow, --text-muted, etc.). The compiled
+  // Tailwind CSS overrides these with its own @theme defaults. Appending
+  // the local CSS imports AFTER the compiled CSS restores the custom values
+  // so the thumbnail matches the dashboard's nav scroll easing, radii,
+  // glass effects, and other design-token-driven styling.
+  const appLocalCss = readAppLocalCssImports()
 
   return {
     body: buildHtmlExport(
@@ -1610,14 +1674,22 @@ export async function buildOpenUIHtmlThumbnail(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; object-src 'none'; base-uri 'self'" />
+  ${themeFontLinks}
   <style>
 ${css}
     #${rootId} { ${themeStyle} }
     html, body { min-height: 100%; margin: 0; background: var(--background); color: var(--foreground); }
+${appLocalCss}
   </style>
 </head>
 <body class="min-h-screen bg-background text-foreground">
   ${rootMarkup}
+  <script>
+    window.__STATIC_SITE__ = ${stringifyJs({ routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};
+    ${buildThemeRuntime(themeStyles, isDark, rootId)}
+    ${buildInteractionRuntime(staticUiMessages(locale), input.sessionId)}
+  </script>
 </body>
 </html>`,
       { includeBadge: false },

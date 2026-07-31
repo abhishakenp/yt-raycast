@@ -400,7 +400,7 @@ describe('Dashboard missing session state', () => {
     })
   })
 
-  it('remembers ready public default sessions for fast repeated prompt opens', async () => {
+  it('does not persist the prompt to localStorage for ready public sessions', async () => {
     getConvexState().generationView = {
       session: {
         sessionId: 'ready-cache-session',
@@ -424,10 +424,16 @@ describe('Dashboard missing session state', () => {
     render(<Dashboard sessionId="ready-cache-session" />)
 
     await waitFor(() => {
-      expect(window.localStorage.getItem('ship-fast:last-prompt')).toContain(
-        'A remembered cache website',
+      expect(document.querySelector('#dashboard-wrap')?.className).toContain(
+        'opacity-100',
       )
     })
+    // The Dashboard must NOT write the prompt to localStorage — the home
+    // page's unified prompt-session cache is cleared on Generate, and
+    // re-writing here would cause the old prompt to reappear on Back.
+    expect(
+      window.localStorage.getItem('ship-fast:prompt-session-cache'),
+    ).toBeNull()
   })
 
   it('does not remember private ready sessions in the public prompt cache', async () => {

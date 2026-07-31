@@ -12,6 +12,7 @@ import { PreviewUrlBridgeContext } from '#/lib/preview-url-bridge.tsx'
 
 const DEFAULT_ROUTES_CONTEXT: RoutesContextValue = {
   routes: [],
+  pageIds: [],
   currentPage: '',
   setCurrentPage: () => {},
   pendingSectionId: null,

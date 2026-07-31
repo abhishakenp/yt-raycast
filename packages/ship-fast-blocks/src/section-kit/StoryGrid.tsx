@@ -38,7 +38,8 @@ const StoryGrid = React.forwardRef<
   return (
     <Comp
       data-slot="story-grid-section"
-      data-d-role="section"className={cn(storyGridVariants({ variant }), className)}
+      data-d-role="section"
+      className={cn(storyGridVariants({ variant }), className)}
       ref={ref}
       {...props}
     />

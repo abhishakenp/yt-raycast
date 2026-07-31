@@ -6,7 +6,7 @@ import {
   type CompositionSection,
   type DslNode,
 } from './composition-parser.ts'
-import { argTypeTree, parseTypeTree } from './openui-signature.ts'
+import { parseTypeTree } from './openui-signature.ts'
 import { DEFAULT_DESIGN } from '../../../ship-fast-blocks/src/primitives/design-system.ts'
 
 describe('parseComposition', () => {
@@ -245,6 +245,7 @@ describe('sectionToProps — type-driven mapping', () => {
       motif: 'SplitHero',
       props: { heading: 'Hello', primaryCta: 'Start' },
       nested: {},
+      page: 'home',
       line: 1,
     }
     const props = sectionToProps(section)
@@ -259,6 +260,7 @@ describe('sectionToProps — type-driven mapping', () => {
       nested: {
         stats: { fields: ['120+', 'Projects', '45', 'Awards'] },
       },
+      page: 'home',
       line: 1,
     }
     const props = sectionToProps(section)
@@ -282,6 +284,7 @@ describe('sectionToProps — type-driven mapping', () => {
           ],
         },
       },
+      page: 'home',
       line: 1,
     }
     const props = sectionToProps(section)
@@ -317,6 +320,7 @@ describe('sectionToProps — type-driven mapping', () => {
           },
         },
       },
+      page: 'home',
       line: 1,
     }
     const props = sectionToProps(section)
@@ -355,6 +359,7 @@ describe('sectionToProps — type-driven mapping', () => {
           ],
         },
       },
+      page: 'home',
       line: 1,
     }
     const props = sectionToProps(section)
@@ -385,6 +390,7 @@ describe('sectionToProps — type-driven mapping', () => {
           fields: ['Pages', 'Home, Menu, About', 'Company', 'About, Contact'],
         },
       },
+      page: 'home',
       line: 1,
     }
     const props = sectionToProps(section)
@@ -399,6 +405,7 @@ describe('sectionToProps — type-driven mapping', () => {
       motif: 'CardGrid',
       props: {},
       nested: {},
+      page: 'home',
       line: 1,
       design: { ...DEFAULT_DESIGN, radius: 'sharp' },
     }
@@ -413,6 +420,7 @@ describe('sectionToProps — type-driven mapping', () => {
       nested: {
         unknownGroup: { fields: ['a', 'b', 'c'] },
       },
+      page: 'home',
       line: 1,
     }
     const props = sectionToProps(section)

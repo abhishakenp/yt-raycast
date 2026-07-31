@@ -18,7 +18,8 @@ const MusicList = React.forwardRef<
   return (
     <Comp
       data-slot="music-list"
-      data-d-role="list"className={cn(MusicListVariants({}), className)}
+      data-d-role="list"
+      className={cn(MusicListVariants({}), className)}
       ref={ref}
       {...props}
     />
@@ -34,7 +35,8 @@ const MusicItem = React.forwardRef<
   return (
     <Comp
       data-slot="music-list-item"
-      data-d-role="list"className={cn('flex flex-col', className)}
+      data-d-role="list"
+      className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />

@@ -210,7 +210,7 @@ describe('verifyBuildBundles', () => {
     writeAsset(
       root,
       '.output/public/assets/openui-capsule-index-test.js',
-      'x'.repeat(19 * 1024 * 1024),
+      'x'.repeat(17 * 1024 * 1024),
     )
 
     expect(() => verifyBuildBundles(root)).not.toThrow()

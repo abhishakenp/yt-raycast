@@ -17,7 +17,8 @@ const PressList = React.forwardRef<
   return (
     <Comp
       data-slot="press-list"
-      data-d-role="list"className={cn('flex flex-col', className)}
+      data-d-role="list"
+      className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />
@@ -33,7 +34,8 @@ const PressItem = React.forwardRef<
   return (
     <Comp
       data-slot="press-item"
-      data-d-role="card"className={cn('flex flex-col', className)}
+      data-d-role="card"
+      className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />

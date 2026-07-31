@@ -6,7 +6,13 @@
  * Usage:
  *   bun scripts/bench-quality-comparison.mjs "your prompt here"
  */
-import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync } from 'node:fs'
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  readFileSync,
+  mkdirSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -25,7 +31,9 @@ const MODELS = [
 const { runComposition } = await import('@ship-fast/engine')
 
 const outDir = join(process.cwd(), '.forge', 'model-comparison')
-try { mkdirSync(outDir, { recursive: true }) } catch {}
+try {
+  mkdirSync(outDir, { recursive: true })
+} catch {}
 
 function makeSessionCtx(id) {
   return {
@@ -59,25 +67,40 @@ for (const model of MODELS) {
 
   if (error) {
     console.log(`  ${model}: FAIL (${wallMs}ms) — ${error.message}`)
-    try { rmSync(workspace, { recursive: true, force: true }) } catch {}
+    try {
+      rmSync(workspace, { recursive: true, force: true })
+    } catch {}
     continue
   }
 
   // Save raw + source
   const modelDir = join(outDir, slug)
-  try { mkdirSync(modelDir, { recursive: true }) } catch {}
+  try {
+    mkdirSync(modelDir, { recursive: true })
+  } catch {}
   writeFileSync(join(modelDir, 'raw.txt'), result.raw || '')
   writeFileSync(join(modelDir, 'home.openui'), result.source || '')
-  writeFileSync(join(modelDir, 'meta.json'), JSON.stringify({
-    model, wallMs, prompt,
-    sectionCount: (result.raw || '').match(/@section/g)?.length || 0,
-    pageCount: ((result.raw || '').match(/@page/g)?.length || 0) + 1,
-    sourceChars: result.source?.length || 0,
-    hasReasoningBlock: (result.raw || '').includes('<reasoning>'),
-  }, null, 2))
+  writeFileSync(
+    join(modelDir, 'meta.json'),
+    JSON.stringify(
+      {
+        model,
+        wallMs,
+        prompt,
+        sectionCount: (result.raw || '').match(/@section/g)?.length || 0,
+        pageCount: ((result.raw || '').match(/@page/g)?.length || 0) + 1,
+        sourceChars: result.source?.length || 0,
+        hasReasoningBlock: (result.raw || '').includes('<reasoning>'),
+      },
+      null,
+      2,
+    ),
+  )
 
   console.log(`  ${model}: ${wallMs}ms — saved to ${modelDir}`)
-  try { rmSync(workspace, { recursive: true, force: true }) } catch {}
+  try {
+    rmSync(workspace, { recursive: true, force: true })
+  } catch {}
 }
 
 console.log(`\nDone. Compare outputs in ${outDir}/`)

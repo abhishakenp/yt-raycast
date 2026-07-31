@@ -11,7 +11,7 @@
  */
 import OpenAI from 'openai'
 import { OpenAIBaseChatCompletionsTextAdapter } from '@tanstack/openai-base'
-import type { Modality, TextOptions } from '@tanstack/ai'
+import type { Modality } from '@tanstack/ai'
 
 const CEREBRAS_BASE_URL = 'https://api.cerebras.ai/v1'
 

@@ -3,10 +3,11 @@
 // The SSR HTML is used for gallery/preview rendering; the DOM JS is shipped to
 // the browser for client-side interactivity (Svelte island pattern).
 
-import { writeFileSync, unlinkSync, existsSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { tmpdir } from 'node:os'
+import { writeFileSync, unlinkSync } from 'node:fs'
+import { join } from 'node:path'
 import { randomBytes } from 'node:crypto'
+
+import { validateSvelteAst } from './svelte-ast-validator'
 
 /** Result of a successful Svelte compilation. */
 export interface CompiledSvelte {
@@ -51,7 +52,8 @@ const XSS_PATTERNS: Array<{ re: RegExp; message: string }> = [
   {
     // Inline HTML event handlers (onclick=, onerror=) — NOT Svelte's on:click
     re: /\bon(click|error|load|mouseover|submit|change|input|focus|blur|mouseout|keyup|keydown|keypress)\s*=/i,
-    message: 'Inline event handlers (on*) are blocked — use Svelte on: directives instead.',
+    message:
+      'Inline event handlers (on*) are blocked — use Svelte on: directives instead.',
   },
   {
     re: /javascript:/i,
@@ -69,16 +71,91 @@ const XSS_PATTERNS: Array<{ re: RegExp; message: string }> = [
   },
   {
     re: /document\.(cookie|domain|write)|window\.(location|open)|eval\(|Function\(/,
-    message: 'DOM access to sensitive APIs (document.cookie, eval, etc.) is blocked.',
+    message:
+      'DOM access to sensitive APIs (document.cookie, eval, etc.) is blocked.',
+  },
+  // Obfuscation-resistant patterns: catch string-concatenation bypasses
+  {
+    re: /document\s*\[\s*['"](cookie|domain|write)['"]\s*\]/i,
+    message: 'Obfuscated document[...] access is blocked.',
+  },
+  {
+    re: /window\s*\[\s*['"](location|open)['"]\s*\]/i,
+    message: 'Obfuscated window[...] access is blocked.',
+  },
+  {
+    re: /\beval\s*\(|Function\s*\(/,
+    message: 'eval() and Function() are blocked — they execute arbitrary code.',
+  },
+  {
+    re: /document\.createElement\s*\(\s*['"]script['"]/i,
+    message: 'document.createElement("script") is blocked.',
+  },
+  {
+    re: /document\.createElement\s*\(\s*['"]iframe['"]/i,
+    message: 'document.createElement("iframe") is blocked.',
+  },
+  {
+    re: /\.innerHTML\s*=/,
+    message:
+      '.innerHTML assignment is blocked — use Svelte reactivity instead.',
+  },
+  {
+    re: /\.outerHTML\s*=/,
+    message: '.outerHTML assignment is blocked.',
+  },
+  {
+    re: /insertAdjacentHTML\s*\(/,
+    message: 'insertAdjacentHTML() is blocked.',
+  },
+  {
+    re: /document\.write\s*\(/,
+    message: 'document.write() is blocked.',
+  },
+  {
+    re: /import\s*\(/,
+    message:
+      'Dynamic import() is blocked in Svelte components — use static imports.',
+  },
+  {
+    re: /require\s*\(/,
+    message: 'require() is blocked in Svelte components.',
+  },
+  {
+    re: /fetch\s*\(/,
+    message:
+      'fetch() is blocked in Svelte components — data fetching must happen outside the preview.',
+  },
+  {
+    re: /XMLHttpRequest/,
+    message: 'XMLHttpRequest is blocked in Svelte components.',
+  },
+  {
+    re: /WebSocket/,
+    message: 'WebSocket is blocked in Svelte components.',
+  },
+  {
+    re: /navigator\.(sendBeacon|geolocation|mediaDevices)/,
+    message: 'Sensitive navigator APIs are blocked in Svelte components.',
+  },
+  {
+    re: /window\.postMessage|document\.postMessage/,
+    message: 'postMessage is blocked in Svelte components.',
   },
 ]
 
 /** Validate Svelte source by attempting to compile it.
  *  Returns structured errors/warnings without evaluating the output.
- *  Also blocks XSS patterns that the Svelte compiler doesn't catch. */
+ *  Also blocks XSS patterns that the Svelte compiler doesn't catch.
+ *
+ *  Two layers of defense:
+ *  1. Regex-based XSS_PATTERNS — catches common patterns in source text
+ *  2. AST-based validation — walks the Svelte compiler's ESTree AST to
+ *     detect dangerous patterns structurally (impossible to bypass with
+ *     obfuscation, string concatenation, or unicode escapes)
+ */
 export function validateSvelteSource(source: string): SvelteValidationResult {
-  // Pre-compilation XSS check — the Svelte compiler only catches syntax errors,
-  // not security issues like {@html}, inline event handlers, or javascript: URIs.
+  // Layer 1: Pre-compilation regex check — catches common patterns quickly.
   const errors: string[] = []
   const warnings: string[] = []
   for (const { re, message } of XSS_PATTERNS) {
@@ -98,6 +175,15 @@ export function validateSvelteSource(source: string): SvelteValidationResult {
       })
       for (const w of result.warnings ?? []) {
         warnings.push((w as { message?: string }).message ?? String(w))
+      }
+
+      // Layer 2: AST-based validation — walks the compiled AST to detect
+      // dangerous patterns structurally. This catches obfuscated patterns
+      // that regex can miss (e.g., window["lo"+"cation"] resolves to a
+      // MemberExpression with object=window, property=location in the AST).
+      const astResult = validateSvelteAst(result.ast)
+      if (!astResult.valid) {
+        errors.push(...astResult.errors)
       }
     } catch (err: unknown) {
       const svelteErr = err as { message?: string; code?: string }
@@ -119,6 +205,16 @@ export async function compileSvelteBlock(
   source: string,
   roleName: string,
 ): Promise<CompiledSvelte> {
+  // Defense-in-depth: validate XSS patterns before compiling, even though
+  // composition-runner.ts also validates. This prevents direct callers from
+  // bypassing the security check.
+  const validation = validateSvelteSource(source)
+  if (!validation.valid) {
+    throw new Error(
+      `Svelte block "${roleName}" failed XSS validation: ${validation.errors.join('; ')}`,
+    )
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { compile } = require('svelte/compiler')
   const componentName = pascalCase(roleName) || 'SvelteBlock'
@@ -143,12 +239,59 @@ export async function compileSvelteBlock(
   const ssrHtml = await evaluateSsrModule(ssrResult.js.code)
   const css = domResult.css?.code ?? ssrResult.css?.code ?? ''
 
+  // Post-compilation sanitization: strip any script tags, event handlers,
+  // or javascript: URIs from the rendered SSR HTML. The Svelte compiler
+  // should already escape text content, but defense-in-depth against
+  // LLM-generated components that might embed dangerous markup via
+  // template expressions or computed attributes.
+  const sanitizedSsrHtml = sanitizeSsrHtml(ssrHtml)
+
   return {
-    ssrHtml,
+    ssrHtml: sanitizedSsrHtml,
     domJs: domResult.js.code,
     css,
     warnings,
   }
+}
+
+/**
+ * Sanitize Svelte SSR HTML output — strip script tags, inline event handlers,
+ * javascript: URIs, and other XSS vectors that could have been introduced
+ * through template expressions or computed attribute values.
+ */
+function sanitizeSsrHtml(html: string): string {
+  if (!html || typeof html !== 'string') return ''
+  let result = html
+
+  // Remove any <script> tags and their content
+  result = result.replace(/<script[\s\S]*?<\/script>/gi, '')
+
+  // Remove inline event handler attributes (on*=)
+  result = result.replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+  result = result.replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+  result = result.replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
+
+  // Remove javascript: URIs in href, src, xlink:href
+  result = result.replace(
+    /((?:xlink:)?href|src)\s*=\s*"[^"]*javascript:[^"]*"/gi,
+    '',
+  )
+  result = result.replace(
+    /((?:xlink:)?href|src)\s*=\s*'[^']*javascript:[^']*'/gi,
+    '',
+  )
+
+  // Remove data:text/html URIs
+  result = result.replace(
+    /((?:xlink:)?href|src)\s*=\s*"[^"]*data:text\/html[^"]*"/gi,
+    '',
+  )
+
+  // Remove <iframe> tags
+  result = result.replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+  result = result.replace(/<iframe[^>]*>/gi, '')
+
+  return result
 }
 
 /** Evaluate a compiled Svelte SSR module and call its render() to get HTML.

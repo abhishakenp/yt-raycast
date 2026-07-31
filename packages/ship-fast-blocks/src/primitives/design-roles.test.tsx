@@ -8,10 +8,7 @@ import {
   useDesignIntent,
   useDesignCompositional,
 } from './design-context.tsx'
-import {
-  resolveDesign,
-  DEFAULT_DESIGN,
-} from './design-system.ts'
+import { resolveDesign, DEFAULT_DESIGN } from './design-system.ts'
 import {
   Button,
   Card,
@@ -21,6 +18,7 @@ import {
   ImageBlock,
   Navbar,
 } from './index.tsx'
+import { Container } from '../section-kit/Container.tsx'
 
 afterEach(cleanup)
 
@@ -63,10 +61,14 @@ describe('resolveDesign (deprecated — CSS handles styling now)', () => {
   it('useDesign returns the empty DesignClasses shape', () => {
     function Probe() {
       const d = useDesign()
-      return <div data-testid="probe" data-radius-btn={d.radius.btn ?? 'empty'} />
+      return (
+        <div data-testid="probe" data-radius-btn={d.radius.btn ?? 'empty'} />
+      )
     }
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}
+      >
         <Probe />
       </DesignSystemProvider>,
     )
@@ -141,7 +143,9 @@ describe('DesignSystemProvider — data attributes for named-concept presets', (
 
   it('does NOT set data-radius when radius is a Tailwind class', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}
+      >
         <div>test</div>
       </DesignSystemProvider>,
     )
@@ -185,7 +189,9 @@ describe('DesignSystemProvider — data attributes for named-concept presets', (
 describe('DesignSystemProvider — inline CSS custom properties for Tailwind axes', () => {
   it('sets --d-radius global var for Tailwind class values', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}
+      >
         <div>test</div>
       </DesignSystemProvider>,
     )
@@ -207,7 +213,10 @@ describe('DesignSystemProvider — inline CSS custom properties for Tailwind axe
   it('sets --d-shadow global var for arbitrary shadow values', () => {
     const { container } = render(
       <DesignSystemProvider
-        intent={{ ...DEFAULT_DESIGN, shadow: 'shadow-[4px_4px_0_0_rgba(0,0,0,0.1)]' }}
+        intent={{
+          ...DEFAULT_DESIGN,
+          shadow: 'shadow-[4px_4px_0_0_rgba(0,0,0,0.1)]',
+        }}
       >
         <div>test</div>
       </DesignSystemProvider>,
@@ -220,7 +229,9 @@ describe('DesignSystemProvider — inline CSS custom properties for Tailwind axe
 
   it('sets --d-tracking global var for Tailwind class tracking values', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, tracking: 'tracking-wide' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, tracking: 'tracking-wide' }}
+      >
         <div>test</div>
       </DesignSystemProvider>,
     )
@@ -230,7 +241,9 @@ describe('DesignSystemProvider — inline CSS custom properties for Tailwind axe
 
   it('sets --d-weight global var for Tailwind class weight values', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, weight: 'font-black' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, weight: 'font-black' }}
+      >
         <div>test</div>
       </DesignSystemProvider>,
     )
@@ -248,9 +261,28 @@ describe('DesignSystemProvider — inline CSS custom properties for Tailwind axe
     expect(wrapper.style.getPropertyValue('--d-border')).toBe('4px')
   })
 
+  it('does NOT set --d-border when border axis is unset (lets Tailwind classes win via d-border-lock)', () => {
+    // Regression: design-presets.css [data-d-role="card"] overrides border-width
+    // via var(--d-border, 0px). When --d-border is unset, this strips Tailwind
+    // border classes. The fix is d-border-lock on chrome-driven cards (tested
+    // in chrome.behavioral.test.tsx). This test verifies the JS precondition:
+    // the provider does NOT set --d-border when the border axis is absent from
+    // the design intent, so the 0px fallback is what the CSS rule resolves to.
+    const { container } = render(
+      <DesignSystemProvider intent={DEFAULT_DESIGN}>
+        <Card className="border-2 border-foreground">card</Card>
+      </DesignSystemProvider>,
+    )
+    const providerWrapper = container.firstElementChild as HTMLElement
+    expect(providerWrapper.style.getPropertyValue('--d-border')).toBe('')
+    expect(providerWrapper.style.getPropertyValue('--d-border-card')).toBe('')
+  })
+
   it('sets --d-opacity global var for Tailwind class opacity values', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, opacity: 'opacity-20' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, opacity: 'opacity-20' }}
+      >
         <div>test</div>
       </DesignSystemProvider>,
     )
@@ -260,7 +292,9 @@ describe('DesignSystemProvider — inline CSS custom properties for Tailwind axe
 
   it('sets --d-image global var for arbitrary image filter values', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, image: '[sepia(0.5)]' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, image: '[sepia(0.5)]' }}
+      >
         <div>test</div>
       </DesignSystemProvider>,
     )
@@ -383,7 +417,9 @@ describe('per-role overrides — intent.roles sets --d-{axis}-{role}', () => {
 describe('lock classes — CSS handles them, no JS-generated CSS', () => {
   it('provider does NOT inject a <style> tag', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}
+      >
         <div>test</div>
       </DesignSystemProvider>,
     )
@@ -392,7 +428,9 @@ describe('lock classes — CSS handles them, no JS-generated CSS', () => {
 
   it('provider does NOT inject a <style> tag for non-preset values', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}
+      >
         <div>test</div>
       </DesignSystemProvider>,
     )
@@ -471,7 +509,11 @@ describe('useDesignIntent — raw intent access', () => {
     }
     const { container } = render(
       <DesignSystemProvider
-        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl', shadow: 'shadow-[4px_4px_0_0]' }}
+        intent={{
+          ...DEFAULT_DESIGN,
+          radius: 'rounded-xl',
+          shadow: 'shadow-[4px_4px_0_0]',
+        }}
       >
         <Probe />
       </DesignSystemProvider>,
@@ -764,6 +806,34 @@ describe('primitives render with data-d-role', () => {
     )
     expect(container.querySelector('[data-d-role="nav"]')).toBeTruthy()
   })
+
+  it('Container does not inherit global --d-shadow (no brutalist strip on layout wrappers)', () => {
+    // Regression: design-presets.css [data-d-role="container"] used to fall
+    // back to var(--d-shadow, none), stamping a brutalist 4px 4px hard shadow
+    // onto every section's content container ("white strips"). The rule now
+    // falls back to `none` — only an explicit --d-shadow-container override
+    // applies. Assert the per-role var is unset so the CSS fallback wins.
+    const { container } = render(
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, shadow: 'shadow-[4px_4px_0_0]' }}
+      >
+        <Container>inside</Container>
+      </DesignSystemProvider>,
+    )
+    const providerWrapper = container.firstElementChild as HTMLElement
+    // Global brutalist shadow IS set on the provider
+    expect(providerWrapper.style.getPropertyValue('--d-shadow')).toBe(
+      '4px 4px 0 0',
+    )
+    // Container element does NOT get a per-role shadow override
+    const containerEl = container.querySelector('[data-d-role="container"]')
+    expect(containerEl).toBeTruthy()
+    expect(
+      (containerEl as HTMLElement).style.getPropertyValue(
+        '--d-shadow-container',
+      ),
+    ).toBe('')
+  })
 })
 
 // ─── DesignOverride cascade — CSS vars on nested wrappers ──────────────────
@@ -771,7 +841,9 @@ describe('primitives render with data-d-role', () => {
 describe('DesignOverride — nested wrapper CSS custom properties', () => {
   it('nested DesignOverride sets merged --d-radius on inner wrapper', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl' }}
+      >
         <DesignOverride override={{ radius: 'rounded-none' }}>
           <div>inner</div>
         </DesignOverride>
@@ -780,14 +852,22 @@ describe('DesignOverride — nested wrapper CSS custom properties', () => {
     // Both wrappers have --d-radius CSS var
     const wrappers = container.querySelectorAll('[style*="--d-radius"]')
     expect(wrappers.length).toBe(2)
-    expect((wrappers[0] as HTMLElement).style.getPropertyValue('--d-radius')).toBe('0.75rem')
-    expect((wrappers[1] as HTMLElement).style.getPropertyValue('--d-radius')).toBe('0px')
+    expect(
+      (wrappers[0] as HTMLElement).style.getPropertyValue('--d-radius'),
+    ).toBe('0.75rem')
+    expect(
+      (wrappers[1] as HTMLElement).style.getPropertyValue('--d-radius'),
+    ).toBe('0px')
   })
 
   it('nested DesignOverride inherits unspecified axes from parent', () => {
     const { container } = render(
       <DesignSystemProvider
-        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-xl', shadow: 'shadow-lg' }}
+        intent={{
+          ...DEFAULT_DESIGN,
+          radius: 'rounded-xl',
+          shadow: 'shadow-lg',
+        }}
       >
         <DesignOverride override={{ radius: 'rounded-full' }}>
           <div>inner</div>
@@ -804,7 +884,9 @@ describe('DesignOverride — nested wrapper CSS custom properties', () => {
 
   it('nested DesignOverride with Tailwind value sets CSS var on inner wrapper', () => {
     const { container } = render(
-      <DesignSystemProvider intent={{ ...DEFAULT_DESIGN, radius: 'rounded-none' }}>
+      <DesignSystemProvider
+        intent={{ ...DEFAULT_DESIGN, radius: 'rounded-none' }}
+      >
         <DesignOverride override={{ radius: 'rounded-xl' }}>
           <div>inner</div>
         </DesignOverride>
@@ -814,6 +896,8 @@ describe('DesignOverride — nested wrapper CSS custom properties', () => {
     // Inner wrapper has --d-radius: 0.75rem
     const wrappers = container.querySelectorAll('[style*="--d-radius"]')
     expect(wrappers.length).toBe(2)
-    expect((wrappers[1] as HTMLElement).style.getPropertyValue('--d-radius')).toBe('0.75rem')
+    expect(
+      (wrappers[1] as HTMLElement).style.getPropertyValue('--d-radius'),
+    ).toBe('0.75rem')
   })
 })

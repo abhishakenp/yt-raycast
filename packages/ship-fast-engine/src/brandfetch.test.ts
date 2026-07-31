@@ -236,4 +236,35 @@ describe('Brandfetch logo materialization', () => {
     expect(result.svg).toContain('Acme &lt;script&gt;')
     expect(result.svg).not.toContain('Acme <script>')
   })
+
+  it.each([
+    ['AWS metadata endpoint', 'http://169.254.169.254/latest/meta-data/'],
+    ['localhost', 'http://localhost:8080/logo.png'],
+    ['private IPv4', 'https://10.0.0.1/logo.png'],
+    ['private IPv4 192.168', 'https://192.168.1.1/logo.png'],
+    ['private IPv4 172.16', 'https://172.16.0.1/logo.png'],
+    ['non-HTTP scheme', 'file:///etc/passwd'],
+    ['HTTP (not HTTPS)', 'http://example.com/logo.png'],
+  ])('blocks SSRF attempt: %s', async (_label, src) => {
+    const fetchSpy = vi.fn()
+    globalThis.fetch = fetchSpy as unknown as typeof fetch
+
+    const result = await materializeBrandfetchLogoToWorkspace(
+      makeWorkspace(),
+      {
+        kind: 'remote',
+        src,
+        alt: 'Test',
+        provider: 'brandfetch',
+        confidence: 0.9,
+      },
+      { timeoutMs: 1000 },
+    )
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      kind: 'svg',
+      provider: 'brandfetch-fallback',
+    })
+  })
 })

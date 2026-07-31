@@ -112,8 +112,8 @@ export default defineEventHandler((event) => {
   // event.path and downstream handlers see the internal route.
   const newPath = `/deployed/${slug}${rest}`
   const newUrl = new URL(newPath + query, event.url.origin)
-  event.url = newUrl
+  ;(event as { url: URL }).url = newUrl
   // Also update req.url so any code reading the raw request URL sees the
   // rewritten path.
-  event.req.url = newPath + query
+  ;(event.req as { url: string }).url = newPath + query
 })

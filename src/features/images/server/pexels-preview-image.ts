@@ -140,7 +140,7 @@ async function searchPexels(
   seed: string,
   deps: PreviewImageDeps,
 ): Promise<string | null> {
-  const pexelsApiKey = readEnv(deps, 'PEXELS_API_KEY', 'VITE_PEXELS_API_KEY')
+  const pexelsApiKey = readEnv(deps, 'PEXELS_API_KEY')
   if (!pexelsApiKey) return null
   const orientation = orientationFromSize(w, h)
   const runtimeFetch = deps.fetch ?? fetch
@@ -200,11 +200,7 @@ async function searchUnsplash(
   seed: string,
   deps: PreviewImageDeps,
 ): Promise<string | null> {
-  const unsplashAccessKey = readEnv(
-    deps,
-    'UNSPLASH_ACCESS_KEY',
-    'VITE_UNSPLASH_ACCESS_KEY',
-  )
+  const unsplashAccessKey = readEnv(deps, 'UNSPLASH_ACCESS_KEY')
   if (!unsplashAccessKey) return null
   const orientation = orientationFromSize(w, h)
   const runtimeFetch = deps.fetch ?? fetch

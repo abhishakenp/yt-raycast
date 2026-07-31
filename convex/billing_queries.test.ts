@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import { convexTest } from 'convex-test'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { api, internal } from './_generated/api'
 import schema from './schema'
@@ -9,6 +9,7 @@ import schema from './schema'
 const modules = import.meta.glob('./**/*.ts')
 
 const ISSUER = 'https://clerk.test'
+const BILLING_SECRET = 'billing-secret'
 
 function asUser(t: ReturnType<typeof convexTest>, userId: string) {
   return t.withIdentity({
@@ -124,6 +125,7 @@ describe('billing read and internal mutation contracts', () => {
   it.each(['active', 'trialing', 'authenticated'] as const)(
     'treats %s subscriptions as active',
     async (status) => {
+      vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', BILLING_SECRET)
       const t = convexTest(schema, modules)
       const userId = `active-${status}`
 
@@ -133,7 +135,10 @@ describe('billing read and internal mutation contracts', () => {
       )
 
       await expect(
-        t.query(api.billing.hasActiveSubscription, { userId }),
+        t.query(api.billing.hasActiveSubscription, {
+          userId,
+          secret: BILLING_SECRET,
+        }),
       ).resolves.toBe(true)
     },
   )
@@ -141,6 +146,7 @@ describe('billing read and internal mutation contracts', () => {
   it.each(['past_due', 'cancelled'] as const)(
     'does not grant subscription access for %s subscriptions',
     async (status) => {
+      vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', BILLING_SECRET)
       const t = convexTest(schema, modules)
       const userId = `inactive-${status}`
 
@@ -150,7 +156,10 @@ describe('billing read and internal mutation contracts', () => {
       )
 
       await expect(
-        t.query(api.billing.hasActiveSubscription, { userId }),
+        t.query(api.billing.hasActiveSubscription, {
+          userId,
+          secret: BILLING_SECRET,
+        }),
       ).resolves.toBe(false)
     },
   )
@@ -223,6 +232,7 @@ describe('billing read and internal mutation contracts', () => {
   })
 
   it('finds an active subscription after more than twenty older inactive rows', async () => {
+    vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', BILLING_SECRET)
     const t = convexTest(schema, modules)
     const userId = 'long-subscription-history-user'
 
@@ -238,7 +248,10 @@ describe('billing read and internal mutation contracts', () => {
     )
 
     await expect(
-      t.query(api.billing.hasActiveSubscription, { userId }),
+      t.query(api.billing.hasActiveSubscription, {
+        userId,
+        secret: BILLING_SECRET,
+      }),
     ).resolves.toBe(true)
   })
 })

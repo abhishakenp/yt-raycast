@@ -90,15 +90,17 @@ describe('ServicesGrid', () => {
     let ref: HTMLElement | null = null
     render(
       <ServicesGrid
-        ref={(r) => {
-          ref = r
-        }}
+        ref={
+          ((r: unknown) => {
+            ref = r as HTMLElement | null
+          }) as never
+        }
       >
         x
       </ServicesGrid>,
     )
     expect(ref).not.toBeNull()
-    expect(ref?.tagName).toBe('SECTION')
+    expect((ref as HTMLElement | null)?.tagName).toBe('SECTION')
   })
 })
 

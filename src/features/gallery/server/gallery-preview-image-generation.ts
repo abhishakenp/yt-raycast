@@ -85,8 +85,31 @@ export const captureGalleryPreviewPng = async (
       timeout: 8_000,
       waitUntil: 'domcontentloaded',
     })
+    // Wait for network idle (fonts, stylesheets) with a generous timeout.
     await page
-      .waitForLoadState('networkidle', { timeout: 2_000 })
+      .waitForLoadState('networkidle', { timeout: 5_000 })
+      .catch(() => undefined)
+    // Explicitly wait for every <img> to finish loading so the screenshot
+    // captures real Pexels/Unsplash photos, not broken/empty placeholders.
+    // The networkidle grace above may fire before large hero images finish.
+    await page
+      .evaluate(async () => {
+        const images = Array.from(document.querySelectorAll('img'))
+        await Promise.all(
+          images.map((img) =>
+            img.complete
+              ? Promise.resolve()
+              : new Promise<void>((resolve) => {
+                  img.addEventListener('load', () => resolve(), {
+                    once: true,
+                  })
+                  img.addEventListener('error', () => resolve(), {
+                    once: true,
+                  })
+                }),
+          ),
+        )
+      })
       .catch(() => undefined)
     return new Uint8Array(
       await page.screenshot({

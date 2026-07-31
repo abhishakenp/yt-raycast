@@ -75,8 +75,18 @@ const CHROMES = [
 const RHYTHMS = ['dense', 'airy', 'alternating', 'cinematic'] as const
 
 // Tailwind axes — store Tailwind classes directly, no invented vocabulary
-const RADII = ['rounded-none', 'rounded-lg', 'rounded-xl', 'rounded-full'] as const
-const SHADOWS = ['shadow-none', 'shadow-sm', 'shadow-[4px_4px_0_0]', 'shadow-[8px_8px_0_0]'] as const
+const RADII = [
+  'rounded-none',
+  'rounded-lg',
+  'rounded-xl',
+  'rounded-full',
+] as const
+const SHADOWS = [
+  'shadow-none',
+  'shadow-sm',
+  'shadow-[4px_4px_0_0]',
+  'shadow-[8px_8px_0_0]',
+] as const
 // Named-concept axes — keep presets (no Tailwind equivalent)
 const GRADIENTS = ['none', 'subtle', 'vibrant'] as const
 const DENSITIES = ['compact', 'balanced', 'airy'] as const

@@ -2,7 +2,7 @@ import { api } from '../../../../convex/_generated/api'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import type { PublicGallerySession } from '../../../../convex/lib/session_gallery_helpers'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
-import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export-builder'
+import { buildOpenUIHtmlThumbnail } from '../../exports/services/openui-html-export-builder'
 
 /**
  * Serve a public session's preview as a standalone HTML document.
@@ -30,7 +30,7 @@ export async function createSessionPreviewRawResponse(
       return new Response('Preview not found or not public', { status: 404 })
     }
 
-    const rendered = await buildOpenUIHtmlExport({
+    const rendered = await buildOpenUIHtmlThumbnail({
       source: moduleSource,
       previewHtml: undefined,
       prompt: session.prompt ?? undefined,
@@ -59,6 +59,9 @@ export async function createSessionPreviewRawResponse(
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, max-age=300',
         'X-Robots-Tag': 'noindex',
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Content-Security-Policy':
+          "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; frame-ancestors 'self'",
       },
     })
   } catch {

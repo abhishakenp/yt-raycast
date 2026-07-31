@@ -19,10 +19,10 @@ const prompt =
 
 // Models to test — from fastest to most capable
 const MODELS_TO_TEST = [
-  'llama-3.1-8b-instant',      // Fastest: ~1000+ tok/s, no reasoning
-  'llama-3.3-70b-versatile',   // Fast: ~400 tok/s, no reasoning, strong quality
-  'openai/gpt-oss-20b',        // Medium: ~960 tok/s, reasoning (low effort)
-  'openai/gpt-oss-120b',       // Current default: ~300 tok/s, reasoning (low effort)
+  'llama-3.1-8b-instant', // Fastest: ~1000+ tok/s, no reasoning
+  'llama-3.3-70b-versatile', // Fast: ~400 tok/s, no reasoning, strong quality
+  'openai/gpt-oss-20b', // Medium: ~960 tok/s, reasoning (low effort)
+  'openai/gpt-oss-120b', // Current default: ~300 tok/s, reasoning (low effort)
 ]
 
 const { runComposition } = await import('@ship-fast/engine')
@@ -44,7 +44,9 @@ function makeSessionCtx(id) {
 }
 
 async function runOne(model, prompt) {
-  const workspace = mkdtempSync(join(tmpdir(), `ship-fast-bench-${model.replace(/[^a-z0-9]/g, '')}-`))
+  const workspace = mkdtempSync(
+    join(tmpdir(), `ship-fast-bench-${model.replace(/[^a-z0-9]/g, '')}-`),
+  )
   const sessionCtx = makeSessionCtx(`bench-${model}-${Date.now()}`)
 
   const t0 = Date.now()
@@ -62,11 +64,17 @@ async function runOne(model, prompt) {
   const wallMs = Date.now() - t0
 
   // Read the raw LLM output and compiled source for quality analysis
-  let rawSize = 0, sourceSize = 0, sectionCount = 0, pageCount = 0
+  let rawSize = 0,
+    sourceSize = 0,
+    sectionCount = 0,
+    pageCount = 0
   let rawPreview = ''
   if (!error) {
     try {
-      rawSize = readFileSync(join(workspace, 'composition-spec.json'), 'utf8').length
+      rawSize = readFileSync(
+        join(workspace, 'composition-spec.json'),
+        'utf8',
+      ).length
       const raw = result.raw || ''
       rawPreview = raw.slice(0, 200)
       // Count sections and pages
@@ -77,7 +85,9 @@ async function runOne(model, prompt) {
   }
 
   // Clean up
-  try { rmSync(workspace, { recursive: true, force: true }) } catch {}
+  try {
+    rmSync(workspace, { recursive: true, force: true })
+  } catch {}
 
   return {
     model,
@@ -105,7 +115,9 @@ for (const model of MODELS_TO_TEST) {
   if (r.error) {
     console.log(` FAIL (${r.wallMs}ms): ${r.error}`)
   } else {
-    console.log(` ${r.wallMs}ms | ${r.sectionCount} sections, ${r.pageCount} pages, ${r.sourceSize} chars source${r.hasReasoning ? ' [REASONING]' : ''}`)
+    console.log(
+      ` ${r.wallMs}ms | ${r.sectionCount} sections, ${r.pageCount} pages, ${r.sourceSize} chars source${r.hasReasoning ? ' [REASONING]' : ''}`,
+    )
   }
 }
 
@@ -128,13 +140,19 @@ for (const r of results) {
 }
 
 // Speedup vs the 120b baseline
-const baseline = results.find(r => r.model === 'openai/gpt-oss-120b' && !r.error)
+const baseline = results.find(
+  (r) => r.model === 'openai/gpt-oss-120b' && !r.error,
+)
 if (baseline) {
-  console.log(`\n📊 Speedup vs current default (gpt-oss-120b @ ${baseline.wallMs}ms):`)
+  console.log(
+    `\n📊 Speedup vs current default (gpt-oss-120b @ ${baseline.wallMs}ms):`,
+  )
   for (const r of results) {
     if (r.error || r.model === 'openai/gpt-oss-120b') continue
     const speedup = (baseline.wallMs / r.wallMs).toFixed(2)
-    console.log(`   ${r.model}: ${speedup}x faster (${r.wallMs}ms vs ${baseline.wallMs}ms)`)
+    console.log(
+      `   ${r.model}: ${speedup}x faster (${r.wallMs}ms vs ${baseline.wallMs}ms)`,
+    )
   }
 }
 

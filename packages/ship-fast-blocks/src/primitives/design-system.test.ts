@@ -174,7 +174,9 @@ describe('parseDesignLine — aliases', () => {
 
 describe('parseDesignLine — edge cases', () => {
   it('handles double-colon radius::rounded-xl', () => {
-    expect(parseDesignLine('@design radius::rounded-xl').radius).toBe('rounded-xl')
+    expect(parseDesignLine('@design radius::rounded-xl').radius).toBe(
+      'rounded-xl',
+    )
   })
 
   it('handles double-colon on multiple axes', () => {

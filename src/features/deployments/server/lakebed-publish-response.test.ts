@@ -41,6 +41,7 @@ describe('createLakebedPublishResponse', () => {
     const client = {
       query: vi.fn(),
       action: vi.fn(),
+      mutation: vi.fn(),
       setAuth: vi.fn(),
     }
 
@@ -63,6 +64,7 @@ describe('createLakebedPublishResponse', () => {
     const client = {
       query: vi.fn(),
       action: vi.fn(),
+      mutation: vi.fn(),
       setAuth: vi.fn(),
     }
 

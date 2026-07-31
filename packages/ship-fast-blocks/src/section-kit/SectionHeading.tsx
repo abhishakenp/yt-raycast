@@ -44,7 +44,8 @@ const SectionHeading = React.forwardRef<
       <Comp
         ref={ref}
         data-slot="section-heading"
-        data-d-role="heading"className={cn(
+        data-d-role="heading"
+        className={cn(
           'flex flex-col gap-3',
           centered ? 'mx-auto max-w-2xl text-center' : 'text-left',
           className,
@@ -54,7 +55,8 @@ const SectionHeading = React.forwardRef<
         {eyebrow ? (
           <span
             data-slot="section-heading-eyebrow"
-            data-d-role="eyebrow"className={cn(
+            data-d-role="eyebrow"
+            className={cn(
               'font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-primary',
               eyebrowClassName,
             )}
@@ -65,7 +67,8 @@ const SectionHeading = React.forwardRef<
         <TitleTag
           id={titleId}
           data-slot="section-heading-title"
-          data-d-role="heading"className={cn(
+          data-d-role="heading"
+          className={cn(
             'text-3xl font-bold tracking-tight text-foreground md:text-4xl',
             titleClassName,
           )}
@@ -75,7 +78,8 @@ const SectionHeading = React.forwardRef<
         {subtitle ? (
           <p
             data-slot="section-heading-subtitle"
-            data-d-role="heading"className={cn(
+            data-d-role="heading"
+            className={cn(
               'text-base text-muted-foreground md:text-lg',
               subtitleClassName,
             )}

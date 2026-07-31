@@ -11,7 +11,8 @@ const StreamingLinks = React.forwardRef<
   return (
     <Comp
       data-slot="streaming-links"
-      data-d-role="link"className={cn('flex flex-wrap gap-4', className)}
+      data-d-role="link"
+      className={cn('flex flex-wrap gap-4', className)}
       ref={ref}
       {...props}
     />

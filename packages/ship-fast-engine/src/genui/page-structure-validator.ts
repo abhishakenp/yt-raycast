@@ -30,6 +30,8 @@ const PAGE_TYPE_REQUIREMENTS: Record<string, string[]> = {
   events: ['EventSchedule', 'Timeline'],
   portfolio: ['ProjectGallery', 'ImageGallery'],
   gallery: ['ImageGallery', 'ProjectGallery'],
+  work: ['ProjectGallery', 'ImageGallery'],
+  projects: ['ProjectGallery', 'ImageGallery', 'CardGrid'],
   collections: ['ProductGrid', 'ImageGallery', 'ProjectGallery'],
   lookbook: ['ImageGallery', 'ProjectGallery', 'CardGrid'],
   product: ['ProductDetail', 'ProductGrid'],
@@ -183,6 +185,8 @@ const PAGE_TYPE_REPAIR_MOTIF: Record<string, string> = {
   events: 'EventSchedule',
   portfolio: 'ProjectGallery',
   gallery: 'ImageGallery',
+  work: 'ProjectGallery',
+  projects: 'ProjectGallery',
   collections: 'ProductGrid',
   lookbook: 'ImageGallery',
   product: 'ProductDetail',
@@ -219,21 +223,60 @@ export function repairPageStructure(parsed: ParsedComposition): {
 
     const contentSections = contentSectionsForPage(parsed, v.page)
 
-    // Empty page: inject a new content section (don't skip!)
+    // Empty page: first try to move a matching section from the home page.
+    // If no matching section exists, inject a new content section.
     // PROVABLE INVARIANT: every page must have ≥1 content section.
     if (contentSections.length === 0) {
-      parsed.sections.push({
-        motif: repairMotif,
-        props: {},
-        nested: {},
-        line: 0,
-        page: v.page,
-      })
+      // Check if any home page section matches the page-type requirements
+      const homePage = parsed.pages[0]
+      const requiredMotifs = pageType
+        ? (PAGE_TYPE_REQUIREMENTS[pageType] ?? [])
+        : []
+      const matchingHomeSection =
+        requiredMotifs.length > 0
+          ? parsed.sections.find(
+              (s) =>
+                s.page === homePage &&
+                !isChromeSection(s) &&
+                requiredMotifs.includes(s.motif),
+            )
+          : undefined
+
+      if (matchingHomeSection) {
+        // Move the matching section to this page (clone it so the home
+        // page keeps its copy — the compiler handles home sections
+        // separately, so the original stays on home)
+        parsed.sections.push({
+          ...matchingHomeSection,
+          page: v.page,
+          props: { ...matchingHomeSection.props },
+          nested: { ...matchingHomeSection.nested },
+        })
+      } else {
+        parsed.sections.push({
+          motif: repairMotif,
+          props: {},
+          nested: {},
+          line: 0,
+          page: v.page,
+        })
+      }
       repaired = true
       continue
     }
 
     if (!pageType) continue
+
+    // Re-check: the empty_page repair above may have already fixed this
+    // violation by moving a matching section from the home page.
+    // Skip if the page now has a required motif.
+    if (v.type === 'missing_required_motif') {
+      const currentMotifs = motifsForPage(parsed, v.page)
+      const required = PAGE_TYPE_REQUIREMENTS[pageType] ?? []
+      if (required.some((m) => currentMotifs.has(m))) {
+        continue
+      }
+    }
 
     // For duplicate violations, replace the first duplicated motif
     // For missing motif violations, replace the first content section

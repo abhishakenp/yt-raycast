@@ -15,42 +15,42 @@ import { cn } from '#/lib/utils.ts'
  * composed by the capsule via children — ContentCard only owns the chrome.
  */
 const contentCardVariants = cva('group', {
- variants: {
- variant: {
- 'bordered-light':
- 'block overflow-hidden border border-border bg-card transition-shadow hover:',
- 'bordered-shadowed':
- 'overflow-hidden border border-border ',
- 'figure-dark':
- 'block w-full overflow-hidden border border-border bg-foreground ',
- plain: 'block',
- 'gradient-tinted': 'relative overflow-hidden bg-background/10',
- },
- },
- defaultVariants: {
- variant: 'bordered-light',
- },
+  variants: {
+    variant: {
+      'bordered-light':
+        'block overflow-hidden border border-border bg-card transition-shadow hover:',
+      'bordered-shadowed': 'overflow-hidden border border-border ',
+      'figure-dark':
+        'block w-full overflow-hidden border border-border bg-foreground ',
+      plain: 'block',
+      'gradient-tinted': 'relative overflow-hidden bg-background/10',
+    },
+  },
+  defaultVariants: {
+    variant: 'bordered-light',
+  },
 })
 
 export interface ContentCardProps
- extends
- React.HTMLAttributes<HTMLDivElement>,
- VariantProps<typeof contentCardVariants> {
- asChild?: boolean
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof contentCardVariants> {
+  asChild?: boolean
 }
 
 const ContentCard = React.forwardRef<HTMLDivElement, ContentCardProps>(
- ({ className, variant, asChild = false, ...props }, ref) => {
- const Comp = asChild ? Slot : 'div'
- return (
- <Comp
- ref={ref}
- data-slot="content-card"
- data-d-role="card"className={cn(contentCardVariants({ variant }), className)}
- {...props}
- />
- )
- },
+  ({ className, variant, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'div'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="content-card"
+        data-d-role="card"
+        className={cn(contentCardVariants({ variant }), className)}
+        {...props}
+      />
+    )
+  },
 )
 ContentCard.displayName = 'ContentCard'
 

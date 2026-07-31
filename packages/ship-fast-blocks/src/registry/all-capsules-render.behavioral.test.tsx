@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react'
-import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('#/lib/route-context.tsx', async (importOriginal) => {

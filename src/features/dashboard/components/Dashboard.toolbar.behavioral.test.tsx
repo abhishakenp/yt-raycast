@@ -330,7 +330,7 @@ function generatingGenerationView(): GenerationView {
   }
 }
 
-const installLocationMock = () => {
+export const installLocationMock = () => {
   const hrefSetter = vi.fn()
   const reloadSpy = vi.fn()
   const original = window.location

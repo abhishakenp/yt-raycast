@@ -158,19 +158,20 @@ describe('referrals', () => {
     expect(status.unlocked).toBe(true)
   })
 
-  it('does NOT count disposable-email referrals toward the reward', async () => {
+  it('qualifies all paying referrals regardless of email domain (Clerk blocks disposable at sign-up)', async () => {
     const t = convexTest(schema, modules)
     const { code } = await asUser(t, 'alice').mutation(
       api.referrals.getOrCreateMyReferralCode,
       {},
     )
 
-    // Two burner accounts.
-    await asUser(t, 'b1', 'b1@mailinator.com').mutation(
+    // Two accounts that pay — Clerk blocks disposable emails at sign-up,
+    // so any authenticated user is legitimate. Both should qualify.
+    await asUser(t, 'b1', 'b1@gmail.com').mutation(
       api.referrals.recordReferralSignup,
       { code },
     )
-    await asUser(t, 'b2', 'b2@yopmail.com').mutation(
+    await asUser(t, 'b2', 'b2@yahoo.com').mutation(
       api.referrals.recordReferralSignup,
       { code },
     )
@@ -178,17 +179,15 @@ describe('referrals', () => {
     const pay1 = await paySubscription(t, 'b1', 'sub_b1', 'evt_b1')
     const pay2 = await paySubscription(t, 'b2', 'sub_b2', 'evt_b2')
     expect(pay1.referralUnlock).toBeNull()
-    expect(pay2.referralUnlock).toBeNull()
+    expect(pay2.referralUnlock).toEqual({ referrerUserId: id('alice') })
 
     const status = await asUser(t, 'alice').query(
       api.referrals.getMyReferralStatus,
       {},
     )
-    expect(status.qualifiedCount).toBe(0)
-    expect(status.unlocked).toBe(false)
-    expect(status.referrals.every((r) => r.status === 'disqualified')).toBe(
-      true,
-    )
+    expect(status.qualifiedCount).toBe(2)
+    expect(status.unlocked).toBe(true)
+    expect(status.referrals.every((r) => r.status === 'qualified')).toBe(true)
   })
 
   it('keeps the reward unlocked permanently (referred churn does not revoke)', async () => {

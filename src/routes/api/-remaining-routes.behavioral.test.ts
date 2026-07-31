@@ -77,6 +77,8 @@ vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => routeMocks.convexClient,
 }))
 
+import { cloneHits } from '@/lib/rate-limit'
+
 type RouteWithHandlers = {
   path: string
   options: {
@@ -110,6 +112,7 @@ describe('remaining API route behavior', () => {
       sessionId: realSessionId,
     })
     routeMocks.convexClient.query.mockResolvedValue(null)
+    cloneHits.clear()
     process.env = { ...originalEnv }
   })
 

@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { previewHtmlHits } from '@/lib/rate-limit'
 import {
   createInlineStyleEditResponse,
   createInlineTextEditResponse,
@@ -35,6 +36,10 @@ const realConvexOpenUiHandoffPreviewHtml = {
 } as const
 
 describe('session preview edit responses', () => {
+  beforeEach(() => {
+    previewHtmlHits.clear()
+  })
+
   it('lists preview history from Convex', async () => {
     const calls: unknown[] = []
     const response = await createPreviewHistoryResponse('session_123', {

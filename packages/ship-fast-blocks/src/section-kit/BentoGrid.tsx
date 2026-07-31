@@ -46,7 +46,8 @@ const BentoGrid = React.forwardRef<HTMLDivElement, BentoGridProps>(
       <Comp
         ref={ref}
         data-slot="bento-grid"
-        data-d-role="grid"className={cn(bentoGridVariants({ cols }), className)}
+        data-d-role="grid"
+        className={cn(bentoGridVariants({ cols }), className)}
         {...props}
       />
     )
@@ -72,7 +73,8 @@ const BentoTile = React.forwardRef<HTMLDivElement, BentoTileProps>(
       <Comp
         ref={ref}
         data-slot="bento-tile"
-        data-d-role="card"className={cn(span, className)}
+        data-d-role="card"
+        className={cn(span, className)}
         {...props}
       />
     )
@@ -89,7 +91,8 @@ const BentoTileBody = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="bento-tile-body"
-      data-d-role="card"className={cn('flex flex-col gap-2', className)}
+      data-d-role="card"
+      className={cn('flex flex-col gap-2', className)}
       {...props}
     />
   )
@@ -105,7 +108,8 @@ const BentoTileTitle = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="bento-tile-title"
-      data-d-role="card"className={cn('font-semibold text-foreground', className)}
+      data-d-role="card"
+      className={cn('font-semibold text-foreground', className)}
       {...props}
     />
   )
@@ -121,7 +125,8 @@ const BentoTileDescription = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="bento-tile-description"
-      data-d-role="card"className={cn('text-sm leading-relaxed text-muted-foreground', className)}
+      data-d-role="card"
+      className={cn('text-sm leading-relaxed text-muted-foreground', className)}
       {...props}
     />
   )

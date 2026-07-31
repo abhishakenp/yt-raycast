@@ -4,6 +4,11 @@ import {
   moderationErrorResponse,
 } from '@/features/moderation/server/enforce-user-input-moderation'
 import { CONTENT_MODERATION_UNAVAILABLE_MESSAGE } from '@/features/moderation/server/moderation-classifier'
+import {
+  getClientIp,
+  hashClientIp,
+} from '@/features/session/server/session-create-response'
+import { checkRateLimit, translateHits } from '@/lib/rate-limit'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -614,6 +619,15 @@ export async function createTranslateResponse(
   entitlementClient: TranslationEntitlementClient = createDefaultTranslationEntitlementClient(),
   enforceModeration: EnforceTranslationModeration = enforceUserInputModeration,
 ): Promise<Response> {
+  // Rate limit: max 10 translations per 10 minutes per IP.
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, translateHits, 10, 10 * 60 * 1000)) {
+    return json(
+      { error: 'Too many translation requests. Please wait a few minutes.' },
+      { status: 429 },
+    )
+  }
+
   let body: TranslationRequestBody = {}
 
   try {

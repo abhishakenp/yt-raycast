@@ -11,6 +11,7 @@ import {
   enforceUserInputModeration,
   moderationErrorResponse,
 } from '@/features/moderation/server/enforce-user-input-moderation'
+import { checkRateLimit, sessionCreateHits } from '@/lib/rate-limit'
 
 type CreateSessionArgs = FunctionArgs<typeof api.sessions.create>
 
@@ -40,18 +41,29 @@ function json(body: unknown, init?: ResponseInit) {
 }
 
 export function getClientIp(request: Request): string {
+  // Proxy-specific headers are set by the trusted proxy (Cloudflare, Fly.io,
+  // nginx) and cannot be spoofed by the client. Check these FIRST so that a
+  // client-supplied X-Forwarded-For cannot override the real client IP.
+  const proxyIp =
+    request.headers.get('cf-connecting-ip')?.trim() ||
+    request.headers.get('fly-client-ip')?.trim() ||
+    request.headers.get('x-real-ip')?.trim()
+  if (proxyIp) return proxyIp
+
+  // X-Forwarded-For is a comma-separated chain: `client, proxy1, proxy2`.
+  // The LEFTMOST entry is client-controlled and spoofable. The RIGHTMOST
+  // entry is set by the closest trusted proxy. Use the last entry to get
+  // the IP as seen by our proxy, not the client-claimed IP.
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) {
-    const firstForwarded = forwarded.split(',')[0]?.trim()
-    if (firstForwarded) return firstForwarded
+    const parts = forwarded
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+    if (parts.length > 0) return parts[parts.length - 1]!
   }
 
-  return (
-    request.headers.get('cf-connecting-ip')?.trim() ||
-    request.headers.get('x-real-ip')?.trim() ||
-    request.headers.get('fly-client-ip')?.trim() ||
-    'unknown'
-  )
+  return 'unknown'
 }
 
 export function hashClientIp(
@@ -130,7 +142,8 @@ function errorPayload(error: unknown) {
     code === 'ANON_DAILY_LIMIT_REACHED' ||
     code === 'ANON_DAILY_EXHAUSTED' ||
     code === 'AUTH_DAILY_LIMIT_REACHED' ||
-    code === 'QUOTA_EXCEEDED'
+    code === 'QUOTA_EXCEEDED' ||
+    code === 'IP_QUOTA_EXCEEDED'
   ) {
     return {
       status: 429,
@@ -192,6 +205,7 @@ function parseCreateSessionArgs(
     isPrivate,
     workspace,
     clientIpHash,
+    serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
   }
 
   if (typeof body.anonymousOwnerSecret === 'string') {
@@ -247,6 +261,18 @@ export async function createSessionCreateResponse(
   try {
     const body = await readJsonBody(request)
     const clientIpHash = hashClientIp(getClientIp(request))
+
+    // Rate limit: 10 session creations per 10 minutes per IP.
+    // This is the primary generation entry point — without this, an attacker
+    // could spam session creation requests to exhaust Convex function calls
+    // before the server-side quota check kicks in.
+    if (!checkRateLimit(clientIpHash, sessionCreateHits, 10, 10 * 60 * 1000)) {
+      return json(
+        { error: 'Too many generation requests. Please try again later.' },
+        { status: 429 },
+      )
+    }
+
     const client = clientOverride ?? createRuntimeConvexHttpClient()
     const token = getBearerToken(request)
     if (token !== null) client.setAuth?.(token)

@@ -181,7 +181,7 @@ describe('enforceUserInputModeration', () => {
     ['missing audit secret', ''],
     ['audit mutation failure', 'server-secret'],
   ])(
-    'fails closed when blocked input cannot be audited: %s',
+    'blocks deterministic violations even when audit is unavailable: %s',
     async (_name, mutationSecret) => {
       const classify = createClassifier({
         category: 'fraud_malware',
@@ -208,10 +208,13 @@ describe('enforceUserInputModeration', () => {
         },
       ).catch((caught: unknown) => caught)
 
+      // Deterministic blocks must be enforced regardless of audit availability.
       expect(error).toMatchObject({
-        code: 'CONTENT_MODERATION_UNAVAILABLE',
-        status: 503,
+        code: 'CONTENT_POLICY',
+        message: CONTENT_POLICY_CLIENT_MESSAGE,
+        status: 422,
       })
+      // Audit mutation is best-effort: only called when secret is present.
       expect(mutation).toHaveBeenCalledTimes(mutationSecret ? 1 : 0)
     },
   )

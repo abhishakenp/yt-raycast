@@ -99,69 +99,69 @@ describe('CapsuleInlineControls', () => {
 
   // ─── Variant switchers ──────────────────────────────────────────────────
 
-  it('renders inline variant switcher for CoworkingGallery columns', () => {
-    mockActions.sectionData = { columns: 3, images: [] }
+  it('renders inline variant switcher for ImageGallery chrome', () => {
+    mockActions.sectionData = { chrome: 'editorial', images: [] }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
       }),
     )
 
-    expect(screen.getByText('columns')).toBeTruthy()
-    expect(screen.getByRole('button', { name: '2' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: '3' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: '4' })).toBeTruthy()
+    expect(screen.getByText('chrome')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'hairline' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'editorial' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'brutalist' })).toBeTruthy()
   })
 
   it('highlights the active variant option', () => {
-    mockActions.sectionData = { columns: 3, images: [] }
+    mockActions.sectionData = { chrome: 'editorial', images: [] }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
       }),
     )
 
-    const activeBtn = screen.getByRole('button', { name: '3' })
+    const activeBtn = screen.getByRole('button', { name: 'editorial' })
     expect(activeBtn.className).toContain('cyan-300/20')
   })
 
   it('does not persist variant changes immediately when a variant option is clicked', () => {
-    mockActions.sectionData = { columns: 3, images: [] }
+    mockActions.sectionData = { chrome: 'editorial', images: [] }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingGallery',
+        capsuleName: 'ImageGallery',
         statementId: 'gallery_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
       }),
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '4' }))
+    fireEvent.click(screen.getByRole('button', { name: 'brutalist' }))
     expect(mockActions.setProp).not.toHaveBeenCalled()
   })
 
-  it('renders variant switcher for CoworkingFeatures columns', () => {
-    mockActions.sectionData = { columns: 3, features: [] }
+  it('renders variant switcher for FeatureList chrome', () => {
+    mockActions.sectionData = { chrome: 'editorial', features: [] }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
       }),
     )
 
-    expect(screen.getByText('columns')).toBeTruthy()
+    expect(screen.getByText('chrome')).toBeTruthy()
   })
 
   // ─── Collection controls ────────────────────────────────────────────────
@@ -169,14 +169,14 @@ describe('CapsuleInlineControls', () => {
   it('renders collection controls with item count', () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -192,7 +192,7 @@ describe('CapsuleInlineControls', () => {
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -206,15 +206,15 @@ describe('CapsuleInlineControls', () => {
   it('shows remove/reorder controls when activeCollectionItem is provided', () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
-        { title: 'Meeting Rooms', description: 'Book by hour' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Meeting Rooms', description: 'Book by hour' },
       ],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -232,14 +232,14 @@ describe('CapsuleInlineControls', () => {
   it('buffers reorder locally when Move up is clicked (no immediate backend call)', () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -255,14 +255,14 @@ describe('CapsuleInlineControls', () => {
   it('buffers reorder locally when Move down is clicked (no immediate backend call)', () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -277,8 +277,8 @@ describe('CapsuleInlineControls', () => {
   it('previews buffered reorder in the DOM and restores it on discard', () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
     const handleRef = makeHandleRef()
@@ -289,7 +289,7 @@ describe('CapsuleInlineControls', () => {
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -316,8 +316,8 @@ describe('CapsuleInlineControls', () => {
   it('commits buffered reorder only when the inline handle is committed', async () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
     const handleRef = makeHandleRef()
@@ -328,7 +328,7 @@ describe('CapsuleInlineControls', () => {
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -347,8 +347,8 @@ describe('CapsuleInlineControls', () => {
 
     expect(mockActions.mergeData).toHaveBeenCalledWith({
       features: [
-        { title: 'Private Offices', description: 'Lockable rooms' },
-        { title: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
       ],
     })
   })
@@ -356,8 +356,8 @@ describe('CapsuleInlineControls', () => {
   it('does not commit a reorder after the inline handle discards it', async () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
     const handleRef = makeHandleRef()
@@ -368,7 +368,7 @@ describe('CapsuleInlineControls', () => {
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -392,14 +392,14 @@ describe('CapsuleInlineControls', () => {
   it('does not persist removal immediately when Remove item is confirmed', async () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -422,14 +422,14 @@ describe('CapsuleInlineControls', () => {
   it('disables Move up for the first item', () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -446,14 +446,14 @@ describe('CapsuleInlineControls', () => {
   it('disables Move down for the last item', () => {
     mockActions.sectionData = {
       features: [
-        { title: 'Hot Desks', description: 'Pick any desk' },
-        { title: 'Private Offices', description: 'Lockable rooms' },
+        { heading: 'Hot Desks', description: 'Pick any desk' },
+        { heading: 'Private Offices', description: 'Lockable rooms' },
       ],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -469,12 +469,12 @@ describe('CapsuleInlineControls', () => {
 
   it('auto-selects first item when no activeCollectionItem', () => {
     mockActions.sectionData = {
-      features: [{ title: 'Hot Desks', description: 'Pick any desk' }],
+      features: [{ heading: 'Hot Desks', description: 'Pick any desk' }],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -513,7 +513,7 @@ describe('CapsuleInlineControls', () => {
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingFeatures',
+        capsuleName: 'FeatureList',
         statementId: 'features_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -546,7 +546,7 @@ describe('CapsuleInlineControls', () => {
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'CoworkingPricing',
+        capsuleName: 'PricingTable',
         statementId: 'pricing_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
@@ -560,35 +560,29 @@ describe('CapsuleInlineControls', () => {
     expect(screen.getByRole('button', { name: 'Remove item' })).toBeTruthy()
   })
 
-  it('renders independent controls for every collection in a multi-collection capsule', () => {
+  it('renders independent controls for every collection in CardGrid', () => {
     mockActions.sectionData = {
-      countdown: [
-        { value: '12', label: 'Hours' },
-        { value: '30', label: 'Minutes' },
-      ],
-      items: [
-        { title: 'Camera Kit', price: '$499' },
-        { title: 'Audio Kit', price: '$199' },
+      cards: [
+        { title: 'Camera Kit', description: 'Photography' },
+        { title: 'Audio Kit', description: 'Audio gear' },
       ],
     }
 
     render(
       createElement(CapsuleInlineControls, {
-        capsuleName: 'ElectronicsStoreDeals',
+        capsuleName: 'CardGrid',
         statementId: 'deals_1',
         sessionId: 'sess-1',
         anonymousOwnerSecret: 'secret',
       }),
     )
 
-    expect(screen.getByText('Countdown')).toBeTruthy()
-    expect(screen.getByText('Items')).toBeTruthy()
-    expect(screen.getByText('Countdown 1')).toBeTruthy()
+    expect(screen.getByText('Cards')).toBeTruthy()
     expect(screen.getByText('Camera Kit')).toBeTruthy()
-    expect(screen.getAllByRole('combobox').length).toBe(2)
-    expect(screen.getAllByTitle('Move down').length).toBe(2)
+    expect(screen.getAllByRole('combobox').length).toBe(1)
+    expect(screen.getAllByTitle('Move down').length).toBe(1)
     expect(screen.getAllByRole('button', { name: 'Remove item' }).length).toBe(
-      2,
+      1,
     )
   })
 })

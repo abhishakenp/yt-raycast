@@ -23,7 +23,7 @@ import { buildComponentCall } from './openui-signature.ts'
 import { inferLakebedFromComposition } from './inference.ts'
 import { getInteraction } from './interactions.ts'
 import { generateConvexBackend } from './convex-codegen.ts'
-import { compileSvelteBlock, type CompiledSvelte } from './svelte-compiler.ts'
+import { compileSvelteBlock } from './svelte-compiler.ts'
 import type { LakebedDefinition, DataBinding } from './types.ts'
 
 export interface CompositionCompileResult {
@@ -380,13 +380,13 @@ async function compileCompositionSection(
   brand: string,
   nav: string[],
   navbarVariant?: string,
-): { statements: string[]; ref: string | null } {
+): Promise<{ statements: string[]; ref: string | null }> {
   const id = `${pageId}_${section.motif.toLowerCase().replace(/[^a-z0-9]/g, '')}`
   const props = sectionToProps(section)
 
   // Fix placeholder imageAlt values — the LLM sometimes passes "imageAlt"
   // (the field name) instead of a real description. Replace with a generic
-  // but useful query based on the motif type.
+  // but useful query based on the motif .
   fixPlaceholderImageAlt(props, section.motif)
 
   // Inject brand for Navbar/Footer motifs
@@ -471,7 +471,7 @@ async function compileCompositionSection(
 // PROVABLE INVARIANT: Every page in the PageSwitch routes list MUST have at
 // least one content section. An empty page (only navbar/footer) is broken by
 // definition. When the LLM omits content for a page, this map selects a
-// page-type-appropriate motif, and createFallbackSection generates generic
+// page--appropriate motif, and createFallbackSection generates generic
 // but useful content so the page is never empty.
 
 const FALLBACK_MOTIF_FOR_PAGE: Record<string, string> = {
@@ -529,7 +529,7 @@ function createFallbackSection(
   const heading = capitalize(pageId)
   const label = brand || 'Brand'
 
-  // Generate minimal but useful props per motif type
+  // Generate minimal but useful props per motif
   const props: Record<string, string> = { heading }
 
   switch (motif) {

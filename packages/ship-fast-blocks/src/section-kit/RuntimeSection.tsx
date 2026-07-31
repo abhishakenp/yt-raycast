@@ -20,7 +20,8 @@ const RuntimeSection = React.forwardRef<HTMLElement, RuntimeSectionProps>(
       <Comp
         ref={ref}
         data-slot="runtime-section"
-        data-d-role="section"className={cn('relative w-full', className)}
+        data-d-role="section"
+        className={cn('relative w-full', className)}
         {...props}
       />
     )

@@ -4,6 +4,11 @@ import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { checkRateLimit, previewHtmlHits } from '@/lib/rate-limit'
+import {
+  getClientIp,
+  hashClientIp,
+} from '@/features/session/server/session-create-response'
 
 type PreviewEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 
@@ -190,6 +195,15 @@ export async function createPreviewHtmlSaveResponse(
   request: Request,
   clientOverride?: PreviewEditClient,
 ): Promise<Response> {
+  // Rate limit: max 10 preview HTML saves per 10 minutes per IP.
+  const ipHash = hashClientIp(getClientIp(request))
+  if (!checkRateLimit(ipHash, previewHtmlHits, 10, 10 * 60 * 1000)) {
+    return json(
+      { error: 'Too many preview requests. Please wait a few minutes.' },
+      { status: 429 },
+    )
+  }
+
   try {
     const body = await readJsonBody(request)
     const html = getString(body, ['html', 'previewHtml', 'homepageHtml'])
@@ -202,6 +216,13 @@ export async function createPreviewHtmlSaveResponse(
         {
           error: 'Preview HTML is not available. Regenerate the preview first.',
         },
+        { status: 422 },
+      )
+    }
+
+    if (containsExecutablePreviewFragment(html)) {
+      return json(
+        { error: 'Executable preview fragments are not allowed' },
         { status: 422 },
       )
     }
