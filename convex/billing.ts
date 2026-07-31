@@ -11,6 +11,24 @@ import {
 import { qualifyReferralOnPayment } from './lib/referral_qualification'
 import { timingSafeEqual } from './lib/timingSafeEqual'
 
+/**
+ * Normalize a userId to include the Clerk issuer prefix.
+ * `tokenIdentifier` format is `https://<issuer>|<subject>`. Some legacy
+ * subscription/credits records were created with bare `<subject>` userIds
+ * (e.g., `user_3G04...`) without the issuer prefix, causing them to not
+ * match `identity.tokenIdentifier` lookups. This function auto-prefixes
+ * bare userIds so both old and new records are consistently keyed.
+ */
+function normalizeUserId(userId: string): string {
+  if (userId.includes('|')) return userId // already prefixed
+  const issuerDomain = process.env.CLERK_JWT_ISSUER_DOMAIN
+  if (!issuerDomain) return userId // can't prefix without issuer domain
+  const issuer = issuerDomain.startsWith('http')
+    ? issuerDomain.replace(/\/$/, '')
+    : `https://${issuerDomain}`
+  return `${issuer}|${userId}`
+}
+
 async function getUserId(ctx: QueryCtx | MutationCtx): Promise<string> {
   const identity = await ctx.auth.getUserIdentity()
   const userId = identity?.tokenIdentifier
@@ -160,8 +178,9 @@ export const hasActiveSubscription = query({
     secret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireBillingReadAccess(ctx, args.userId, args.secret)
-    return (await getActiveSubscription(ctx, args.userId)) !== null
+    const userId = normalizeUserId(args.userId)
+    await requireBillingReadAccess(ctx, userId, args.secret)
+    return (await getActiveSubscription(ctx, userId)) !== null
   },
 })
 
@@ -171,8 +190,9 @@ export const getUserCredits = query({
     secret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireBillingReadAccess(ctx, args.userId, args.secret)
-    return await getCredits(ctx, args.userId)
+    const userId = normalizeUserId(args.userId)
+    await requireBillingReadAccess(ctx, userId, args.secret)
+    return await getCredits(ctx, userId)
   },
 })
 
@@ -182,18 +202,19 @@ export const addCreditsForUser = internalMutation({
     amount: v.number(),
   },
   handler: async (ctx, args) => {
+    const userId = normalizeUserId(args.userId)
     if (args.amount <= 0)
-      return { remaining: await getCredits(ctx, args.userId) }
+      return { remaining: await getCredits(ctx, userId) }
 
     const now = Date.now()
     const existing = await ctx.db
       .query('customerCredits')
-      .withIndex('by_userId', (index) => index.eq('userId', args.userId))
+      .withIndex('by_userId', (index) => index.eq('userId', userId))
       .first()
 
     if (existing === null) {
       const creditsId = await ctx.db.insert('customerCredits', {
-        userId: args.userId,
+        userId,
         remaining: args.amount,
         updatedAt: now,
       })
@@ -223,6 +244,7 @@ export const upsertSubscriptionForUser = internalMutation({
     providerCheckoutId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = normalizeUserId(args.userId)
     const now = Date.now()
     const existing = await findProviderSubscription(
       ctx,
@@ -232,7 +254,7 @@ export const upsertSubscriptionForUser = internalMutation({
 
     if (existing !== null) {
       await ctx.db.patch(existing._id, {
-        userId: args.userId,
+        userId,
         provider: args.provider,
         status: args.status,
         planId: args.planId,
@@ -244,7 +266,7 @@ export const upsertSubscriptionForUser = internalMutation({
     }
 
     const subscriptionId = await ctx.db.insert('subscriptions', {
-      userId: args.userId,
+      userId,
       provider: args.provider,
       status: args.status,
       planId: args.planId,
@@ -275,7 +297,7 @@ export const confirmCheckoutSubscription = internalMutation({
     providerCheckoutId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = args.userId
+    const userId = normalizeUserId(args.userId)
     const now = Date.now()
     const existing = await ctx.db
       .query('subscriptions')
@@ -289,7 +311,7 @@ export const confirmCheckoutSubscription = internalMutation({
       // record. Without this check, an authenticated attacker could call this
       // mutation with a known providerSubscriptionId and steal another user's
       // subscription by patching the userId to their own.
-      if (existing.userId !== userId) {
+      if (existing.userId !== userId && existing.userId !== args.userId) {
         throw new ConvexError({
           code: 'FORBIDDEN',
           message: 'Subscription does not belong to this user.',
@@ -357,9 +379,10 @@ export const consumeCreditForExport = internalMutation({
     sessionId: v.optional(v.id('sessions')),
   },
   handler: async (ctx, args) => {
+    const userId = normalizeUserId(args.userId)
     const existing = await ctx.db
       .query('customerCredits')
-      .withIndex('by_userId', (index) => index.eq('userId', args.userId))
+      .withIndex('by_userId', (index) => index.eq('userId', userId))
       .first()
 
     if (existing === null || existing.remaining <= 0) {
@@ -374,7 +397,7 @@ export const consumeCreditForExport = internalMutation({
     await ctx.db.patch(existing._id, { remaining, updatedAt: now })
 
     await ctx.db.insert('creditLedger', {
-      userId: args.userId,
+      userId,
       sessionId: args.sessionId,
       amount: -1,
       balanceAfter: remaining,
@@ -393,19 +416,20 @@ export const getCreditLedger = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    await requireBillingReadAccess(ctx, args.userId, args.secret)
+    const userId = normalizeUserId(args.userId)
+    await requireBillingReadAccess(ctx, userId, args.secret)
     const limit = Math.min(args.limit ?? 50, 100)
     const transactions = await ctx.db
       .query('creditLedger')
       .withIndex('by_userId_createdAt', (index) =>
-        index.eq('userId', args.userId),
+        index.eq('userId', userId),
       )
       .order('desc')
       .take(limit)
 
     const credits = await ctx.db
       .query('customerCredits')
-      .withIndex('by_userId', (index) => index.eq('userId', args.userId))
+      .withIndex('by_userId', (index) => index.eq('userId', userId))
       .first()
 
     return {
@@ -447,7 +471,7 @@ export const applyBillingWebhook = mutation({
     }
 
     const idempotencyKey = args.idempotencyKey.trim()
-    const userId = args.userId.trim()
+    const userId = normalizeUserId(args.userId.trim())
     const credits = args.credits
     if (!idempotencyKey || !userId) {
       throw new ConvexError({
@@ -591,5 +615,57 @@ export const applyBillingWebhook = mutation({
     }
 
     return { processed: true, duplicate: false, referralUnlock }
+  },
+})
+
+/**
+ * One-time backfill: normalize legacy non-prefixed userIds in subscriptions,
+ * customerCredits, and creditLedger tables to include the Clerk issuer prefix.
+ * Safe to run multiple times — only patches records that lack the `|` separator.
+ */
+export const backfillPrefixedUserIds = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const issuerDomain = process.env.CLERK_JWT_ISSUER_DOMAIN
+    if (!issuerDomain) {
+      throw new ConvexError({
+        code: 'CONFIG_ERROR',
+        message: 'CLERK_JWT_ISSUER_DOMAIN is not set.',
+      })
+    }
+    const issuer = issuerDomain.startsWith('http')
+      ? issuerDomain.replace(/\/$/, '')
+      : `https://${issuerDomain}`
+
+    let patched = 0
+
+    // Subscriptions
+    const subscriptions = await ctx.db.query('subscriptions').collect()
+    for (const sub of subscriptions) {
+      if (sub.userId && !sub.userId.includes('|')) {
+        await ctx.db.patch(sub._id, { userId: `${issuer}|${sub.userId}` })
+        patched++
+      }
+    }
+
+    // Customer credits
+    const credits = await ctx.db.query('customerCredits').collect()
+    for (const credit of credits) {
+      if (credit.userId && !credit.userId.includes('|')) {
+        await ctx.db.patch(credit._id, { userId: `${issuer}|${credit.userId}` })
+        patched++
+      }
+    }
+
+    // Credit ledger
+    const ledger = await ctx.db.query('creditLedger').collect()
+    for (const entry of ledger) {
+      if (entry.userId && !entry.userId.includes('|')) {
+        await ctx.db.patch(entry._id, { userId: `${issuer}|${entry.userId}` })
+        patched++
+      }
+    }
+
+    return { patched }
   },
 })

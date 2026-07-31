@@ -2,7 +2,7 @@ import { convexTest } from 'convex-test'
 import type { DebouncerComponentApi } from '@ikhrustalev/convex-debouncer'
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import type { FunctionReference } from 'convex/server'
-import { afterEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { api, components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import schema from './schema'
@@ -21,6 +21,10 @@ type LegacyEditedSessionExportRebuildReference = FunctionReference<
   { status: 'queued' | 'stale' }
 >
 
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
+
 let activeTest: ReturnType<typeof convexTest> | null = null
 
 function createTestSession(
@@ -35,6 +39,7 @@ function createTestSession(
     workspace: 'workspace_test',
     anonymousClientId: `anon-${prompt}`,
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 }
 
@@ -152,6 +157,7 @@ test('owner-secret sessions clone cached public previews without reusing another
     workspace: 'workspace_first',
     anonymousClientId: 'anon-first-cache-owner',
     anonymousOwnerSecret: 'owner-a',
+    serverSecret: 'test-secret',
   })
   await persistGeneratedPreview(t, first.sessionId, prompt)
 
@@ -163,6 +169,7 @@ test('owner-secret sessions clone cached public previews without reusing another
     workspace: 'workspace_second',
     anonymousClientId: 'anon-second-cache-owner',
     anonymousOwnerSecret: 'owner-b',
+    serverSecret: 'test-secret',
   })
 
   expect(second.cached).toBe(true)

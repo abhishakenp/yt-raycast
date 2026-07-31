@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import { convexTest } from 'convex-test'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api, internal } from './_generated/api'
 import schema from './schema'
@@ -32,6 +32,14 @@ function subscriptionArgs(
     providerSubscriptionId,
   }
 }
+
+beforeEach(() => {
+  vi.stubEnv('CLERK_JWT_ISSUER_DOMAIN', '')
+})
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 describe('billing read and internal mutation contracts', () => {
   it('rejects unauthenticated self-service billing reads', async () => {

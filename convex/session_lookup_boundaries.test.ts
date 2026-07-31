@@ -28,7 +28,7 @@ describe('session lookup API boundaries', () => {
         lookup: INVALID_LOOKUP,
         target: 'html',
       }),
-    ).resolves.toBeNull()
+    ).rejects.toThrow('Session not found')
   })
 
   it('rejects export creation before side effects for an invalid lookup', async () => {

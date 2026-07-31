@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api } from './_generated/api'
 import schema from './schema'
@@ -8,6 +8,10 @@ import { deploy } from './lakebed_deploy'
 const modules = import.meta.glob('./**/*.ts')
 
 const ownerSecret = 'lakebed-owner-secret'
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 describe('lakebed_deploy action', () => {
   it('exports a deploy action definition', () => {
@@ -28,6 +32,7 @@ describe('lakebed_deploy action', () => {
       preferredLanguage: 'en',
       prompt: 'Lakebed deploy lifecycle',
       workspace: 'workspace_lakebed_deploy_test',
+      serverSecret: 'test-secret',
     })
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})

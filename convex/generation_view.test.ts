@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { afterEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import type { DebouncerComponentApi } from '@ikhrustalev/convex-debouncer'
 import type { FunctionReference } from 'convex/server'
@@ -20,6 +20,10 @@ type DebouncerCallDetailsReference = FunctionReference<
 // completeGeneration and otherwise writes after the test's transaction
 // context is torn down, causing "Write outside of transaction" errors).
 let activeTest: ReturnType<typeof convexTest> | null = null
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 const generationConvexTest = () => {
   const t = convexTest(schema, modules)
@@ -71,6 +75,7 @@ test('getGenerationView accepts lookup-only session ids', async () => {
     isPrivate: false,
     workspace: 'workspace_test',
     anonymousClientId: 'anon-generation-view',
+    serverSecret: 'test-secret',
   })
 
   const view = await t.query(api.sessions.getGenerationView, {
@@ -118,6 +123,7 @@ test('create fails fast when model configuration is missing', async () => {
       isPrivate: false,
       workspace: 'workspace_missing_model_config',
       anonymousClientId: 'anon-missing-model-config',
+      serverSecret: 'test-secret',
     })
 
     const session = await t.query(api.sessions.getSessionApiResponse, {
@@ -162,6 +168,7 @@ test('public prompt cache is scoped by preferred language', async () => {
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_language_cache_en',
+    serverSecret: 'test-secret',
   })
 
   await persistGeneratedPreview(t, english.sessionId, prompt)
@@ -172,6 +179,7 @@ test('public prompt cache is scoped by preferred language', async () => {
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_language_cache_hi',
+    serverSecret: 'test-secret',
   })
 
   const englishAgain = await t.mutation(api.sessions.create, {
@@ -180,6 +188,7 @@ test('public prompt cache is scoped by preferred language', async () => {
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_language_cache_en_again',
+    serverSecret: 'test-secret',
   })
 
   expect(hindi.sessionId).not.toBe(english.sessionId)
@@ -200,6 +209,7 @@ test('public prompt cache can replay a ready session without creating an owned c
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_replay_ready',
+    serverSecret: 'test-secret',
   })
   await persistGeneratedPreview(t, ready.sessionId, prompt)
 
@@ -209,6 +219,7 @@ test('public prompt cache can replay a ready session without creating an owned c
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_replay_second',
+    serverSecret: 'test-secret',
   })
 
   expect(replay).toMatchObject({
@@ -240,6 +251,7 @@ test('workspace idempotency returns the same queued session for a retried create
     workspace: 'workspace_retry_idempotent',
     anonymousClientId: 'anon-retry-idempotent',
     anonymousOwnerSecret: 'owner-retry-idempotent',
+    serverSecret: 'test-secret',
   }
 
   const first = await t.mutation(api.sessions.create, request)
@@ -268,6 +280,7 @@ test('workspace idempotency rejects conflicting reuse of a workspace key', async
     workspace: 'workspace_conflict_guard',
     anonymousClientId: 'anon-workspace-conflict',
     anonymousOwnerSecret: 'owner-workspace-conflict',
+    serverSecret: 'test-secret',
   })
 
   await expect(
@@ -279,6 +292,7 @@ test('workspace idempotency rejects conflicting reuse of a workspace key', async
       workspace: 'workspace_conflict_guard',
       anonymousClientId: 'anon-workspace-conflict',
       anonymousOwnerSecret: 'owner-workspace-conflict',
+      serverSecret: 'test-secret',
     }),
   ).rejects.toThrow()
 })
@@ -293,6 +307,7 @@ test('public prompt cache is reused across engine versions', async () => {
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_v1_cache_ready',
+    serverSecret: 'test-secret',
   })
   await persistGeneratedPreview(t, defaultEngine.sessionId, prompt)
 
@@ -303,6 +318,7 @@ test('public prompt cache is reused across engine versions', async () => {
     isPrivate: false,
     workspace: 'workspace_v2_cache_request',
     engineVersion: 'v2',
+    serverSecret: 'test-secret',
   })
 
   expect(v2).toMatchObject({
@@ -321,6 +337,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_cache_ready',
+    serverSecret: 'test-secret',
   })
   await persistGeneratedPreview(t, ready.sessionId, prompt)
 
@@ -331,6 +348,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
     isPrivate: false,
     workspace: 'workspace_cache_incomplete',
     designReferenceUrls: ['https://example.com/reference'],
+    serverSecret: 'test-secret',
   })
 
   expect(incomplete.cached).not.toBe(true)
@@ -342,6 +360,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_cache_again',
+    serverSecret: 'test-secret',
   })
 
   expect(cachedAgain).toMatchObject({
@@ -361,6 +380,7 @@ test('inline preview edits patch canonical source artifacts and history restore 
     workspace: 'workspace_dashboard_artifacts',
     anonymousClientId: 'anon-dashboard-artifacts',
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await persistGeneratedPreview(
@@ -451,6 +471,7 @@ test('inline preview edits patch canonical artifacts even when rendered text nor
     workspace: 'workspace_dashboard_whitespace_edit',
     anonymousClientId: 'anon-dashboard-whitespace-edit',
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await t.action(internal.sessions.completeGeneration, {
@@ -511,6 +532,7 @@ test('inline preview edits use one sliding debounce entry for export rebuild aut
     workspace: 'workspace_dashboard_debounced_exports',
     anonymousClientId: 'anon-dashboard-debounced-exports',
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await persistGeneratedPreview(t, sessionId, 'Build an editable homepage')
@@ -572,6 +594,7 @@ test('inline preview edits reject missing text without creating edit history', a
     workspace: 'workspace_missing_text_edit',
     anonymousClientId: 'anon-missing-text-edit',
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await persistGeneratedPreview(t, sessionId, 'Build a simple homepage')
@@ -607,6 +630,7 @@ test('late generation jobs cannot clobber an existing preview', async () => {
     workspace: 'workspace_late_generation_guard',
     anonymousClientId: 'anon-late-generation-guard',
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await persistGeneratedPreview(t, sessionId, 'Already ready generated site')
@@ -685,6 +709,7 @@ test('duplicate generation actions cannot start the same queued session twice', 
       workspace: 'workspace_duplicate_start_guard',
       anonymousClientId: 'anon-duplicate-start-guard',
       anonymousOwnerSecret: 'owner-secret',
+      serverSecret: 'test-secret',
     })
 
     await expect(

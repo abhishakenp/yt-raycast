@@ -1,9 +1,13 @@
 import { convexTest } from 'convex-test'
-import { expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { api, internal } from './_generated/api'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 function createTestSession(
   t: ReturnType<typeof convexTest>,
@@ -16,6 +20,7 @@ function createTestSession(
     isPrivate: false,
     workspace: 'workspace_test',
     anonymousClientId: `anon-${prompt}`,
+    serverSecret: 'test-secret',
   })
 }
 

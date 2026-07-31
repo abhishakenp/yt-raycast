@@ -42,6 +42,7 @@ async function billingRows(t: ReturnType<typeof convexTest>) {
 
 describe('billing webhook validation and ownership boundaries', () => {
   beforeEach(() => {
+    vi.stubEnv('CLERK_JWT_ISSUER_DOMAIN', '')
     vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', secret)
   })
 

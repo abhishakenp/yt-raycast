@@ -38,6 +38,7 @@ type CreateGenerationSessionArgs = {
   designReferenceNotes?: string
   cloneUrl?: string
   engineVersion?: string
+  serverSecret?: string
 }
 
 type QueryRows = {
@@ -1145,6 +1146,7 @@ describe('session creation helpers', () => {
         preferredExportTarget: 'html',
         isPrivate: false,
         workspace: 'ws1',
+        serverSecret: TEST_SERVER_SECRET,
       }
       const handler =
         create as unknown as MutationHandler<CreateGenerationSessionArgs>

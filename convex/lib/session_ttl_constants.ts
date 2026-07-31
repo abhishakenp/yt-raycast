@@ -17,3 +17,11 @@
  * reuse a session that no longer exists.
  */
 export const DRAFT_SESSION_TTL_MS = 15 * 60 * 1_000
+
+/**
+ * How long a session can stay in `queued` or `running` status before the
+ * stuck-session cleanup cron marks it as `failed`. The VPS generation
+ * handler normally updates the status within minutes; anything older than
+ * this is assumed to have crashed or lost its worker.
+ */
+export const STUCK_SESSION_TIMEOUT_MS = 60 * 60 * 1_000 // 1 hour

@@ -25,6 +25,7 @@ const localizedEditConvexTest = () => {
 beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(new Date('2026-07-13T12:00:00.000Z'))
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
   process.env.VITE_DISABLE_CLERK = 'true'
 })
 
@@ -52,6 +53,7 @@ async function createReadySession(
     workspace: `workspace_localized_edit_${options.key}`,
     anonymousClientId: `anonymous_localized_edit_${options.key}`,
     anonymousOwnerSecret: OWNER_SECRET,
+    serverSecret: 'test-secret',
   })
 
   await t.mutation(internal.sessions.completeGenerationInternal, {

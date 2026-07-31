@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { api, internal } from './_generated/api'
 import schema from './schema'
 
@@ -7,6 +7,12 @@ const modules = import.meta.glob('./**/*.ts')
 
 afterEach(() => {
   vi.unstubAllEnvs()
+})
+
+// Stub CLERK_JWT_ISSUER_DOMAIN to empty so normalizeUserId is a no-op in tests.
+// Tests that exercise userId normalization should override this per-test.
+beforeEach(() => {
+  vi.stubEnv('CLERK_JWT_ISSUER_DOMAIN', '')
 })
 
 describe('billing webhook state mutation', () => {

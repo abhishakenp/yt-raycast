@@ -1,9 +1,13 @@
 import { convexTest } from 'convex-test'
-import { expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { api, internal } from './_generated/api'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 async function createGeneratedSession(
   t: ReturnType<typeof convexTest>,
@@ -24,6 +28,7 @@ async function createGeneratedSession(
     isPrivate,
     workspace: `workspace_${anonymousClientId}_${Math.random().toString(36).slice(2)}`,
     anonymousClientId,
+    serverSecret: 'test-secret',
   })
 
   await t.mutation(internal.sessions.completeGenerationInternal, {
@@ -132,6 +137,7 @@ test("listOwnedSessions returns the caller's sessions (signed-in owner) and excl
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_alice',
+    serverSecret: 'test-secret',
   })
   await asUser(t, 'alice').mutation(
     internal.sessions.completeGenerationInternal,
@@ -151,6 +157,7 @@ test("listOwnedSessions returns the caller's sessions (signed-in owner) and excl
     preferredExportTarget: 'html',
     isPrivate: true,
     workspace: 'workspace_bob',
+    serverSecret: 'test-secret',
   })
   await asUser(t, 'bob').mutation(
     internal.sessions.completeGenerationInternal,
@@ -256,6 +263,7 @@ test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed
     isPrivate: false,
     workspace: 'workspace_bob_link',
     anonymousClientId: 'link-anon',
+    serverSecret: 'test-secret',
   })
   await asUser(t, 'bob').mutation(
     internal.sessions.completeGenerationInternal,

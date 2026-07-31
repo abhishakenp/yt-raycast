@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import { convexTest } from 'convex-test'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api } from './_generated/api'
 import schema from './schema'
@@ -25,6 +25,10 @@ async function settlement(promise: Promise<unknown>) {
     return 'rejected'
   }
 }
+
+beforeEach(() => {
+  vi.stubEnv('CLERK_JWT_ISSUER_DOMAIN', '')
+})
 
 afterEach(() => {
   vi.unstubAllEnvs()

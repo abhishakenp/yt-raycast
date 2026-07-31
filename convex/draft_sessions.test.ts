@@ -1,12 +1,16 @@
 import { convexTest } from 'convex-test'
 import type { FunctionArgs } from 'convex/server'
-import { expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 
 import { api, internal } from './_generated/api'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 type CreateSessionArgs = FunctionArgs<typeof api.sessions.create>
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 const createArgs = {
   prompt: 'Build a speculative draft site',
@@ -15,6 +19,7 @@ const createArgs = {
   isPrivate: false,
   anonymousClientId: 'anon-draft-client',
   workspace: 'workspace_draft_publish',
+  serverSecret: 'test-secret',
 } satisfies Omit<CreateSessionArgs, 'isDraft'>
 
 test('speculative sessions are stored as drafts until the same workspace is submitted', async () => {

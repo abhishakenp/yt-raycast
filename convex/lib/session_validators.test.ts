@@ -1,7 +1,7 @@
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { convexTest } from 'convex-test'
 import type { FunctionArgs } from 'convex/server'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api } from '../_generated/api'
 import schema from '../schema'
@@ -47,6 +47,10 @@ import {
 } from './session_validators'
 
 const modules = import.meta.glob('../**/*.ts')
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 const sessionValidatorsConvexTest = () => {
   const t = convexTest(schema, modules)
@@ -214,6 +218,7 @@ describe('session validators boundary', () => {
         workspace: 'workspace_validators_test',
         anonymousClientId: 'anon_validators_test',
         anonymousOwnerSecret: 'owner-secret',
+        serverSecret: 'test-secret',
       }),
     ).resolves.toMatchObject({ sessionId: expect.any(String) })
   })
@@ -226,6 +231,7 @@ describe('session validators boundary', () => {
         preferredExportTarget: 'html',
         isPrivate: false,
         workspace: 'workspace_invalid',
+        serverSecret: 'test-secret',
       } as unknown as FunctionArgs<typeof api.sessions.create>),
     ).rejects.toThrow()
   })
@@ -241,6 +247,7 @@ describe('session validators boundary', () => {
         workspace: 'workspace_bad_target',
         anonymousClientId: 'anon_bad_target',
         anonymousOwnerSecret: 'owner-secret',
+        serverSecret: 'test-secret',
       } as unknown as FunctionArgs<typeof api.sessions.create>),
     ).rejects.toThrow()
   })

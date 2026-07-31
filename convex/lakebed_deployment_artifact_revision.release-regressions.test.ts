@@ -1,12 +1,16 @@
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { convexTest } from 'convex-test'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api } from './_generated/api'
 import { exportGeneratorRevision } from './lib/session_export_helpers'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 function deploymentArtifactTest() {
   const t = convexTest(schema, modules)
@@ -25,6 +29,7 @@ async function createOwnedSession(
     workspace: 'workspace_lakebed_artifact_revision',
     anonymousClientId: 'anon-lakebed-artifact-revision',
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 }
 

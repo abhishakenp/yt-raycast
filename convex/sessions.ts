@@ -46,6 +46,7 @@ import {
 } from './lib/session_ai_capsule_helpers'
 import { applySectionEditToArtifacts } from './lib/session_section_edit_helpers'
 import { deleteSessionGraph } from './lib/session_delete_helpers'
+import { STUCK_SESSION_TIMEOUT_MS } from './lib/session_ttl_constants'
 import {
   applyCloneBriefAndGenerate as applyCloneBriefAndGenerateHelper,
   finalizeSessionClonePreview,
@@ -301,6 +302,21 @@ export const deleteMine = mutation({
 export const create = mutation({
   args: createGenerationSessionArgs,
   handler: async (ctx, args) => {
+    // Require serverSecret: only the API route (which has the secret in its
+    // env) should create sessions. Direct Convex API calls without the secret
+    // are rejected — this prevents bypassing the API route's rate limiting,
+    // content moderation, and IP hash validation.
+    const expectedSecret = process.env.SHARE_BONUS_MUTATION_SECRET
+    if (
+      expectedSecret === undefined ||
+      args.serverSecret === undefined ||
+      args.serverSecret !== expectedSecret
+    ) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Session creation is only available via the API route.',
+      })
+    }
     const result: CreateGenerationSessionResult = await createGenerationSession(
       ctx,
       args,
@@ -388,6 +404,47 @@ export const deleteDraftSessionIfStillDraft = internalMutation({
     if (session.deletedAt !== undefined) return
     if (session.isDraft !== true) return
     await deleteSessionGraph(ctx, args.sessionId, { hardDeleteSession: true })
+  },
+})
+
+/**
+ * Periodic cleanup: mark sessions stuck in `queued` or `running` status for
+ * longer than STUCK_SESSION_TIMEOUT_MS as `failed`. The VPS generation
+ * handler normally completes within minutes; anything older has likely
+ * crashed or lost its worker. Intended to be called from a cron job.
+ */
+export const cleanupStuckSessions = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - STUCK_SESSION_TIMEOUT_MS
+    const stuckStatuses = ['queued', 'running'] as const
+    let cleaned = 0
+
+    for (const status of stuckStatuses) {
+      const stuck = await ctx.db
+        .query('sessions')
+        .withIndex('by_status_updatedAt', (index) =>
+          index.eq('status', status).lt('updatedAt', cutoff),
+        )
+        .take(100)
+
+      for (const session of stuck) {
+        if (session.deletedAt !== undefined) continue
+        await ctx.db.patch(session._id, {
+          status: 'failed',
+          updatedAt: Date.now(),
+        })
+        await ctx.db.insert('generationEvents', {
+          sessionId: session._id,
+          eventType: 'error',
+          message: 'Generation timed out (stuck session cleanup)',
+          createdAt: Date.now(),
+        })
+        cleaned++
+      }
+    }
+
+    return { cleaned }
   },
 })
 
@@ -893,7 +950,12 @@ export const getOwnedExportArtifactDownloadByLookup = query({
   args: ownedExportLookupArgs,
   handler: (ctx, args) => {
     const sessionId = ctx.db.normalizeId('sessions', args.lookup)
-    if (sessionId === null) return null
+    if (sessionId === null) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    }
     return loadOwnedExportArtifactDownload(ctx, {
       sessionId,
       target: args.target,

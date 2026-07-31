@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { api, internal } from './_generated/api'
 import schema from './schema'
 
@@ -30,8 +30,13 @@ function createTestSession(
     workspace: 'workspace_test',
     anonymousClientId: `anon-${prompt}`,
     clientIpHash: 'test_ip_bucket',
+    serverSecret: 'test-secret',
   })
 }
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 afterEach(async () => {
   vi.unstubAllGlobals()
@@ -209,6 +214,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
     isPrivate: false,
     workspace: 'workspace_cache_first',
     clientIpHash: 'test_ip_bucket',
+    serverSecret: 'test-secret',
   })
 
   await t.action(internal.sessions.completeGeneration, {
@@ -224,6 +230,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
     isPrivate: false,
     workspace: 'workspace_cache_second',
     clientIpHash: 'test_ip_bucket',
+    serverSecret: 'test-secret',
   })
 
   const metrics = await t.query(api.sessions.getUsageMetrics, { sessionId })

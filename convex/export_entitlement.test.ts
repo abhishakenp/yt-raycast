@@ -1,10 +1,14 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test'
-import { expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { api, internal } from './_generated/api'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 function requireEventStream<T>(stream: T | null): T {
   if (stream === null) throw new Error('Expected event stream')
@@ -30,6 +34,7 @@ async function createReadySession(
     preferredExportTarget: 'html' as const,
     isPrivate: options.isPrivate ?? false,
     workspace: `workspace_export_entitlement_${identity?.subject ?? 'anonymous'}`,
+    serverSecret: 'test-secret',
     ...(identity === undefined
       ? {
           anonymousClientId: 'anon-export-entitlement',

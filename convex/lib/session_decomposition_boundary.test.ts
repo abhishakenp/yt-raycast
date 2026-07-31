@@ -1,6 +1,6 @@
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { convexTest } from 'convex-test'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
@@ -9,6 +9,10 @@ import schema from '../schema'
 const modules = import.meta.glob('../**/*.ts')
 
 let activeTest: ReturnType<typeof convexTest> | null = null
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 const sessionBoundaryConvexTest = () => {
   const t = convexTest(schema, modules)
@@ -39,6 +43,7 @@ async function createReadySession(
     workspace: `workspace_${prompt.toLowerCase().replace(/\W+/g, '_')}`,
     anonymousClientId: `anon_${prompt.toLowerCase().replace(/\W+/g, '_')}`,
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await t.action(internal.sessions.completeGeneration, {
@@ -114,6 +119,7 @@ describe('session decomposition boundary', () => {
         preferredExportTarget: 'html',
         isPrivate: false,
         workspace: 'workspace_bad_prompt',
+        serverSecret: 'test-secret',
       }),
     ).rejects.toThrow()
 

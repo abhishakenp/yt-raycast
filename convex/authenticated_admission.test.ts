@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { api } from './_generated/api'
 import schema from './schema'
 import {
@@ -26,10 +26,12 @@ function createPayload(stamp: string) {
     preferredExportTarget: 'html' as const,
     isPrivate: false,
     workspace: `workspace_authenticated_quota_${stamp}`,
+    serverSecret: 'test-secret',
   }
 }
 
 beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
   delete process.env.IS_DEV
   delete process.env.DISABLE_LIMIT
 })

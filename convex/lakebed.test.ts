@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import { api } from './_generated/api'
 import schema from './schema'
@@ -7,6 +7,10 @@ import schema from './schema'
 const modules = import.meta.glob('./**/*.ts')
 const convexApi = api
 const ownerSecret = 'lakebed-owner-secret'
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -49,6 +53,7 @@ async function createSession(
     preferredLanguage: 'en',
     prompt,
     workspace: `workspace_${anonymousClientId}`,
+    serverSecret: 'test-secret',
   }
 
   return identity === undefined

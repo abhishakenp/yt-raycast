@@ -132,7 +132,7 @@ describe('generation quota checks with long account histories', () => {
     await expect(
       asUser(t, 'monthly-user').mutation(
         api.sessions.create,
-        createPayload('monthly-long-history'),
+        { ...createPayload('monthly-long-history'), serverSecret: 'test-server-secret' },
       ),
     ).rejects.toMatchObject({
       data: expect.objectContaining({ code: 'QUOTA_EXCEEDED' }),
@@ -170,7 +170,7 @@ describe('generation quota checks with long account histories', () => {
     await expect(
       asUser(t, 'rate-user').mutation(
         api.sessions.create,
-        createPayload('rate-long-history'),
+        { ...createPayload('rate-long-history'), serverSecret: 'test-server-secret' },
       ),
     ).rejects.toMatchObject({
       data: expect.objectContaining({ code: 'RATE_LIMITED' }),

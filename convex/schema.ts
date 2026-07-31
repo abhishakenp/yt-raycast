@@ -197,7 +197,8 @@ export default defineSchema({
     .index('by_promptCacheKey', ['promptCacheKey'])
     .index('by_public_createdAt', ['isPrivate', 'createdAt'])
     .index('by_isDraft_createdAt', ['isDraft', 'createdAt'])
-    .index('by_deploymentSlug', ['deploymentSlug']),
+    .index('by_deploymentSlug', ['deploymentSlug'])
+    .index('by_status_updatedAt', ['status', 'updatedAt']),
 
   contentModerationFlags: defineTable({
     prompt: v.string(),

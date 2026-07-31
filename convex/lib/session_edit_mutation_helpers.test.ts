@@ -1,6 +1,6 @@
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { convexTest } from 'convex-test'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
@@ -20,6 +20,7 @@ const sessionEditConvexTest = () => {
 const originalClerk = process.env.VITE_DISABLE_CLERK
 
 beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
   process.env.VITE_DISABLE_CLERK = 'true'
 })
 
@@ -46,6 +47,7 @@ async function createReadySession(
     workspace: `workspace_${prompt.toLowerCase().replace(/\W+/g, '_')}`,
     anonymousClientId: `anon_${prompt.toLowerCase().replace(/\W+/g, '_')}`,
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await t.action(internal.sessions.completeGeneration, {
@@ -275,6 +277,7 @@ describe('session edit mutation helpers', () => {
       workspace: 'workspace_repeated_glass_page',
       anonymousClientId: 'anon_repeated_glass_page',
       anonymousOwnerSecret: 'owner-secret',
+      serverSecret: 'test-secret',
     })
 
     await t.action(internal.sessions.completeGeneration, {
@@ -395,6 +398,7 @@ describe('session edit mutation helpers', () => {
       workspace: 'workspace_ai_capsule_inline_text',
       anonymousClientId: 'anon_ai_capsule_inline_text',
       anonymousOwnerSecret: 'owner-secret',
+      serverSecret: 'test-secret',
     })
 
     const capsuleName = 'AICustom_FashionStoreHero_home_hero'
@@ -575,6 +579,7 @@ describe('session edit mutation helpers', () => {
       workspace: 'workspace_gate_two_page',
       anonymousClientId: 'anon_gate_two_page',
       anonymousOwnerSecret: 'owner-secret',
+      serverSecret: 'test-secret',
     })
     await t.action(internal.sessions.completeGeneration, {
       sessionId,

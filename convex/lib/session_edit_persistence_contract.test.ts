@@ -2,7 +2,7 @@ import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/tes
 import { convexTest } from 'convex-test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import schema from '../schema'
@@ -21,6 +21,10 @@ function loadFixture(name: string): string {
 // context is torn down, causing "Write outside of transaction" errors).
 let activeTest: ReturnType<typeof convexTest> | null = null
 const scheduledDrainTimeoutMs = 5_000
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 async function drainScheduledFunctionsWithTimeout(
   t: ReturnType<typeof convexTest>,
@@ -77,6 +81,7 @@ async function createReadySessionWithFixture(
     workspace: `workspace_${fixtureName}`,
     anonymousClientId: `anon_${fixtureName}`,
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await t.action(internal.sessions.completeGeneration, {

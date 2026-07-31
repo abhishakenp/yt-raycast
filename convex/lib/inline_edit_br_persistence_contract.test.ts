@@ -2,7 +2,7 @@ import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/tes
 import { convexTest } from 'convex-test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import schema from '../schema'
@@ -17,6 +17,10 @@ function loadFixture(name: string): string {
 }
 
 let activeTest: ReturnType<typeof convexTest> | null = null
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 const sessionEditContractTest = () => {
   const t = convexTest(schema, modules)
@@ -50,6 +54,7 @@ async function createReadySessionWithFixture(
     workspace: `workspace_${fixtureName}`,
     anonymousClientId: `anon_${fixtureName}`,
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   const { renderOpenUIToHTML } = await import('@ship-fast/engine/openui-ssr.js')

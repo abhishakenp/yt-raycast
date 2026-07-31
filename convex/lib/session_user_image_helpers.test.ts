@@ -1,6 +1,6 @@
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { convexTest } from 'convex-test'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
@@ -10,6 +10,10 @@ import { listUserImages } from './session_user_image_helpers'
 const modules = import.meta.glob('../**/*.ts')
 
 let activeTest: ReturnType<typeof convexTest> | null = null
+
+beforeEach(() => {
+  vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
+})
 
 const userImageTest = () => {
   const t = convexTest(schema, modules)
@@ -40,6 +44,7 @@ async function createReadySession(
     workspace: `workspace_${prompt.toLowerCase().replace(/\W+/g, '_')}_${Math.random().toString(36).slice(2, 8)}`,
     anonymousClientId: `anon_${prompt.toLowerCase().replace(/\W+/g, '_')}_${Math.random().toString(36).slice(2, 8)}`,
     anonymousOwnerSecret: 'owner-secret',
+    serverSecret: 'test-secret',
   })
 
   await t.action(internal.sessions.completeGeneration, {
@@ -237,6 +242,7 @@ describe('user image upload helpers', () => {
       workspace: 'workspace_private_image_upload_test',
       anonymousClientId: 'anon_private_image_upload_test',
       anonymousOwnerSecret: 'owner-secret',
+      serverSecret: 'test-secret',
     })
 
     await t.mutation(api.sessions.saveUserImage, {
