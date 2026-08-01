@@ -23,11 +23,7 @@ function HistoryCommand() {
   }, []);
 
   // Try real history first (via Safari JS), fall back to search-based
-  const {
-    data: realHistory,
-    isLoading: realLoading,
-    error: realError,
-  } = useQuery({
+  const { data: realHistory, isLoading: realLoading } = useQuery({
     queryKey: ["youtube", "real-history"],
     queryFn: fetchRealHistory,
     retry: false,
