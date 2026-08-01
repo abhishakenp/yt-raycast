@@ -12,6 +12,7 @@ import type * as account from "../account.js";
 import type * as billing from "../billing.js";
 import type * as brandfetch from "../brandfetch.js";
 import type * as commerce_operations from "../commerce_operations.js";
+import type * as commerceInstances from "../commerceInstances.js";
 import type * as contentCache from "../contentCache.js";
 import type * as crons from "../crons.js";
 import type * as customLanguages from "../customLanguages.js";
@@ -104,6 +105,7 @@ declare const fullApi: ApiFromModules<{
   billing: typeof billing;
   brandfetch: typeof brandfetch;
   commerce_operations: typeof commerce_operations;
+  commerceInstances: typeof commerceInstances;
   contentCache: typeof contentCache;
   crons: typeof crons;
   customLanguages: typeof customLanguages;
