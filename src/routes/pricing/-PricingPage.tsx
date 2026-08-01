@@ -259,17 +259,6 @@ export const PricingPage = () => {
     }
   }, [getToken, isCheckoutStarting, isSignedIn, refreshBillingOverview])
 
-  useEffect(() => {
-    const tick = () => {
-      const countdown = document.getElementById('countdown-text')
-      if (countdown) countdown.textContent = 'Early adopter slots still open'
-    }
-
-    tick()
-    const interval = window.setInterval(tick, 30000)
-    return () => window.clearInterval(interval)
-  }, [])
-
   const handlePricingContentClick = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
       const target = event.target

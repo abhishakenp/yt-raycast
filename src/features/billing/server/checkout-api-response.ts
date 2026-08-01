@@ -72,7 +72,6 @@ const fetchRazorpayCheckout = async (
   referralOfferId: string | null,
 ) => {
   const mode = normalizeString(body.mode)
-  const tier = normalizeString(body.tier) || 'pro'
   const packId = normalizeString(body.packId) as keyof typeof creditPacks
 
   if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
@@ -85,10 +84,7 @@ const fetchRazorpayCheckout = async (
   const auth = btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`)
 
   if (mode === 'subscription') {
-    const planId =
-      tier === 'early_adopter'
-        ? env.RAZORPAY_EARLY_ADOPTER_PLAN_ID
-        : env.RAZORPAY_PRO_PLAN_ID
+    const planId = env.RAZORPAY_PRO_PLAN_ID
     if (!planId) {
       return json(
         { error: 'Razorpay subscription plan is not configured.' },
@@ -110,7 +106,7 @@ const fetchRazorpayCheckout = async (
           customer_notify: 1,
           // Lifetime referral reward: apply the pre-configured Razorpay offer.
           ...(referralOfferId ? { offer_id: referralOfferId } : {}),
-          notes: { userId, tier },
+          notes: { userId, tier: 'pro' },
         }),
       })
     } catch {
@@ -240,6 +236,10 @@ export async function createCheckoutApiResponse(
   const mode = normalizeString(body.mode)
   if (mode !== 'subscription' && mode !== 'credit_pack') {
     return json({ error: 'Invalid checkout mode.' }, { status: 400 })
+  }
+  const tier = normalizeString(body.tier)
+  if (mode === 'subscription' && tier !== '' && tier !== 'pro') {
+    return json({ error: 'Invalid subscription plan.' }, { status: 400 })
   }
 
   const requestedGateway =

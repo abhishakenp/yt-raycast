@@ -421,6 +421,30 @@ describe('createCheckoutApiResponse', () => {
     })
   })
 
+  it('rejects the retired early-adopter tier before creating a subscription', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          tier: 'early_adopter',
+          gateway: 'razorpay',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid subscription plan.',
+    })
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('does not treat a malformed 200 Razorpay subscription response as a successful checkout', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response('<html>razorpay gateway returned a login page</html>', {

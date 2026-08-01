@@ -1,5 +1,3 @@
-import { existsSync, mkdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 import { ConvexHttpClient } from 'convex/browser'
 import {
@@ -53,60 +51,7 @@ function getConvexClient(): AnyConvexClient {
   return convex
 }
 
-let billingDir: string | null = null
-
-function ensureBillingDir(): string | null {
-  if (billingDir) return billingDir
-  const sessionsDir = process.env.SESSIONS_DIR
-  if (!sessionsDir) {
-    console.warn(
-      '[billing] SESSIONS_DIR env var is not set — file-based billing operations will be skipped. Add SESSIONS_DIR=./sessions to .env.local',
-    )
-    return null
-  }
-  billingDir = join(sessionsDir, 'billing')
-  mkdirSync(billingDir, { recursive: true })
-  return billingDir
-}
-
 const PAYWALL_DISABLED = devFlags.disablePaywall
-
-const EARLY_ADOPTER_MAX = parseInt(
-  process.env.EARLY_ADOPTER_MAX_USERS || '500',
-  10,
-)
-const EARLY_ADOPTER_PLAN_ID = process.env.RAZORPAY_EARLY_ADOPTER_PLAN_ID || ''
-
-type EarlyAdopterData = { count: number; users: string[] }
-
-function getEarlyAdopterCountFile(): string | null {
-  const dir = ensureBillingDir()
-  if (!dir) return null
-  return join(dir, '_early_adopter_count.json')
-}
-
-function readEarlyAdopterCountFromFile(): EarlyAdopterData {
-  const filePath = getEarlyAdopterCountFile()
-  if (!filePath || !existsSync(filePath)) return { count: 0, users: [] }
-  try {
-    return JSON.parse(readFileSync(filePath, 'utf-8'))
-  } catch {
-    return { count: 0, users: [] }
-  }
-}
-
-async function readEarlyAdopterCount(): Promise<EarlyAdopterData> {
-  try {
-    const data = await getConvexClient().query('billing:getEarlyAdopterStatus')
-    return { count: data.count || 0, users: data.users || [] }
-  } catch (err: unknown) {
-    console.warn(
-      '[early-adopter] Convex read failed, falling back to file:',
-      (err as Error)?.message,
-    )
-    return readEarlyAdopterCountFromFile()
-  }
-}
 
 export async function getUserGenerationQuota(
   userId: string | null | undefined,
@@ -160,58 +105,6 @@ export async function getUserGenerationQuota(
   }
 }
 
-export async function incrementEarlyAdopterCount(uid: string): Promise<void> {
-  try {
-    await getConvexClient().mutation('billing:incrementEarlyAdopterCount', {
-      userId: uid,
-    })
-  } catch (err: unknown) {
-    console.error(
-      '[early-adopter] Convex mutation failed:',
-      (err as Error)?.message,
-    )
-  }
-}
-
-export async function isEarlyAdopterSlotAvailable(): Promise<boolean> {
-  try {
-    return await getConvexClient().query('billing:isEarlyAdopterSlotAvailable')
-  } catch (err: unknown) {
-    console.warn(
-      '[early-adopter] Convex query failed, falling back to file:',
-      (err as Error)?.message,
-    )
-    const data = await readEarlyAdopterCount()
-    return data.count < EARLY_ADOPTER_MAX
-  }
-}
-
-export const getEarlyAdopterStatus = async () => {
-  try {
-    const data = await getConvexClient().query('billing:getEarlyAdopterStatus')
-    return {
-      eligible:
-        data.count < EARLY_ADOPTER_MAX && Boolean(EARLY_ADOPTER_PLAN_ID),
-      slotsRemaining: data.slotsRemaining,
-      totalSlots: EARLY_ADOPTER_MAX,
-      priceId: EARLY_ADOPTER_PLAN_ID,
-    }
-  } catch (err: unknown) {
-    console.warn(
-      '[early-adopter] Convex query failed, falling back to file:',
-      (err as Error)?.message,
-    )
-    const data = await readEarlyAdopterCount()
-    return {
-      eligible:
-        data.count < EARLY_ADOPTER_MAX && Boolean(EARLY_ADOPTER_PLAN_ID),
-      slotsRemaining: Math.max(0, EARLY_ADOPTER_MAX - data.count),
-      totalSlots: EARLY_ADOPTER_MAX,
-      priceId: EARLY_ADOPTER_PLAN_ID,
-    }
-  }
-}
-
 export const FREE_PLAN = {
   name: 'Free',
   priceId: '',
@@ -239,7 +132,7 @@ const PRO_PLAN = {
     'Monthly template drops',
   ],
   pricing: {
-    inr: { amount: 399, display: '\u20B9399/month' },
+    inr: { amount: 999, display: '\u20B9999/month' },
     usd: { amount: 9, display: '$9/month' },
   },
 }
@@ -611,9 +504,8 @@ export async function getSessionPaymentDetails(
   const gateway = resolvePaymentGateway()
   const currency = resolvePaymentCurrency(gateway)
   const resolvedIp = ip
-  const [isSubscribedRaw, earlyAdopter, credits, quota] = await Promise.all([
+  const [isSubscribedRaw, credits, quota] = await Promise.all([
     hasActiveSubscription(session?.userId),
-    getEarlyAdopterStatus(),
     getUserCredits(session?.userId),
     getUserGenerationQuota(session?.userId, resolvedIp),
   ])
@@ -643,16 +535,6 @@ export async function getSessionPaymentDetails(
       priceId: p.priceId,
       pricing: p.pricing,
     })),
-    earlyAdopter: {
-      eligible: earlyAdopter.eligible,
-      slotsRemaining: earlyAdopter.slotsRemaining,
-      totalSlots: earlyAdopter.totalSlots,
-      priceId: earlyAdopter.priceId,
-      pricing: {
-        inr: { amount: 199, display: '\u20B9199/month' },
-        usd: { amount: 5, display: '$5/month' },
-      },
-    },
     subscription: {
       active: isSubscribed,
       status: isSubscribed ? 'active' : null,

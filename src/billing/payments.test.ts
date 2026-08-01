@@ -23,14 +23,11 @@ const BILLING_ENV_KEYS = [
   'VITE_CONVEX_URL',
   'VITE_CONVEX_SELF_HOSTED_URL',
   'DISABLE_PAYWALL',
-  'EARLY_ADOPTER_MAX_USERS',
-  'RAZORPAY_EARLY_ADOPTER_PLAN_ID',
   'RAZORPAY_PRO_PLAN_ID',
   'RAZORPAY_KEY_ID',
   'RAZORPAY_KEY_SECRET',
   'RAZORPAY_CREDITS_3_PAISE',
   'RAZORPAY_CREDITS_10_PAISE',
-  'STRIPE_EARLY_ADOPTER_PRICE_ID',
   'STRIPE_PRO_PRICE_ID',
   'STRIPE_SECRET_KEY',
   'STRIPE_CREDITS_3_PRICE_ID',
@@ -186,19 +183,14 @@ describe('session payment details', () => {
   it('returns Razorpay pricing, credit packs, quota, and unlock state for all users', async () => {
     const { getSessionPaymentDetails, setActiveSubscriptionLookupForTest } =
       await loadPayments({
-        EARLY_ADOPTER_MAX_USERS: '10',
         RAZORPAY_KEY_ID: 'rzp_key',
         RAZORPAY_KEY_SECRET: 'rzp_secret',
         RAZORPAY_PRO_PLAN_ID: 'plan_pro',
-        RAZORPAY_EARLY_ADOPTER_PLAN_ID: 'plan_early',
         RAZORPAY_CREDITS_3_PAISE: '19900',
         RAZORPAY_CREDITS_10_PAISE: '39900',
       })
     setActiveSubscriptionLookupForTest(() => false)
     convexMock.query.mockImplementation(async (name) => {
-      if (name === 'billing:getEarlyAdopterStatus') {
-        return { count: 4, slotsRemaining: 6, users: [] }
-      }
       if (name === 'billing:getUserCredits') return 5
       throw new Error(`Unexpected query: ${name}`)
     })
@@ -221,16 +213,13 @@ describe('session payment details', () => {
         name: 'Pro',
         priceId: 'plan_pro',
       },
+      pricing: {
+        inr: { amount: 999, display: '₹999/month' },
+      },
       creditPacks: [
         { id: '3_credits', credits: 3, priceId: '3_credits' },
         { id: '10_credits', credits: 10, priceId: '10_credits' },
       ],
-      earlyAdopter: {
-        eligible: true,
-        slotsRemaining: 6,
-        totalSlots: 10,
-        priceId: 'plan_early',
-      },
       subscription: {
         active: false,
         status: null,
