@@ -17,6 +17,8 @@ declare namespace Preferences {
   export type Search = ExtensionPreferences & {}
   /** Preferences accessible in the `watching` command */
   export type Watching = ExtensionPreferences & {}
+  /** Preferences accessible in the `watching-fullscreen` command */
+  export type WatchingFullscreen = ExtensionPreferences & {}
   /** Preferences accessible in the `trending` command */
   export type Trending = ExtensionPreferences & {}
   /** Preferences accessible in the `history` command */
@@ -33,6 +35,8 @@ declare namespace Arguments {
 }
   /** Arguments passed to the `watching` command */
   export type Watching = {}
+  /** Arguments passed to the `watching-fullscreen` command */
+  export type WatchingFullscreen = {}
   /** Arguments passed to the `trending` command */
   export type Trending = {}
   /** Arguments passed to the `history` command */
