@@ -9,6 +9,12 @@ beforeEach(() => {
   vi.stubEnv('SHARE_BONUS_MUTATION_SECRET', 'test-secret')
 })
 
+const identityFor = (userId: string) => ({
+  issuer: 'https://convex.test',
+  subject: userId,
+  tokenIdentifier: `https://convex.test|${userId}`,
+})
+
 async function createGeneratedSession(
   t: ReturnType<typeof convexTest>,
   {
@@ -56,7 +62,19 @@ test('listPublicSessions returns only public visible sessions with gallery metad
     prompt: 'SaaS analytics dashboard for product teams',
     anonymousClientId: 'gallery-public',
   })
-  await createGeneratedSession(t, {
+  const privateOwner = identityFor('gallery-private-owner')
+  await t.run(async (ctx) => {
+    await ctx.db.insert('subscriptions', {
+      userId: privateOwner.tokenIdentifier,
+      provider: 'stripe',
+      status: 'active',
+      planId: 'pro',
+      providerSubscriptionId: 'sub_gallery_private',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+  })
+  await createGeneratedSession(t.withIdentity(privateOwner), {
     prompt: 'Private portfolio studio preview',
     isPrivate: true,
     anonymousClientId: 'gallery-private',

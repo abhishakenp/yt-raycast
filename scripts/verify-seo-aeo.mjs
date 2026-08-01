@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
 
-import { renderHtmlProject } from '../packages/ship-fast-engine/src/renderers/html/index.js'
+import { renderHtmlProject } from '../packages/ship-fast-engine/src/renderers/html/index.ts'
 
 const args = new Map(
   process.argv.slice(2).map((arg) => {

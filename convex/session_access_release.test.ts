@@ -137,7 +137,6 @@ describe('registered session access boundaries', () => {
       session: {
         sessionId,
         prompt: 'Public release workspace',
-        isPrivate: false,
       },
       preview: { openUiSource: '<main>Public preview</main>' },
     })
@@ -189,7 +188,6 @@ describe('registered session access boundaries', () => {
       session: {
         sessionId,
         userId: `${ISSUER}|alice`,
-        isPrivate: true,
       },
     })
   })

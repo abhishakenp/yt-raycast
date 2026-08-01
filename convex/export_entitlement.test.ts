@@ -178,7 +178,19 @@ test('credited users consume one credit only for a new current-preview export', 
 
 test('private event streams require the session owner', async () => {
   const t = convexTest(schema, modules)
-  const sessionId = await createReadySession(t, undefined, { isPrivate: true })
+  const owner = identityFor('private-event-stream-owner')
+  await t.run(async (ctx) => {
+    await ctx.db.insert('subscriptions', {
+      userId: owner.tokenIdentifier,
+      provider: 'stripe',
+      status: 'active',
+      planId: 'pro',
+      providerSubscriptionId: 'sub_private_event_stream',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+  })
+  const sessionId = await createReadySession(t, owner, { isPrivate: true })
 
   await expect(
     t.query(api.sessions.getEventStream, {
@@ -187,9 +199,8 @@ test('private event streams require the session owner', async () => {
   ).rejects.toThrow(/own this session/)
 
   const stream = requireEventStream(
-    await t.query(api.sessions.getEventStream, {
+    await t.withIdentity(owner).query(api.sessions.getEventStream, {
       lookup: sessionId,
-      anonymousOwnerSecret: 'owner-secret',
     }),
   )
 

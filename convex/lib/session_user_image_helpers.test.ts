@@ -22,6 +22,12 @@ const userImageTest = () => {
   return t
 }
 
+const identityFor = (userId: string) => ({
+  issuer: 'https://convex.test',
+  subject: userId,
+  tokenIdentifier: `https://convex.test|${userId}`,
+})
+
 afterEach(async () => {
   if (activeTest) {
     for (let i = 0; i < 5; i++) {
@@ -232,24 +238,35 @@ describe('user image upload helpers', () => {
     expect(imagesB).toEqual([])
   })
 
-  it('does not expose uploaded images for private anonymous sessions through an unauthenticated list query', async () => {
+  it('does not expose uploaded images for private paid sessions through an unauthenticated list query', async () => {
     const t = userImageTest()
     const storageId = await createStorageId(t)
-    const { sessionId } = await t.mutation(api.sessions.create, {
-      serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
-      prompt: 'Private product launch page',
-      preferredLanguage: 'en',
-      preferredExportTarget: 'html',
-      isPrivate: true,
-      workspace: 'workspace_private_image_upload_test',
-      anonymousClientId: 'anon_private_image_upload_test',
-      anonymousOwnerSecret: 'owner-secret',
-      serverSecret: 'test-secret',
+    const owner = identityFor('private-image-owner')
+    await t.run(async (ctx) => {
+      await ctx.db.insert('subscriptions', {
+        userId: owner.tokenIdentifier,
+        provider: 'stripe',
+        status: 'active',
+        planId: 'pro',
+        providerSubscriptionId: 'sub_private_image',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      })
     })
+    const { sessionId } = await t
+      .withIdentity(owner)
+      .mutation(api.sessions.create, {
+        serverSecret: process.env.SHARE_BONUS_MUTATION_SECRET,
+        prompt: 'Private product launch page',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: true,
+        workspace: 'workspace_private_image_upload_test',
+        serverSecret: 'test-secret',
+      })
 
-    await t.mutation(api.sessions.saveUserImage, {
+    await t.withIdentity(owner).mutation(api.sessions.saveUserImage, {
       sessionId: sessionId as Id<'sessions'>,
-      anonymousOwnerSecret: 'owner-secret',
       storageId,
       filename: 'private-hero.png',
       contentType: 'image/png',
@@ -261,6 +278,12 @@ describe('user image upload helpers', () => {
         sessionId: sessionId as Id<'sessions'>,
       }),
     ).resolves.toEqual([])
+
+    await expect(
+      t.withIdentity(owner).query(api.sessions.listUserImages, {
+        sessionId: sessionId as Id<'sessions'>,
+      }),
+    ).resolves.toHaveLength(1)
   })
 
   it('filters uploaded image rows whose storage URL can no longer be resolved', async () => {

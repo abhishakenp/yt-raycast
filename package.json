@@ -26,7 +26,7 @@
     "verify:authenticated-admission": "bun run test -- convex/authenticated_admission.test.ts",
     "verify:restored-routes": "node scripts/verify-restored-routes.mjs",
     "verify:deployment-preview": "node scripts/verify-deployment-preview.mjs",
-    "verify:seo-aeo": "node scripts/verify-seo-aeo.mjs",
+    "verify:seo-aeo": "bun scripts/verify-seo-aeo.mjs",
     "verify:brand-localization": "node scripts/verify-brand-localization.mjs",
     "verify:billing": "node scripts/verify-billing.mjs",
     "verify:billing-state": "bun run test -- convex/billing.test.ts",

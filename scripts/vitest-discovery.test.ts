@@ -8,7 +8,10 @@ const TEST_ARTIFACT_GLOBS = [
   'convex/**/*.{test,spec}.{ts,tsx,js,jsx,mjs,cjs}',
   'packages/*/src/**/*.{test,spec}.{ts,tsx,js,jsx,mjs,cjs}',
   'public/scripts/**/*.{test,spec}.{ts,tsx,js,jsx,mjs,cjs}',
-  'scripts/**/*.{test,spec}.{ts,tsx,js,jsx,mjs,cjs}',
+  // Script-side tests are configured as TypeScript Vitest suites. Some legacy
+  // `.test.mjs` maintenance scripts use a different runner and must not be
+  // asserted as Vitest-discoverable.
+  'scripts/**/*.{test,spec}.{ts,tsx}',
   'src/**/*.{test,spec}.{ts,tsx,js,jsx,mjs,cjs}',
 ]
 

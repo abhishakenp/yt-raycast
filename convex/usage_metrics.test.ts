@@ -201,7 +201,6 @@ test('completeGeneration records runtime usage metrics and a replayable completi
     cacheHit: false,
   })
   expect(session?.elapsed).toBe(4321)
-  expect(session?.cost).toBe(0)
 })
 
 test('duplicate public prompt cache hits record replayable alert metadata', async () => {

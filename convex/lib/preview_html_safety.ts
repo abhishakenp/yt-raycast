@@ -153,13 +153,23 @@ function normalizedVariants(html: string): string[] {
     variants.add(decoded)
   }
   for (const variant of [...variants]) {
-    variants.add(
-      variant.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ''),
-    )
+    variants.add(stripControlCharacters(variant))
     variants.add(variant.replace(/<!--[\s\S]*?-->/g, ''))
   }
   return [...variants]
 }
+
+const stripControlCharacters = (value: string) =>
+  Array.from(value, (character) => {
+    const code = character.charCodeAt(0)
+    return (code >= 0 && code <= 8) ||
+      code === 11 ||
+      code === 12 ||
+      (code >= 14 && code <= 31) ||
+      code === 127
+      ? ''
+      : character
+  }).join('')
 
 const RULES = [
   DANGEROUS_ELEMENT_PATTERN,
