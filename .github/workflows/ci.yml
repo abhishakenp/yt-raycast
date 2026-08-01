@@ -158,7 +158,7 @@ jobs:
         run: bun run verify:seo-aeo -- --static-only
 
       - name: Monitoring
-        run: bun run verify:monitoring
+        run: bun run test -- convex/usage_metrics.test.ts
 
   coverage:
     name: Test with coverage
