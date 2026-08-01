@@ -159,11 +159,15 @@ export function verifyQualityExitFromTexts({
     if (!changeReport.includes(reportHeading)) {
       failures.push(`${changeGroupReportPath} does not include ${group.title}`)
     }
+  }
 
-    for (const artifact of [`${group.id}.files.txt`, `${group.id}.patch`]) {
-      if (!reviewBundlesReadme.includes(artifact)) {
-        failures.push(`${reviewBundlesReadmePath} does not include ${artifact}`)
-      }
+  const bundleIds = [
+    ...reviewBundlesReadme.matchAll(/([a-z0-9-]+)\.files\.txt/g),
+  ].map((match) => match[1])
+  for (const bundleId of bundleIds) {
+    const patch = `${bundleId}.patch`
+    if (!reviewBundlesReadme.includes(patch)) {
+      failures.push(`${reviewBundlesReadmePath} does not include ${patch}`)
     }
   }
 
