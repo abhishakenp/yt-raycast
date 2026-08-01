@@ -68,4 +68,18 @@ describe('validateProductionConfig', () => {
       ],
     })
   })
+
+  it('allows Stripe to be explicitly disabled for a Razorpay-only market', () => {
+    expect(
+      validateProductionConfig({
+        env: {
+          ...validEnv,
+          STRIPE_ENABLED: 'false',
+          STRIPE_SECRET_KEY: 'sk_test_unused',
+          STRIPE_WEBHOOK_SECRET: 'short',
+        },
+        convexEnvNames: new Set(REQUIRED_CONVEX_ENV),
+      }),
+    ).toEqual({ ok: true, errors: [] })
+  })
 })

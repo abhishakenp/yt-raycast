@@ -8,12 +8,14 @@ Completed/restored migration rows have been removed from this file. Keep this do
 
 ### 1. Billing Checkout And Export Unlock Proof
 
-Status: implementation restored; signed-in sandbox acceptance pending.
+Status: Razorpay production acceptance pending. Stripe is intentionally disabled
+for India (`STRIPE_ENABLED=false`) until Stripe offers the required market
+support; Stripe checkout and webhook acceptance are out of scope for this
+launch.
 
 Remaining work:
 
-- Run signed-in Stripe sandbox checkout for subscription and credit-pack flows.
-- Run signed-in Razorpay sandbox checkout for subscription and credit-pack flows.
+- Run signed-in Razorpay checkout for subscription and credit-pack flows.
 - Replay or receive provider webhooks with valid signatures.
 - Prove Convex billing state changes through the secret-gated webhook mutation.
 - Prove export entitlement updates after payment: dashboard create export, ready state, and download for `html`, `react`, and `next` where practical.
@@ -28,8 +30,8 @@ Acceptance evidence to record:
 
 Latest implementation:
 
-- `bun run verify:providers` now gates full billing proof on sandbox credentials and writes a provider evidence report.
-- `scripts/verify-billing.mjs` now records checkout-start evidence and signed Stripe/Razorpay webhook state changes when signed auth and provider secrets are configured.
+- `bun run verify:providers` now gates provider proof on configured credentials and writes a provider evidence report.
+- `scripts/verify-billing.mjs` records Razorpay checkout-start evidence and signed webhook state changes when signed auth and provider secrets are configured. Stripe remains deliberately skipped while `STRIPE_ENABLED=false`.
 
 ### 2. GitHub Push Provider Proof
 

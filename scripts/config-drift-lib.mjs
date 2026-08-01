@@ -12,6 +12,7 @@ const REQUIRED_WEB_ENV = [
   'GITHUB_WEBHOOK_MUTATION_SECRET',
   'SHIP_FAST_IP_HASH_SALT',
 ]
+const STRIPE_ENV = new Set(['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'])
 
 const REQUIRED_CONVEX_ENV = [
   'BILLING_WEBHOOK_MUTATION_SECRET',
@@ -20,7 +21,12 @@ const REQUIRED_CONVEX_ENV = [
   'GITHUB_WEBHOOK_MUTATION_SECRET',
 ]
 
-const BOOLEAN_ENV = ['DISABLE_PAYWALL', 'DISABLE_LIMIT', 'DISABLE_MODEL_SPEND']
+const BOOLEAN_ENV = [
+  'DISABLE_PAYWALL',
+  'DISABLE_LIMIT',
+  'DISABLE_MODEL_SPEND',
+  'STRIPE_ENABLED',
+]
 const SECRET_ENV = REQUIRED_WEB_ENV.filter((name) =>
   /(SECRET|SALT)$/i.test(name),
 )
@@ -32,13 +38,16 @@ const REQUIRED_LIVE_CREDENTIAL_PREFIXES = {
 }
 
 const value = (env, name) => String(env[name] ?? '').trim()
+const isStripeDisabled = (env) => value(env, 'STRIPE_ENABLED') === 'false'
 
 export const validateProductionConfig = ({ env, convexEnvNames }) => {
   const errors = []
   for (const name of REQUIRED_WEB_ENV) {
+    if (isStripeDisabled(env) && STRIPE_ENV.has(name)) continue
     if (!value(env, name)) errors.push(`missing web env: ${name}`)
   }
   for (const name of SECRET_ENV) {
+    if (isStripeDisabled(env) && STRIPE_ENV.has(name)) continue
     if (value(env, name).length > 0 && value(env, name).length < 32) {
       errors.push(`secret too short: ${name}`)
     }
@@ -58,6 +67,7 @@ export const validateProductionConfig = ({ env, convexEnvNames }) => {
   for (const [name, prefix] of Object.entries(
     REQUIRED_LIVE_CREDENTIAL_PREFIXES,
   )) {
+    if (isStripeDisabled(env) && name === 'STRIPE_SECRET_KEY') continue
     if (!value(env, name).startsWith(prefix)) {
       errors.push(`production credential is not live: ${name}`)
     }

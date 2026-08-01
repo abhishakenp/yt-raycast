@@ -193,6 +193,10 @@
 
 ## Billing & Commerce
 
+| Property               | Decision                                                                                                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| India payment provider | Razorpay only for launch. Stripe is disabled with `STRIPE_ENABLED=false` until it supports the required India availability; no Stripe checkout or webhook acceptance is required while disabled. |
+
 | Property           | Decision                                                                                             |
 | ------------------ | ---------------------------------------------------------------------------------------------------- |
 | Reconciliation     | **Decision:** create billing reconciliation runbook. Add automated daily comparison job              |
