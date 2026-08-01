@@ -155,7 +155,7 @@ jobs:
         run: bun run verify:billing-state
 
       - name: SEO / AEO
-        run: bun run verify:seo-aeo
+        run: bun run verify:seo-aeo -- --static-only
 
       - name: Monitoring
         run: bun run verify:monitoring

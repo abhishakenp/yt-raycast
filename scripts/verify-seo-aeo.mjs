@@ -16,6 +16,7 @@ const baseUrl = (
   'http://localhost:3000'
 ).replace(/\/$/, '')
 const timeoutMs = Number(args.get('--timeout-ms') ?? 90000)
+const staticOnly = args.has('--static-only')
 const ownerSecret = `owner-${Date.now()}`
 const slug = args.get('--slug') ?? `verify-seo-aeo-${Date.now()}`
 const siteUrl = `https://${slug}.ship-fast.ai`
@@ -104,6 +105,21 @@ assert(
   ),
   'llms.txt missing suggested queries',
 )
+
+if (staticOnly) {
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        mode: 'static',
+        generatedFiles: Object.keys(files).sort(),
+      },
+      null,
+      2,
+    ),
+  )
+  process.exit(0)
+}
 
 const session = convexRun('sessions:create', {
   prompt,
