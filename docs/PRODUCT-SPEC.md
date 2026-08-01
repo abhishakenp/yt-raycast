@@ -196,6 +196,7 @@
 | Property               | Decision                                                                                                                                                                                         |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | India payment provider | Razorpay only for launch. Stripe is disabled with `STRIPE_ENABLED=false` until it supports the required India availability; no Stripe checkout or webhook acceptance is required while disabled. |
+| Launch subscription    | One ₹999/month Pro plan. No early-adopter subscription plan; invite/referral rewards apply the existing 50% discount.                                                                            |
 
 | Property           | Decision                                                                                             |
 | ------------------ | ---------------------------------------------------------------------------------------------------- |

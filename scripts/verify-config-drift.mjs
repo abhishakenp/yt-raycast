@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
 
-import { validateProductionConfig } from './config-drift-lib.mjs'
+import {
+  parseConvexEnvironmentNames,
+  validateProductionConfig,
+} from './config-drift-lib.mjs'
 
 const args = new Set(process.argv.slice(2))
 const shouldCheckConvex = !args.has('--skip-convex')
@@ -9,21 +12,12 @@ let convexEnvNames
 
 if (shouldCheckConvex) {
   try {
-    const output = execFileSync(
-      'bunx',
-      ['convex', 'env', 'list', '--names-only'],
-      {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        env: process.env,
-      },
-    )
-    convexEnvNames = new Set(
-      output
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean),
-    )
+    const output = execFileSync('bunx', ['convex', 'env', 'list'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: process.env,
+    })
+    convexEnvNames = parseConvexEnvironmentNames(output)
   } catch {
     console.error(
       '[config-drift] Unable to list production Convex environment names.',

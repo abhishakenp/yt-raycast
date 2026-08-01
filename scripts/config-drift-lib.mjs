@@ -13,6 +13,10 @@ const REQUIRED_WEB_ENV = [
   'SHIP_FAST_IP_HASH_SALT',
 ]
 const STRIPE_ENV = new Set(['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'])
+const PROVIDER_MANAGED_SECRETS = new Set([
+  'RAZORPAY_KEY_SECRET',
+  'RAZORPAY_WEBHOOK_SECRET',
+])
 
 const REQUIRED_CONVEX_ENV = [
   'BILLING_WEBHOOK_MUTATION_SECRET',
@@ -27,8 +31,8 @@ const BOOLEAN_ENV = [
   'DISABLE_MODEL_SPEND',
   'STRIPE_ENABLED',
 ]
-const SECRET_ENV = REQUIRED_WEB_ENV.filter((name) =>
-  /(SECRET|SALT)$/i.test(name),
+const SECRET_ENV = REQUIRED_WEB_ENV.filter(
+  (name) => /(SECRET|SALT)$/i.test(name) && !PROVIDER_MANAGED_SECRETS.has(name),
 )
 const REQUIRED_LIVE_CREDENTIAL_PREFIXES = {
   CLERK_SECRET_KEY: 'sk_live_',
@@ -39,6 +43,20 @@ const REQUIRED_LIVE_CREDENTIAL_PREFIXES = {
 
 const value = (env, name) => String(env[name] ?? '').trim()
 const isStripeDisabled = (env) => value(env, 'STRIPE_ENABLED') === 'false'
+const isValidIpHashSalt = (salt) => {
+  if (/^[0-9a-f]{64}$/i.test(salt)) return true
+  if (!/^[A-Za-z0-9+/_-]{43}=?$/.test(salt)) return false
+  const normalized = salt.replace(/-/g, '+').replace(/_/g, '/')
+  return Buffer.from(normalized.padEnd(44, '='), 'base64').length === 32
+}
+
+export const parseConvexEnvironmentNames = (output) =>
+  new Set(
+    output
+      .split(/\r?\n/)
+      .map((line) => line.slice(0, line.indexOf('=')).trim())
+      .filter(Boolean),
+  )
 
 export const validateProductionConfig = ({ env, convexEnvNames }) => {
   const errors = []
@@ -60,9 +78,9 @@ export const validateProductionConfig = ({ env, convexEnvNames }) => {
   }
   if (
     value(env, 'SHIP_FAST_IP_HASH_SALT') &&
-    !/^[0-9a-f]{64}$/i.test(value(env, 'SHIP_FAST_IP_HASH_SALT'))
+    !isValidIpHashSalt(value(env, 'SHIP_FAST_IP_HASH_SALT'))
   ) {
-    errors.push('SHIP_FAST_IP_HASH_SALT must be a 32-byte hex value')
+    errors.push('SHIP_FAST_IP_HASH_SALT must encode exactly 32 bytes')
   }
   for (const [name, prefix] of Object.entries(
     REQUIRED_LIVE_CREDENTIAL_PREFIXES,

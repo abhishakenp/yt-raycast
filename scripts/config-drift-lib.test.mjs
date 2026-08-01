@@ -4,6 +4,7 @@ import {
   REQUIRED_CONVEX_ENV,
   REQUIRED_LIVE_CREDENTIAL_PREFIXES,
   REQUIRED_WEB_ENV,
+  parseConvexEnvironmentNames,
   validateProductionConfig,
 } from './config-drift-lib.mjs'
 
@@ -20,6 +21,14 @@ for (const [name, prefix] of Object.entries(
 }
 
 describe('validateProductionConfig', () => {
+  it('retains only names when parsing Convex environment output', () => {
+    expect(
+      parseConvexEnvironmentNames(
+        'BILLING_WEBHOOK_MUTATION_SECRET=redacted-value\nDUB_API_KEY=redacted-value\n',
+      ),
+    ).toEqual(new Set(['BILLING_WEBHOOK_MUTATION_SECRET', 'DUB_API_KEY']))
+  })
+
   it('accepts complete typed web and Convex config', () => {
     expect(
       validateProductionConfig({
@@ -77,6 +86,20 @@ describe('validateProductionConfig', () => {
           STRIPE_ENABLED: 'false',
           STRIPE_SECRET_KEY: 'sk_test_unused',
           STRIPE_WEBHOOK_SECRET: 'short',
+        },
+        convexEnvNames: new Set(REQUIRED_CONVEX_ENV),
+      }),
+    ).toEqual({ ok: true, errors: [] })
+  })
+
+  it('accepts a 32-byte base64url IP salt and provider-managed Razorpay secrets', () => {
+    expect(
+      validateProductionConfig({
+        env: {
+          ...validEnv,
+          RAZORPAY_KEY_SECRET: 'provider-issued-secret',
+          RAZORPAY_WEBHOOK_SECRET: 'provider-webhook',
+          SHIP_FAST_IP_HASH_SALT: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
         },
         convexEnvNames: new Set(REQUIRED_CONVEX_ENV),
       }),
