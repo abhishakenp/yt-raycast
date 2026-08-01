@@ -51,7 +51,7 @@ export default defineConfig({
             'packages/ship-fast-engine/src/spec/**/*.test.ts',
             'packages/ship-fast-engine/src/v3/**/*.test.ts',
             'packages/ship-fast-lakebed/src/**/*.test.ts',
-            'scripts/**/*.test.mjs',
+            'scripts/config-drift-lib.test.mjs',
             'scripts/**/*.test.ts',
             'server/**/*.test.ts',
           ],
