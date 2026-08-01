@@ -49,11 +49,13 @@ function HistoryCommand() {
     (v: HistoryVideo) => ({
       id: v.id,
       title: v.title,
+      description: "",
       channel: v.channel,
       url: v.url,
       thumbnail: v.thumbnail,
       duration: v.duration,
       views: null,
+      uploadedAt: null,
     }),
   );
 
