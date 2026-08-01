@@ -124,6 +124,9 @@ import {
 } from './lib/session_generation_state_helpers'
 import { type CompleteGenerationActionResult } from './lib/session_generation_action_helpers'
 import {
+  GENERATION_STALLED_ERROR_CODE,
+  GENERATION_STALLED_MESSAGE,
+  type MarkSessionGenerationStartedResult,
   addGenerationProgressEvent,
   markSessionGenerationStarted,
   upsertGeneratedModuleRecord,
@@ -391,7 +394,47 @@ export const getGenerationSession = internalQuery({
 export const markGenerationStarted = internalMutation({
   args: sessionIdArgs,
   handler: async (ctx, args) => {
-    return markSessionGenerationStarted(ctx, args.sessionId, Date.now())
+    const result: MarkSessionGenerationStartedResult =
+      await markSessionGenerationStarted(ctx, args.sessionId, Date.now(), {
+        failIfStillStreaming: internal.sessions.failIfStillStreaming,
+      })
+    return result
+  },
+})
+
+// Scheduled GENERATION_STALL_TTL_MS after a session enters `streaming`. The
+// engine only writes a terminal status from inside the Node process running
+// the generation, so a container redeploy (or a hard crash) leaves the session
+// streaming forever, burning the user's quota with no error and no way to
+// retry. This reaper closes that hole.
+//
+// `startedAt` is the lease token: it must still match the session's current
+// generationStartedAt, otherwise a newer, legitimately-running generation
+// would be clobbered by an older scheduled job.
+export const failIfStillStreaming = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    startedAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+    if (session === null) return
+    if (session.deletedAt !== undefined) return
+    // Completed, already-failed, or otherwise terminal runs are left alone.
+    if (session.status !== 'streaming') return
+    if ((session.previewVersion ?? 0) > 0) return
+    // A newer run owns the session now — its own reaper will handle it.
+    if (session.generationStartedAt !== args.startedAt) return
+
+    await failGeneratedSession(ctx, {
+      sessionId: args.sessionId,
+      message: GENERATION_STALLED_MESSAGE,
+      errorCode: GENERATION_STALLED_ERROR_CODE,
+      elapsed: Date.now() - args.startedAt,
+      now: Date.now(),
+      sendOperationalNotification:
+        sessionInternalReferences.sendOperationalNotification,
+    })
   },
 })
 
@@ -576,7 +619,11 @@ export const markGenerationStartedPublic = mutation({
       args.sessionId,
       args.anonymousOwnerSecret,
     )
-    return markSessionGenerationStarted(ctx, args.sessionId, Date.now())
+    const result: MarkSessionGenerationStartedResult =
+      await markSessionGenerationStarted(ctx, args.sessionId, Date.now(), {
+        failIfStillStreaming: internal.sessions.failIfStillStreaming,
+      })
+    return result
   },
 })
 

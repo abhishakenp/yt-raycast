@@ -3,10 +3,17 @@ import { describe, expect, it } from 'vitest'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 import {
+  GENERATION_STALL_TTL_MS,
   addGenerationProgressEvent,
   markSessionGenerationStarted,
   upsertGeneratedModuleRecord,
 } from './session_generation_progress_helpers'
+
+const failIfStillStreaming = 'failIfStillStreaming' as unknown as Parameters<
+  MutationCtx['scheduler']['runAfter']
+>[1]
+
+const references = { failIfStillStreaming }
 
 type GeneratedModuleRecord = Doc<'generatedModules'>
 type GenerationEventRecord = Doc<'generationEvents'>
@@ -127,23 +134,31 @@ function ctxFor(input: {
     },
   } as unknown as Pick<MutationCtx, 'db'>['db']
 
+  const schedulerCalls: { delayMs: number; args: unknown }[] = []
+  const scheduler = {
+    runAfter: async (delayMs: number, _reference: unknown, args: unknown) => {
+      schedulerCalls.push({ delayMs, args })
+    },
+  } as unknown as MutationCtx['scheduler']
+
   return {
-    ctx: { db } as Pick<MutationCtx, 'db'>,
+    ctx: { db, scheduler } as Pick<MutationCtx, 'db' | 'scheduler'>,
     sessions,
     tasks,
     generatedModules,
     generationEvents,
+    schedulerCalls,
   }
 }
 
 describe('session generation progress helpers', () => {
   it('marks eligible sessions as streaming and records the homepage task', async () => {
-    const { ctx, sessions, tasks, generationEvents } = ctxFor({
+    const { ctx, sessions, tasks, generationEvents, schedulerCalls } = ctxFor({
       sessions: [sessionDoc({ status: 'created' })],
     })
 
     await expect(
-      markSessionGenerationStarted(ctx, sessionId, 100),
+      markSessionGenerationStarted(ctx, sessionId, 100, references),
     ).resolves.toEqual({ started: true })
 
     expect(sessions).toEqual([
@@ -152,8 +167,17 @@ describe('session generation progress helpers', () => {
         status: 'streaming',
         errorCode: undefined,
         errorMessage: undefined,
+        generationStartedAt: 100,
         updatedAt: 100,
       }),
+    ])
+    // The stall reaper is armed for exactly this run, so a redeploy that kills
+    // the owning Node process cannot strand the session in `streaming`.
+    expect(schedulerCalls).toEqual([
+      {
+        delayMs: GENERATION_STALL_TTL_MS,
+        args: { sessionId, startedAt: 100 },
+      },
     ])
     expect(tasks).toEqual([
       expect.objectContaining({
@@ -178,7 +202,7 @@ describe('session generation progress helpers', () => {
 
   it('rejects missing, completed, active, and non-startable sessions without writes', async () => {
     await expect(
-      markSessionGenerationStarted(ctxFor({}).ctx, sessionId, 100),
+      markSessionGenerationStarted(ctxFor({}).ctx, sessionId, 100, references),
     ).resolves.toEqual({ started: false, reason: 'not_found' })
 
     await expect(
@@ -186,6 +210,7 @@ describe('session generation progress helpers', () => {
         ctxFor({ sessions: [sessionDoc({ previewVersion: 1 })] }).ctx,
         sessionId,
         100,
+        references,
       ),
     ).resolves.toEqual({
       started: false,
@@ -197,6 +222,7 @@ describe('session generation progress helpers', () => {
         ctxFor({ sessions: [sessionDoc({ status: 'streaming' })] }).ctx,
         sessionId,
         100,
+        references,
       ),
     ).resolves.toEqual({
       started: false,
@@ -204,16 +230,56 @@ describe('session generation progress helpers', () => {
     })
 
     const nonStartable = ctxFor({
-      sessions: [sessionDoc({ status: 'failed' })],
+      sessions: [sessionDoc({ status: 'preview_ready' })],
     })
     await expect(
-      markSessionGenerationStarted(nonStartable.ctx, sessionId, 100),
+      markSessionGenerationStarted(
+        nonStartable.ctx,
+        sessionId,
+        100,
+        references,
+      ),
     ).resolves.toEqual({
       started: false,
       reason: 'generation_not_startable',
     })
     expect(nonStartable.tasks).toEqual([])
     expect(nonStartable.generationEvents).toEqual([])
+    expect(nonStartable.schedulerCalls).toEqual([])
+  })
+
+  // A session terminated by the stall reaper lands in `failed`. Retry is only
+  // possible if `failed` is startable, so this guards the end of the fix.
+  it('restarts failed sessions and clears the previous failure', async () => {
+    const { ctx, sessions, schedulerCalls } = ctxFor({
+      sessions: [
+        sessionDoc({
+          status: 'failed',
+          errorCode: 'GENERATION_STALLED',
+          errorMessage: 'Generation stopped unexpectedly.',
+          generationStartedAt: 100,
+        }),
+      ],
+    })
+
+    await expect(
+      markSessionGenerationStarted(ctx, sessionId, 900, references),
+    ).resolves.toEqual({ started: true })
+
+    expect(sessions[0]).toEqual(
+      expect.objectContaining({
+        status: 'streaming',
+        errorCode: undefined,
+        errorMessage: undefined,
+        generationStartedAt: 900,
+      }),
+    )
+    expect(schedulerCalls).toEqual([
+      {
+        delayMs: GENERATION_STALL_TTL_MS,
+        args: { sessionId, startedAt: 900 },
+      },
+    ])
   })
 
   it('upserts generated modules and clears stale module errors', async () => {

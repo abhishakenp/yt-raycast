@@ -14,8 +14,8 @@ Ship Fast is a TanStack Start application for generating, previewing, editing, e
 | `src/features/home/components/HomePage.tsx`                | Homepage generation entry UI and gallery surface.                                                      |
 | `src/features/dashboard/components/Dashboard.tsx`          | Session workspace: live preview, status, editing tools, export/deploy panels, chat, and activity.      |
 | `convex/sessions.ts`                                       | Core session backend mutations/queries for generation status, previews, ownership, and exports.        |
-| `packages/ship-fast-engine/src/pipeline/runner-v2.ts`      | Main generation pipeline orchestration and persisted artifact handoff.                                 |
-| `packages/ship-fast-engine/src/pipeline/phase-sff-html.ts` | SFF HTML homepage production path.                                                                     |
+| `packages/ship-fast-engine/src/genui/composition-runner.ts` | Main generation orchestration: prompt → composition → parsed/compiled OpenUI artifact, including streaming. |
+| `packages/ship-fast-engine/src/genui/composition-compiler.ts` | Compiles parsed composition, page plans, macros, fallbacks, and OpenUI calls.                         |
 | `packages/ship-fast-blocks/src/library.ts`                 | OpenUI renderer library assembled from registry blocks and capsules.                                   |
 
 ## Directory Map
@@ -39,7 +39,7 @@ Ship Fast is a TanStack Start application for generating, previewing, editing, e
 
 1. User starts a generation from `HomePage` or dashboard controls.
 2. Frontend writes/reads session state through Convex APIs in `convex/sessions.ts`.
-3. The engine pipeline in `packages/ship-fast-engine/src/pipeline/runner-v2.ts` runs site-spec, homepage, OpenUI/SFF HTML, export, and artifact phases.
+3. The engine runs `genui/composition-runner.ts`: it asks the configured model for a composition, parses and compiles it to OpenUI, then applies structural/quality checks before the artifact handoff.
 4. Preview state flows back to the dashboard through Convex session queries and event-stream routes in `src/features/session/server/`.
 5. `GeneratedModulePreview` renders SFF HTML directly in an iframe, or lazy-loads `OpenUIViewer` for OpenUI programs.
 6. `OpenUIViewer` normalizes runtime OpenUI source, wraps renderer providers, and renders via the `@ship-fast/blocks` library.

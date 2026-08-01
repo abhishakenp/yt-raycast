@@ -1489,6 +1489,36 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     expect(screen.queryByText('Generating')).toBeNull()
   })
 
+  // A generation stranded by a container redeploy is terminated by the
+  // scheduled `failIfStillStreaming` reaper, which writes status `failed` +
+  // errorCode GENERATION_STALLED. The dashboard must surface that instead of
+  // spinning the generating skeleton forever.
+  it('surfaces a stall-reaped generation instead of the endless generating skeleton', () => {
+    const stalledMessage =
+      'Generation stopped unexpectedly before it finished. Please try again.'
+
+    getConvexState().generationView = generatingGenerationView({
+      session: {
+        sessionId: realConvexStreamingSession.sessionId,
+        status: 'failed',
+        errorCode: 'GENERATION_STALLED',
+        errorMessage: stalledMessage,
+        prompt: realConvexStreamingSession.prompt,
+        preferredLanguage: realConvexStreamingSession.preferredLanguage,
+        previewVersion: 0,
+      },
+      tasks: [realConvexStreamingSession.task],
+      homeModule: undefined,
+      latestPreview: null,
+    })
+
+    render(<Dashboard sessionId={realConvexStreamingSession.sessionId} />)
+
+    expect(screen.queryByTestId('intro-loader')).toBeNull()
+    expect(screen.getByText(stalledMessage)).toBeTruthy()
+    expect(screen.queryByText('Generating')).toBeNull()
+  })
+
   it('keeps the intro loader up for a ready-marked real session when no preview content exists', () => {
     getConvexState().generationView = readyGenerationView({
       session: {

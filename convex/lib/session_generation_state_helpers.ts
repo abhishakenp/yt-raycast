@@ -149,6 +149,12 @@ export async function failGeneratedSession(
     message: string
     elapsed?: number
     now: number
+    /**
+     * Distinguishes the cause of the failure on the session document.
+     * Defaults to the engine-reported `GENERATION_FAILED`; the stall reaper
+     * passes `GENERATION_STALLED`.
+     */
+    errorCode?: string
     sendOperationalNotification: OperationalNotificationReference
   },
 ) {
@@ -206,7 +212,7 @@ export async function failGeneratedSession(
 
   await ctx.db.patch(args.sessionId, {
     status: 'failed',
-    errorCode: 'GENERATION_FAILED',
+    errorCode: args.errorCode ?? 'GENERATION_FAILED',
     errorMessage: args.message,
     elapsed: args.elapsed,
     updatedAt: args.now,

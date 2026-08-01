@@ -179,6 +179,11 @@ export default defineSchema({
     cloneMode: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
+    // Timestamp of the most recent transition into `streaming`. Used as the
+    // lease token for the stall reaper: a scheduled `failIfStillStreaming`
+    // only fires for the run it was scheduled for, so a newer generation is
+    // never clobbered by an older reaper.
+    generationStartedAt: v.optional(v.number()),
     errorCode: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
     agentationEnabled: v.optional(v.boolean()),

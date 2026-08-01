@@ -4,16 +4,51 @@ import type { SessionTaskStatus } from './session_serialization_helpers'
 import { upsertTask } from './session_task_helpers'
 
 type GenerationProgressCtx = Pick<MutationCtx, 'db'>
+type GenerationStartCtx = Pick<MutationCtx, 'db' | 'scheduler'>
+type ScheduledFunctionReference = Parameters<
+  MutationCtx['scheduler']['runAfter']
+>[1]
 
+export type MarkSessionGenerationStartedReferences = {
+  failIfStillStreaming: ScheduledFunctionReference
+}
+
+// Explicit result type: the callers in `convex/sessions.ts` reference
+// `internal.sessions.failIfStillStreaming`, which makes the module's own type
+// circular unless the call sites can annotate the result (same reason
+// `CreateGenerationSessionResult` exists).
+export type MarkSessionGenerationStartedResult =
+  | { started: true }
+  | { started: false; reason: string }
+
+/**
+ * How long a session may sit in `streaming` before the scheduled reaper
+ * declares it stranded. The engine's own budget is
+ * GENERATION_TIMEOUT_MS (90s) x GENERATION_ATTEMPTS (2) = 180s, so 240s
+ * leaves headroom for a slow-but-live run and only fires when the Node
+ * process that owned the run is genuinely gone (e.g. a redeploy).
+ */
+export const GENERATION_STALL_TTL_MS = 240_000
+
+/** errorCode written when the stall reaper terminates a stranded run. */
+export const GENERATION_STALLED_ERROR_CODE = 'GENERATION_STALLED'
+
+export const GENERATION_STALLED_MESSAGE =
+  'Generation stopped unexpectedly before it finished. Please try again.'
+
+// `failed` is startable so a session terminated by the stall reaper (or by any
+// other generation failure) can be retried. Without it the retry endpoint
+// answers `skipped` and the session is stuck forever.
 const startableGenerationStatuses = new Set<
   Doc<'sessions'>['status'] | undefined
->([undefined, 'created', 'queued', 'validating'])
+>([undefined, 'created', 'queued', 'validating', 'failed'])
 
 export async function markSessionGenerationStarted(
-  ctx: GenerationProgressCtx,
+  ctx: GenerationStartCtx,
   sessionId: Id<'sessions'>,
   now: number,
-) {
+  references: MarkSessionGenerationStartedReferences,
+): Promise<MarkSessionGenerationStartedResult> {
   const session = await ctx.db.get(sessionId)
 
   if (session === null || (session.previewVersion ?? 0) > 0) {
@@ -37,8 +72,20 @@ export async function markSessionGenerationStarted(
     status: 'streaming',
     errorCode: undefined,
     errorMessage: undefined,
+    generationStartedAt: now,
     updatedAt: now,
   })
+
+  // The only terminal writes (complete/fail) come from the Node process that
+  // owns this run, so a container redeploy strands the session in `streaming`
+  // forever. Schedule a one-shot reaper GENERATION_STALL_TTL_MS later: if the
+  // session is still streaming *for this run* it is failed so the user sees
+  // the error and can retry. A finished or restarted run makes it a no-op.
+  await ctx.scheduler.runAfter(
+    GENERATION_STALL_TTL_MS,
+    references.failIfStillStreaming,
+    { sessionId, startedAt: now },
+  )
 
   await upsertTask(
     ctx,

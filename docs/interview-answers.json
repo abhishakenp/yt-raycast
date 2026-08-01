@@ -1,0 +1,188 @@
+{
+  "generatedAt": "2026-08-01T00:22:19.763Z",
+  "source": "docs/DOCUMENTATION-DECISION-INTERVIEW.md",
+  "totalQuestions": 59,
+  "answeredQuestions": 30,
+  "answers": [
+    {
+      "id": 1,
+      "category": "Product, access, and public behavior",
+      "prompt": "Which published Pro price is authoritative: ₹999 in the UI or ₹399/$9 in backend configuration, and are Free and credit packs sellable offers?",
+      "answer": "₹999"
+    },
+    {
+      "id": 2,
+      "category": "Product, access, and public behavior",
+      "prompt": "Should non-private previews and deployments be indexable, and should private and missing URLs be intentionally indistinguishable?",
+      "answer": "non-private previews and deployments should be indexable. Free tier users' creations are public and indexable as advertising. Paid users can hide their creations - they are not visible or indexable. URLs follow same format, distinction is at the ID level."
+    },
+    {
+      "id": 3,
+      "category": "Product, access, and public behavior",
+      "prompt": "If all browser storage is unavailable, should anonymous sessions survive reload or warn users that they are temporary?",
+      "answer": "We don't handle this edge case. If browser storage is unavailable, we wipe the session. We prioritize development effort on paying users, not free users. This is an acceptable edge case for a startup focused on speed."
+    },
+    {
+      "id": 4,
+      "category": "Product, access, and public behavior",
+      "prompt": "What retry or recovery action must users receive after a session is created but VPS generation handoff fails?",
+      "answer": "Users must be able to retry without additional cost. For paid users with monthly generation limits, retries should NOT count as additional credits - the entire retry cycle counts as one credit. We don't charge for failures. This is a critical edge case that must be handled properly."
+    },
+    {
+      "id": 5,
+      "category": "Product, access, and public behavior",
+      "prompt": "Which browser versions and accessibility baseline do we support for generation, editing, preview, and export?",
+      "answer": "We follow React's browser compatibility baseline without additional support. We don't go beyond React's supported browsers or handle edge cases that React doesn't support. This is a pragmatic startup decision - we comply with the framework and don't invest in extra compatibility layers."
+    },
+    {
+      "id": 6,
+      "category": "Product, access, and public behavior",
+      "prompt": "When generated source, preview HTML, and persisted edits conflict, which is the canonical exportable artifact?",
+      "answer": "Conflicts should not occur by design. The canonical exportable artifact is what the user sees - we cannot have divergence between preview and export. This is a UX product, not a technology product. User experience is what people pay for."
+    },
+    {
+      "id": 7,
+      "category": "Product, access, and public behavior",
+      "prompt": "What versioning and deprecation promise applies to externally consumed HTTP and Convex APIs?",
+      "answer": "We follow standard API versioning best practices: HTTP APIs use semantic versioning with minimum 6-month deprecation notice for breaking changes. Convex functions maintain backward compatibility within major versions. We communicate changes clearly to ensure product stability and good UX."
+    },
+    {
+      "id": 8,
+      "category": "Product, access, and public behavior",
+      "prompt": "Which generation-event fields and ordering guarantees are stable for external consumers?",
+      "answer": "TECHNICAL: To be answered by AI - determine stable API contracts for external consumers"
+    },
+    {
+      "id": 9,
+      "category": "Product, access, and public behavior",
+      "prompt": "Which cross-origin credentialed integrations are supported, and what CORS and CSRF controls apply?",
+      "answer": "TECHNICAL: To be answered by AI - implement CORS/CSRF controls to prevent abuse while supporting legitimate integrations"
+    },
+    {
+      "id": 10,
+      "category": "Security, identity, and privacy",
+      "prompt": "Which API error codes are stable customer contracts rather than internal details?",
+      "answer": "Display clear, user-friendly error messages for customer-relevant issues. Hide internal technical details (model names, internal processes, implementation details) to prevent service abuse and replication. Errors should be readable and standard, but we withhold technical specifics that could help competitors copy the service."
+    },
+    {
+      "id": 11,
+      "category": "Security, identity, and privacy",
+      "prompt": "When, if ever, will the `nextjs` export-target alias retire?",
+      "answer": "The nextjs export-target alias will not retire. Our goal is to expand export technology options, not remove them. We want to provide maximum flexibility for users to export in the technologies they expect. Can refine later if needed."
+    },
+    {
+      "id": 12,
+      "category": "Security, identity, and privacy",
+      "prompt": "May anonymous owner secrets remain in query strings, or must clients use headers only?",
+      "answer": "TECHNICAL: To be answered by AI after web search for security best practices"
+    },
+    {
+      "id": 13,
+      "category": "Security, identity, and privacy",
+      "prompt": "When identity signals conflict, which one controls ownership, quotas, and later account claim?",
+      "answer": "TECHNICAL: To be answered by AI - determine identity conflict resolution strategy"
+    },
+    {
+      "id": 14,
+      "category": "Security, identity, and privacy",
+      "prompt": "How are IP-derived identifiers salted, retained, and disclosed?",
+      "answer": "TECHNICAL: To be answered by AI - research best practices to prevent abuse"
+    },
+    {
+      "id": 15,
+      "category": "Security, identity, and privacy",
+      "prompt": "Which session fields may be public or gallery-visible, and which are confidential or PII?",
+      "answer": "TECHNICAL: To be answered by AI - determine data classification for security"
+    },
+    {
+      "id": 16,
+      "category": "Security, identity, and privacy",
+      "prompt": "Approve the public/private session-field redaction matrix.",
+      "answer": "Public/private distinction is based on payment status: Free users' generations are public and displayed in gallery. Paid users' generations are private. If a paid user stops paying, new generations become public, but past paid generations remain private."
+    },
+    {
+      "id": 17,
+      "category": "Security, identity, and privacy",
+      "prompt": "What is the GitHub token retention, encryption, revocation, and deletion policy?",
+      "answer": "Retain data for user comfort and convenience. Comply with GDPR/privacy requests when users explicitly ask for deletion. Don't over-engineer privacy features now - prioritize user comfort for release. Balance retention with legal compliance."
+    },
+    {
+      "id": 18,
+      "category": "Security, identity, and privacy",
+      "prompt": "What appeal, review, retention, and outage-classification process applies to moderation decisions?",
+      "answer": "TECHNICAL: To be answered by AI - design moderation appeal process"
+    },
+    {
+      "id": 19,
+      "category": "Security, identity, and privacy",
+      "prompt": "What validation and sandbox boundary applies to AI capsule JavaScript before persistence or blob import?",
+      "answer": "TECHNICAL: To be answered by AI - implement JavaScript validation and sandboxing"
+    },
+    {
+      "id": 20,
+      "category": "Data, durability, and lifecycle",
+      "prompt": "Which records and caches need explicit retention/deletion policy beyond existing draft and commerce exceptions?",
+      "answer": "We never do real deletion except when users explicitly request it. We use logical deletion with a boolean filter. Everything generated costs money, so it doesn't make sense to delete that value. We never delete anything generated by anyone - we just hide it with logical delete."
+    },
+    {
+      "id": 21,
+      "category": "Data, durability, and lifecycle",
+      "prompt": "What external deletion is guaranteed and audited after a session is deleted from Convex?",
+      "answer": "Same as Q20 - we don't delete stuff unless requested. We only do logical deletion with a boolean. We keep stuff in the database forever."
+    },
+    {
+      "id": 22,
+      "category": "Data, durability, and lifecycle",
+      "prompt": "What backup cadence, recovery-test cadence, RPO, and RTO apply to self-hosted Convex and file storage?",
+      "answer": "Backup cadence should be daily to start. This is handled at the infra level on Dokploy, not in code. Dokploy has a backup system. Should still be documented in the project as architecture documentation even if not implemented in code."
+    },
+    {
+      "id": 23,
+      "category": "Data, durability, and lifecycle",
+      "prompt": "Who owns schema migrations, backward compatibility, and rollback approval?",
+      "answer": "TECHNICAL: To be answered by AI - Convex handles auto-migration, determine ownership process"
+    },
+    {
+      "id": 27,
+      "category": "Data, durability, and lifecycle",
+      "prompt": "What provenance, integrity, and licensing record must accompany exports and third-party media?",
+      "answer": "Paid exports: unbranded, no Ship Fast badge - user paid for ownership. Free exports: must include Ship Fast branding/badge for promotion (free users promote us). Past paid generations remain unbranded even if user stops paying."
+    },
+    {
+      "id": 29,
+      "category": "Generation, content, and exports",
+      "prompt": "Must user-visible structural repairs be disclosed, and if so how?",
+      "answer": "No, structural repairs should not be disclosed. We want a smooth user experience without showing technical repairs."
+    },
+    {
+      "id": 35,
+      "category": "Generation, content, and exports",
+      "prompt": "Which SEO/AEO claims are mandatory, user-editable, or rejected, and how is truthful structured data verified?",
+      "answer": "SEO is mandatory - nobody wants a site that can't be found. AEO (Agentic Experience Optimization) is the new differentiator - people browse with agents now. We claim both SEO and AEO as selling points. If specs are underspecified, study after interview. Both are crucial for the product."
+    },
+    {
+      "id": 38,
+      "category": "Billing, referrals, and commerce",
+      "prompt": "Who approves and deploys quota-constant changes?",
+      "answer": "Quota changes are done manually by developers in code, not through automated systems or admin interfaces. This is a coding problem, not a user-facing feature. Only the development team can change quotas."
+    },
+    {
+      "id": 39,
+      "category": "Billing, referrals, and commerce",
+      "prompt": "What historical access, if any, persists after entitlement expiry?",
+      "answer": "When users stop paying: old projects NOT deleted but editing blocked by backend. Websites stay live. Warn users about project loss with 1-2 month grace period before restrictions. Scare to pay but without dramatic consequences. Access restored when they pay. Research competitor approaches (Lovable/Replit) - they temporarily pause deployments after ~1 month. Grace period because we're not assholes."
+    },
+    {
+      "id": 52,
+      "category": "Integrations, operations, and launch governance",
+      "prompt": "What notification redaction and on-call ownership applies to Slack and Telegram operational events?",
+      "answer": "Only Slack notifications, no Telegram. Current notification system is perfect as implemented recently - nothing to add or remove."
+    },
+    {
+      "id": 59,
+      "category": "Integrations, operations, and launch governance",
+      "prompt": "What incident severity, customer communication, support, and postmortem process applies to auth, billing, data, and generation failures?",
+      "answer": "Incident communication handled externally (X/Twitter). No in-product communication needed now. For spec: implement maintenance wall feature - database boolean triggers beautiful maintenance screen blocking all screens with Ship Fast logo, \"sorry, back soon\" message, and links to Twitter/LinkedIn for updates."
+    }
+  ]
+}
