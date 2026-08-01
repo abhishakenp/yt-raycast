@@ -112,6 +112,18 @@ describe('quality exit verification', () => {
     })
   })
 
+  it('does not require transient review bundles for a clean worktree', () => {
+    const texts = completeTexts()
+    texts.reviewBundlesReadme = ''
+
+    expect(
+      verifyQualityExitFromTexts(texts, { requireReviewBundles: false }),
+    ).toEqual({
+      criteriaCount: requiredQualityExitCriteria.length,
+      groupCount: changeGroups.length,
+    })
+  })
+
   it('fails when the assessment keeps stale quality evidence', () => {
     const texts = completeTexts()
     texts.assessment += '\nDate: 2026-06-17 (commit bfa35548)\n'
