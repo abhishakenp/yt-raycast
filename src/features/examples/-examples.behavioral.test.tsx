@@ -15,6 +15,10 @@ const navigationMocks = vi.hoisted(() => ({
   navigate: vi.fn(),
 }))
 
+const authMocks = vi.hoisted(() => ({
+  isCurrentUserAdmin: vi.fn(() => false),
+}))
+
 class MockResizeObserver implements ResizeObserver {
   observe() {}
   unobserve() {}
@@ -97,6 +101,10 @@ vi.mock('@tanstack/react-router', () => ({
     )
   },
   notFound: () => new RouteNotFoundError('not found'),
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  isCurrentUserAdmin: authMocks.isCurrentUserAdmin,
 }))
 
 vi.mock('@/features/dashboard/components/SessionGeneratedPreview', () => ({
@@ -234,6 +242,8 @@ describe('examples route behavior', () => {
       mode: 'light',
     }
     navigationMocks.navigate.mockClear()
+    authMocks.isCurrentUserAdmin.mockReset()
+    authMocks.isCurrentUserAdmin.mockReturnValue(false)
     vi.stubGlobal('ResizeObserver', MockResizeObserver)
     Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {
       configurable: true,
@@ -295,12 +305,7 @@ describe('examples route behavior', () => {
 
   it('lets super admins through /examples even when Clerk is enabled', async () => {
     vi.stubEnv('VITE_DISABLE_CLERK', 'false')
-    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_examples_admin')
-    ;(window as Window & { Clerk?: unknown }).Clerk = {
-      addListener: vi.fn(),
-      session: { getToken: vi.fn() },
-      user: { id: 'user_admin', publicMetadata: { system_role: 'admin' } },
-    }
+    authMocks.isCurrentUserAdmin.mockReturnValue(true)
 
     expect(isExamplesAccessible()).toBe(true)
 
@@ -310,12 +315,7 @@ describe('examples route behavior', () => {
 
   it('lets super admins through /examples/$category even when Clerk is enabled', async () => {
     vi.stubEnv('VITE_DISABLE_CLERK', 'false')
-    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_examples_admin')
-    ;(window as Window & { Clerk?: unknown }).Clerk = {
-      addListener: vi.fn(),
-      session: { getToken: vi.fn() },
-      user: { id: 'user_admin', publicMetadata: { systemRole: 'admin' } },
-    }
+    authMocks.isCurrentUserAdmin.mockReturnValue(true)
 
     const Route = await importExamplesCategoryRoute()
     expect(() =>
@@ -325,12 +325,6 @@ describe('examples route behavior', () => {
 
   it('still 404s for non-admin signed-in users when Clerk is enabled', async () => {
     vi.stubEnv('VITE_DISABLE_CLERK', 'false')
-    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_examples_user')
-    ;(window as Window & { Clerk?: unknown }).Clerk = {
-      addListener: vi.fn(),
-      session: { getToken: vi.fn() },
-      user: { id: 'user_normal', publicMetadata: { system_role: 'user' } },
-    }
 
     expect(isExamplesAccessible()).toBe(false)
 
