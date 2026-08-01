@@ -1,6 +1,6 @@
-# YouTube for Raycast
+# YT for Raycast
 
-Search videos, browse trending and history, and open YouTube in a Safari web app with auto Picture-in-Picture — all from Raycast.
+Search videos, browse trending and history, and open YouTube in a Safari web app with auto Picture-in-Picture — all from Raycast. **No API key needed.**
 
 ## Features
 
@@ -20,13 +20,13 @@ Search videos, browse trending and history, and open YouTube in a Safari web app
 
 ### From the Raycast Store (recommended)
 
-Once published, search "YouTube" in the Raycast Store and click Install.
+Once published, search "YT" in the Raycast Store and click Install.
 
 ### From Source
 
 ```bash
-git clone https://github.com/abhishakenp/youtube-raycast.git
-cd youtube-raycast
+git clone https://github.com/abhishakenp/yt-raycast.git
+cd yt-raycast
 npm install
 npm run build
 ray publish
@@ -43,10 +43,11 @@ The `ray publish` command will install the extension locally and submit it to th
 
 ## How It Works
 
-- Uses `youtube-sr` to search YouTube without an API key
+- **No API key needed** — Uses `youtube-sr` to search YouTube by scraping public pages, no Google API key required
 - Search results, trending, and history are cached with `@tanstack/react-query` + Raycast `LocalStorage` for instant load
 - Opening videos launches the Safari web app and navigates to the video URL
 - **Continue Watching** resumes the last page the web app was on (it remembers its state)
+- The Safari web app has direct access to your logged-in YouTube session — your subscriptions, history, and recommendations are all there
 
 ## Tech Stack
 

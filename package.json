@@ -1,7 +1,7 @@
 {
-  "name": "youtube",
-  "title": "YouTube",
-  "description": "Search videos, browse trending and history, and open YouTube in a Safari web app with auto Picture-in-Picture",
+  "name": "yt",
+  "title": "YT",
+  "description": "Search videos, browse trending and history, and open YouTube in a Safari web app with auto Picture-in-Picture. No API key needed.",
   "icon": "icon.png",
   "author": "abhi",
   "license": "MIT",
