@@ -30,6 +30,7 @@ function installFakeBunx(exitCode: number) {
   const dir = makeTempDir()
   const logPath = join(dir, 'bunx-call.json')
   const binPath = join(dir, 'bunx')
+  const sleepPath = join(dir, 'sleep')
   writeFileSync(
     binPath,
     [
@@ -51,6 +52,10 @@ function installFakeBunx(exitCode: number) {
     ].join('\n'),
   )
   chmodSync(binPath, 0o755)
+  // The failure path retries with `sleep 30`. Keep the test focused on its
+  // exit contract instead of making the suite wait through production backoff.
+  writeFileSync(sleepPath, '#!/usr/bin/env node\nprocess.exit(0)\n')
+  chmodSync(sleepPath, 0o755)
   return { binDir: dir, logPath }
 }
 
