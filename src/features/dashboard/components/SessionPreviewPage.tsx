@@ -7,6 +7,7 @@ import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
 import { useEditController } from '@/features/editing/hooks/useEditController'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { SessionGeneratedPreview } from '@/features/dashboard/components/SessionGeneratedPreview'
+import { PreviewErrorPage } from '@/features/dashboard/components/PreviewErrorPage'
 
 type BrandLogoSelection = {
   name: string
@@ -167,7 +168,7 @@ export const SessionPreviewPage = ({ sessionId }: { sessionId: string }) => {
   }, [activePreviewLocale, editController.edits, shouldApplyPersistedHomeEdits])
 
   if (!generationView || !isPreviewRenderable) {
-    return <main className="fixed inset-0 bg-background" />
+    return <PreviewErrorPage />
   }
 
   const renderedPreviewSource =
