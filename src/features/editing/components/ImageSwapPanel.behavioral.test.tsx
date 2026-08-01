@@ -403,7 +403,7 @@ describe('ImageSwapPanel (behavioral)', () => {
       ).toBe(10),
     )
 
-    expect(intersectionObserverCallback).toBeDefined()
+    await waitFor(() => expect(intersectionObserverCallback).toBeDefined())
     await act(async () => {
       intersectionObserverCallback?.(
         [{ isIntersecting: true } as IntersectionObserverEntry],
