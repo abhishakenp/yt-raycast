@@ -11,7 +11,7 @@ if (shouldCheckConvex) {
   try {
     const output = execFileSync(
       'bunx',
-      ['convex', 'env', 'list', '--names-only', '--prod'],
+      ['convex', 'env', 'list', '--names-only'],
       {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],

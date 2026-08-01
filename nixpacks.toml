@@ -22,14 +22,15 @@ cmds = [
 ]
 
 [phases.build]
-# 1. Deploy Convex functions FIRST — runs when server load is lowest (after
-#    install, before the heavy Vite build) so the Convex backend's V8 isolates
-#    can analyze modules within the 2s timeout. Also regenerates
-#    convex/_generated/ so the frontend build bundles against fresh API code.
-# 2. Build the frontend with the freshly generated Convex API client.
+# 1. Verify production configuration before any deployment. This rejects
+#    missing, malformed, and test-mode credentials; the Cloud deploy key scopes
+#    the Convex CLI env check to the exact target deployment.
+# 2. Deploy Convex functions when server load is lowest (after install, before
+#    the heavy Vite build), then build the frontend against fresh API code.
 # deploy:convex skips cleanly when CONVEX_SELF_HOSTED_ADMIN_KEY is absent and
 # fails the build if the Convex deploy fails (fail loud, never skew).
 cmds = [
+  "bun run verify:config-drift",
   "bun run deploy:convex",
   "NODE_ENV=production bun run build",
 ]
