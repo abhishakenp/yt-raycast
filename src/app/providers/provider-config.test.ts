@@ -57,6 +57,8 @@ describe('provider config', () => {
     // shouldUseConvexProviders to get a ClerkProvider mounted.
     expect(shouldUseConvexProviders('/')).toBe(true)
     expect(shouldUseConvexProviders('/pricing')).toBe(true)
+    expect(shouldUseConvexProviders('/privacy')).toBe(true)
+    expect(shouldUseConvexProviders('/terms')).toBe(true)
     expect(shouldUseConvexProviders('/partners')).toBe(true)
     expect(shouldUseConvexProviders('/referrals')).toBe(true)
     expect(shouldUseConvexProviders('/generate/session_123')).toBe(true)

@@ -2,7 +2,12 @@
 // in model.ts so all of them are selectable in the picker for testing — including
 // the small/fast ones. Default is the strongest reliable model.
 
-export type ModelProvider = 'groq' | 'gemini' | 'talaas' | 'cerebras'
+export type ModelProvider =
+  | 'groq'
+  | 'gemini'
+  | 'talaas'
+  | 'cerebras'
+  | 'pollinations'
 
 export interface ShipFastModel {
   id: string

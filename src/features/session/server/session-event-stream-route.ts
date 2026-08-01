@@ -40,13 +40,7 @@ function parseSince(request: Request): number | undefined {
 }
 
 function getOwnerSecret(request: Request): string | undefined {
-  const url = new URL(request.url)
-  return (
-    request.headers.get('x-ship-fast-owner-secret') ??
-    url.searchParams.get('anonymousOwnerSecret') ??
-    url.searchParams.get('anonOwnerSecret') ??
-    undefined
-  )
+  return request.headers.get('x-ship-fast-owner-secret') ?? undefined
 }
 
 function getBearerToken(request: Request): string | null {

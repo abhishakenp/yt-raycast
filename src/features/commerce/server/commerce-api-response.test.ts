@@ -144,6 +144,28 @@ describe('createSessionMedusaProvisionResponse', () => {
     expect(mutation).not.toHaveBeenCalled()
   })
 
+  it('does not accept an owner secret from the provision request body', async () => {
+    const query = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          body: JSON.stringify({ anonymousOwnerSecret: 'body-secret' }),
+          method: 'POST',
+        },
+      ),
+      { mutation: vi.fn(), query, setAuth: vi.fn() },
+      { containerProvider: { findRunning: vi.fn(), provision: vi.fn() } },
+    )
+
+    expect(response.status).toBe(403)
+    expect(query).toHaveBeenCalledWith(expect.anything(), {
+      anonymousOwnerSecret: undefined,
+      sessionId: 'session_123',
+    })
+  })
+
   it('returns 404 before provisioning side effects for a missing session', async () => {
     const query = vi.fn().mockRejectedValue(new Error('NOT_FOUND'))
     const mutation = vi.fn()
@@ -1784,6 +1806,7 @@ describe('createSessionMedusaProvisionResponse', () => {
         'http://ship-fast.test/api/sessions/preview_123/provision/medusa',
         {
           body: JSON.stringify({ anonymousOwnerSecret: 'owner_secret' }),
+          headers: { 'x-ship-fast-owner-secret': 'owner_secret' },
           method: 'POST',
         },
       ),

@@ -67,6 +67,13 @@ describe('createSessionPreviewRawResponse', () => {
     expect(response.headers.get('x-robots-tag')).toBe('noindex')
     expect(response.headers.get('x-content-type-options')).toBe('nosniff')
     expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN')
+    const contentSecurityPolicy = response.headers.get(
+      'content-security-policy',
+    )
+    expect(contentSecurityPolicy).toContain("default-src 'none'")
+    expect(contentSecurityPolicy).toContain('sandbox allow-scripts')
+    expect(contentSecurityPolicy).not.toContain('allow-same-origin')
+    expect(contentSecurityPolicy).not.toContain("'unsafe-eval'")
     expect(await response.text()).toContain('<h1>Preview</h1>')
     expect(query).toHaveBeenCalledWith('getPublicGallerySession', {
       sessionId: 'session-1',
@@ -86,6 +93,12 @@ describe('createSessionPreviewRawResponse', () => {
     const response = await createSessionPreviewRawResponse('missing-preview')
 
     expect(response.status).toBe(404)
+    expect(response.headers.get('content-security-policy')).toContain(
+      "default-src 'none'",
+    )
+    expect(response.headers.get('content-security-policy')).toContain(
+      'sandbox allow-scripts',
+    )
   })
 
   it('does not serve real OpenUI renderer error HTML as a successful preview document', async () => {

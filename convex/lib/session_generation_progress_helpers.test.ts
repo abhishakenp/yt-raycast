@@ -168,6 +168,7 @@ describe('session generation progress helpers', () => {
         errorCode: undefined,
         errorMessage: undefined,
         generationStartedAt: 100,
+        generationAttemptCount: 1,
         updatedAt: 100,
       }),
     ])
@@ -258,6 +259,7 @@ describe('session generation progress helpers', () => {
           errorCode: 'GENERATION_STALLED',
           errorMessage: 'Generation stopped unexpectedly.',
           generationStartedAt: 100,
+          generationAttemptCount: 1,
         }),
       ],
     })
@@ -272,6 +274,7 @@ describe('session generation progress helpers', () => {
         errorCode: undefined,
         errorMessage: undefined,
         generationStartedAt: 900,
+        generationAttemptCount: 2,
       }),
     )
     expect(schedulerCalls).toEqual([

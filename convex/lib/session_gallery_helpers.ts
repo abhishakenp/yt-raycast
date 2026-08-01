@@ -289,7 +289,6 @@ export function serializePublicGallerySession(
     siteSpecJson,
     categories: getGalleryCategories(session.prompt),
     elapsed: session.elapsed ?? null,
-    cost: session.cost ?? null,
     homepageReady: session.homepageReady ?? null,
     siteSpecReady: session.siteSpecReady ?? null,
     openuiReady: session.openuiReady ?? null,

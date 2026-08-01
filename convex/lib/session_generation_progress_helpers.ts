@@ -73,6 +73,10 @@ export async function markSessionGenerationStarted(
     errorCode: undefined,
     errorMessage: undefined,
     generationStartedAt: now,
+    // The admission layer charges quota when it creates a session, not when a
+    // run starts. Incrementing this field makes retries observable without
+    // creating another billable session (one retry cycle = one credit).
+    generationAttemptCount: (session.generationAttemptCount ?? 0) + 1,
     updatedAt: now,
   })
 

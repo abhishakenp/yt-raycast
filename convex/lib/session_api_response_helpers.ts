@@ -102,15 +102,11 @@ export function serializeSessionApiResponse(
       errorMessage: task.errorMessage ?? null,
     })),
     elapsed: session.elapsed ?? null,
-    cost: session.cost ?? null,
     isAnonymous: session.userId === undefined,
     ecommerce: session.medusaConfig !== undefined,
     openuiReady: session.openuiReady === true,
     integrations: {
-      medusa:
-        session.medusaConfig === undefined
-          ? null
-          : { enabled: true, config: session.medusaConfig },
+      medusa: session.medusaConfig === undefined ? null : { enabled: true },
     },
     medusaAdminEmbed: {
       show: false,

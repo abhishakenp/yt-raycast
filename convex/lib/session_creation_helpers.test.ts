@@ -949,6 +949,45 @@ describe('session creation helpers', () => {
     expect(session?.value.anonOwnerSecretHash).toBeUndefined()
   })
 
+  it('derives visibility from the owner subscription instead of client input', async () => {
+    vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
+    vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
+    vi.stubEnv('DISABLE_LIMIT', 'true')
+    const identity = {
+      subject: 'paid_user',
+      tokenIdentifier: 'clerk|paid_user',
+    } as TestIdentity
+    const paid = createMutationCtxFor(
+      { subscriptions: [{ userId: 'clerk|paid_user', status: 'active' }] },
+      identity,
+    )
+    const free = createMutationCtxFor({}, identity)
+    const input = {
+      serverSecret: TEST_SERVER_SECRET,
+      prompt: 'Build a private project',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html' as const,
+      // Deliberately opposite the paid entitlement: callers cannot choose
+      // visibility themselves.
+      isPrivate: false,
+      workspace: 'workspace-paid-visibility',
+    }
+
+    await createGenerationSession(paid.ctx, input, createReferences())
+    await createGenerationSession(
+      free.ctx,
+      { ...input, isPrivate: true, workspace: 'workspace-free-visibility' },
+      createReferences(),
+    )
+
+    expect(
+      paid.inserted.find((row) => row.table === 'sessions')?.value.isPrivate,
+    ).toBe(true)
+    expect(
+      free.inserted.find((row) => row.table === 'sessions')?.value.isPrivate,
+    ).toBe(false)
+  })
+
   it('marks the new session failed when model configuration is missing', async () => {
     vi.stubEnv('OPENUI_HOME_MODEL', 'openai/gpt-oss-120b')
     vi.stubEnv('GROQ_API_KEY', '')

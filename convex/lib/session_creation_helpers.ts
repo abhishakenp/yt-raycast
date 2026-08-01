@@ -401,6 +401,12 @@ export async function createGenerationSession(
   const userId = await getUserId(ctx)
   const ownerEmail = userId === undefined ? undefined : await getUserEmail(ctx)
   const isAdmin = userId !== undefined && (await isUserAdmin(ctx))
+  // Visibility is a product entitlement, not a client preference. Keeping it
+  // server-derived prevents a free caller from creating an unlisted/private
+  // project (or a paid caller from accidentally publishing one).
+  const isPrivate =
+    userId !== undefined &&
+    (await getActiveSubscriptionsForUser(ctx, userId)).length > 0
 
   const anonOwnerSecretHash =
     userId === undefined && args.anonymousOwnerSecret !== undefined
@@ -452,7 +458,7 @@ export async function createGenerationSession(
         designReferenceFingerprint,
         cloneUrl,
         engineVersion: args.engineVersion,
-        isPrivate: args.isPrivate,
+        isPrivate,
         userId,
         anonymousClientIdHash,
         clientIpHash,
@@ -485,7 +491,7 @@ export async function createGenerationSession(
     !args.forceFresh &&
     !isAuthDisabled() &&
     designReferenceFingerprint === undefined &&
-    args.isPrivate === false &&
+    isPrivate === false &&
     userId === undefined
   const cachedSession = canUsePromptCache
     ? await findReusablePromptCacheSession(ctx, promptCacheKey)
@@ -542,7 +548,7 @@ export async function createGenerationSession(
     designReferenceFingerprint,
     promptCacheKey,
     engineVersion: args.engineVersion,
-    isPrivate: args.isPrivate,
+    isPrivate,
     isDraft,
     previewVersion: 0,
     createdAt: now,

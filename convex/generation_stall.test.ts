@@ -220,6 +220,9 @@ test('a session failed by the reaper can be retried end to end', async () => {
 
   const retried = await t.run((ctx) => ctx.db.get(sessionId))
   expect(retried?.status).toBe('streaming')
+  // Retries resume this exact session, so quota still observes one billable
+  // session while the attempt count makes recovery visible to operations.
+  expect(retried?.generationAttemptCount).toBe(2)
   // The previous stall failure must not linger, or the dashboard would keep
   // rendering the failure state over a live run.
   expect(retried?.errorCode).toBeUndefined()

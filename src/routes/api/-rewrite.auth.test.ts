@@ -22,6 +22,7 @@ vi.mock('@/shared/convex/http-client', () => ({
 import { Route } from './rewrite'
 import { callRouteHandler } from './-route-handler.test-helper'
 import { rewriteHits } from '@/lib/rate-limit'
+import { resetSpendCounters } from '@/lib/spend-cap'
 
 const postRewrite = (headers?: HeadersInit) =>
   callRouteHandler(Route, 'POST', {
@@ -35,6 +36,7 @@ const postRewrite = (headers?: HeadersInit) =>
 describe('/api/rewrite authentication', () => {
   beforeEach(() => {
     rewriteHits.clear()
+    resetSpendCounters()
     convexQueryMock.mockReset()
     generateTextMock.mockClear()
     vi.stubEnv('VITE_DISABLE_CLERK', 'false')
@@ -69,6 +71,31 @@ describe('/api/rewrite authentication', () => {
     const response = await postRewrite({ Authorization: 'Bearer real-token' })
 
     expect(response.status).toBe(200)
+    expect(generateTextMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('caps only model dispatches, not rejected rewrite payloads', async () => {
+    convexQueryMock.mockResolvedValue({ active: true })
+    vi.stubEnv('MODEL_DAILY_CALL_CAP', '1')
+
+    const invalid = await callRouteHandler(Route, 'POST', {
+      request: new Request('https://ship-fast.ai/api/rewrite', {
+        body: JSON.stringify({ text: 'Missing instruction' }),
+        headers: {
+          Authorization: 'Bearer real-token',
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      }),
+    })
+    const firstModelCall = await postRewrite({
+      Authorization: 'Bearer real-token',
+    })
+    const capped = await postRewrite({ Authorization: 'Bearer real-token' })
+
+    expect(invalid.status).toBe(422)
+    expect(firstModelCall.status).toBe(200)
+    expect(capped.status).toBe(503)
     expect(generateTextMock).toHaveBeenCalledTimes(1)
   })
 

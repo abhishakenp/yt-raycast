@@ -1063,7 +1063,6 @@ describe('serializePublicGallerySession', () => {
       createdAt: 100,
       updatedAt: 100,
       elapsed: 123,
-      cost: 0,
       moduleSource: '$page = "Home"',
       siteSpecJson: '{"legacy":"Gallery"}',
       readiness: {
@@ -1074,6 +1073,7 @@ describe('serializePublicGallerySession', () => {
       },
     })
     expect(result.categories).toContain('saas')
+    expect(result).not.toHaveProperty('cost')
   })
 
   it('serializes detail gallery fields without legacy site spec fallback or stored-preview readiness fallback', () => {

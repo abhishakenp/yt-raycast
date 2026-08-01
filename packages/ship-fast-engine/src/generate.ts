@@ -2,14 +2,16 @@ import { chat, maxIterations } from '@tanstack/ai'
 import type { InferSchemaType, SchemaInput, Tool } from '@tanstack/ai'
 import { getProvider, supportsReasoningEffort } from './model-list.ts'
 import { getAdapter } from './model.ts'
+import {
+  providerFallbackModelIds,
+  recordProviderFailure,
+  recordProviderSuccess,
+} from './provider-fallback.ts'
 import { talaasChat } from './talaas.ts'
 
 // Resilient single-shot text generation over @tanstack/ai. Critically, it detects
 // RUN_ERROR chunks (which streamToText silently swallows -> "") and retries
 // transient provider failures (503 / overload / rate limit) with backoff.
-
-const RETRYABLE =
-  /\b(503|429|500|502|504)\b|unavailable|overload|high demand|try again|rate.?limit|temporar|timeout/i
 
 /**
  * Build provider-appropriate model options. Not all providers support the same
@@ -123,6 +125,46 @@ function sleep(ms: number, signal: AbortSignal): Promise<void> {
       { once: true },
     )
   })
+}
+
+async function withProviderFallback<T>(
+  modelId: string,
+  signal: AbortSignal,
+  retries: number,
+  onRetry: ((attempt: number) => void) | undefined,
+  operation: (candidateModelId: string) => Promise<T>,
+  hasResult: (value: T) => boolean,
+): Promise<T> {
+  let last: unknown = new Error('generation failed')
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    if (signal.aborted) throw new DOMException('aborted', 'AbortError')
+
+    for (const candidateModelId of providerFallbackModelIds(modelId)) {
+      try {
+        const result = await operation(candidateModelId)
+        if (!hasResult(result)) {
+          throw new Error('empty model output')
+        }
+        recordProviderSuccess(candidateModelId)
+        return result
+      } catch (error) {
+        if ((error as { name?: string })?.name === 'AbortError') throw error
+        last = error
+        recordProviderFailure(candidateModelId)
+      }
+    }
+
+    if (attempt < retries) {
+      onRetry?.(attempt + 1)
+      await sleep(
+        Math.min(8000, 600 * 2 ** attempt) + Math.floor(Math.random() * 300),
+        signal,
+      )
+    }
+  }
+
+  throw last instanceof Error ? last : new Error('generation failed')
 }
 
 async function once(
@@ -292,30 +334,14 @@ export async function generateText(
   retries = 4,
   onRetry?: (attempt: number) => void,
 ): Promise<string> {
-  let last: unknown
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    if (signal.aborted) throw new DOMException('aborted', 'AbortError')
-    try {
-      const text = await once(modelId, system, user, signal)
-      if (text.trim()) {
-        return text
-      }
-      last = new Error('empty model output')
-    } catch (e) {
-      if ((e as { name?: string })?.name === 'AbortError') throw e
-      last = e
-      const msg = String((e as { message?: string })?.message ?? e)
-      if (!RETRYABLE.test(msg)) throw e
-    }
-    if (attempt < retries) {
-      onRetry?.(attempt + 1)
-      await sleep(
-        Math.min(8000, 600 * 2 ** attempt) + Math.floor(Math.random() * 300),
-        signal,
-      )
-    }
-  }
-  throw last instanceof Error ? last : new Error('generation failed')
+  return withProviderFallback(
+    modelId,
+    signal,
+    retries,
+    onRetry,
+    (candidateModelId) => once(candidateModelId, system, user, signal),
+    (text) => text.trim().length > 0,
+  )
 }
 
 /**
@@ -336,30 +362,15 @@ export async function generateTextStream(
   retries = 4,
   onRetry?: (attempt: number) => void,
 ): Promise<string> {
-  let last: unknown
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    if (signal.aborted) throw new DOMException('aborted', 'AbortError')
-    try {
-      const text = await onceStream(modelId, system, user, signal, onLine)
-      if (text.trim()) {
-        return text
-      }
-      last = new Error('empty model output')
-    } catch (e) {
-      if ((e as { name?: string })?.name === 'AbortError') throw e
-      last = e
-      const msg = String((e as { message?: string })?.message ?? e)
-      if (!RETRYABLE.test(msg)) throw e
-    }
-    if (attempt < retries) {
-      onRetry?.(attempt + 1)
-      await sleep(
-        Math.min(8000, 600 * 2 ** attempt) + Math.floor(Math.random() * 300),
-        signal,
-      )
-    }
-  }
-  throw last instanceof Error ? last : new Error('generation failed')
+  return withProviderFallback(
+    modelId,
+    signal,
+    retries,
+    onRetry,
+    (candidateModelId) =>
+      onceStream(candidateModelId, system, user, signal, onLine),
+    (text) => text.trim().length > 0,
+  )
 }
 
 /**
@@ -430,28 +441,15 @@ export async function generateWithTools(
   retries = 4,
   onRetry?: (attempt: number) => void,
 ): Promise<GenerateWithToolsResult> {
-  let last: unknown
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    if (signal.aborted) throw new DOMException('aborted', 'AbortError')
-    try {
-      const result = await onceWithTools(modelId, system, user, tools, signal)
-      if (result.text.trim() || result.toolCalls.length > 0) return result
-      last = new Error('empty model output')
-    } catch (e) {
-      if ((e as { name?: string })?.name === 'AbortError') throw e
-      last = e
-      const msg = String((e as { message?: string })?.message ?? e)
-      if (!RETRYABLE.test(msg)) throw e
-    }
-    if (attempt < retries) {
-      onRetry?.(attempt + 1)
-      await sleep(
-        Math.min(8000, 600 * 2 ** attempt) + Math.floor(Math.random() * 300),
-        signal,
-      )
-    }
-  }
-  throw last instanceof Error ? last : new Error('generation failed')
+  return withProviderFallback(
+    modelId,
+    signal,
+    retries,
+    onRetry,
+    (candidateModelId) =>
+      onceWithTools(candidateModelId, system, user, tools, signal),
+    (result) => result.text.trim().length > 0 || result.toolCalls.length > 0,
+  )
 }
 
 export async function generateStructuredWithTools<TSchema extends SchemaInput>(
@@ -464,31 +462,20 @@ export async function generateStructuredWithTools<TSchema extends SchemaInput>(
   retries = 4,
   onRetry?: (attempt: number) => void,
 ): Promise<InferSchemaType<TSchema>> {
-  let last: unknown
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    if (signal.aborted) throw new DOMException('aborted', 'AbortError')
-    try {
-      return await onceStructuredWithTools(
-        modelId,
+  return withProviderFallback(
+    modelId,
+    signal,
+    retries,
+    onRetry,
+    (candidateModelId) =>
+      onceStructuredWithTools(
+        candidateModelId,
         system,
         user,
         tools,
         outputSchema,
         signal,
-      )
-    } catch (e) {
-      if ((e as { name?: string })?.name === 'AbortError') throw e
-      last = e
-      const msg = String((e as { message?: string })?.message ?? e)
-      if (!RETRYABLE.test(msg)) throw e
-    }
-    if (attempt < retries) {
-      onRetry?.(attempt + 1)
-      await sleep(
-        Math.min(8000, 600 * 2 ** attempt) + Math.floor(Math.random() * 300),
-        signal,
-      )
-    }
-  }
-  throw last instanceof Error ? last : new Error('generation failed')
+      ),
+    () => true,
+  )
 }

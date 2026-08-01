@@ -4,6 +4,7 @@ const adapterMocks = vi.hoisted(() => ({
   geminiText: vi.fn((model) => ({ model, provider: 'gemini' })),
   groqText: vi.fn((model) => ({ model, provider: 'groq' })),
   cerebrasText: vi.fn((model) => ({ model, provider: 'cerebras' })),
+  pollinationsText: vi.fn((model) => ({ model, provider: 'pollinations' })),
 }))
 
 vi.mock('@tanstack/ai-gemini', () => ({
@@ -16,6 +17,10 @@ vi.mock('@tanstack/ai-groq', () => ({
 
 vi.mock('./llm/cerebras.ts', () => ({
   cerebrasText: adapterMocks.cerebrasText,
+}))
+
+vi.mock('./llm/pollinations.ts', () => ({
+  pollinationsText: adapterMocks.pollinationsText,
 }))
 
 describe('model adapter selection', () => {
@@ -45,6 +50,15 @@ describe('model adapter selection', () => {
     expect(getAdapter('cerebras/gpt-oss-120b')).toEqual({
       model: 'gpt-oss-120b',
       provider: 'cerebras',
+    })
+  })
+
+  it('creates a Pollinations adapter for pollinations/openai', async () => {
+    const { getAdapter } = await import('./model.ts')
+
+    expect(getAdapter('pollinations/openai')).toEqual({
+      model: 'openai',
+      provider: 'pollinations',
     })
   })
 

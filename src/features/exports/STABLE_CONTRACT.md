@@ -122,11 +122,22 @@ The deployment adapter (`stable-deployment-adapter.ts`) allows deployments to wo
 
 ## Migration Path
 
+### Retirement schedule
+
+- **Stable contract default:** 2026-08-01. Export downloads and background
+  artifact builds use `StableExportInput` whenever the session has final HTML.
+- **Legacy OpenUI fallback retirement:** 2027-02-01. Until then it is used
+  only for historical sessions that lack final HTML; no new export path may
+  depend on OpenUI internals.
+- Before the retirement date, backfill affected historical artifacts to the
+  stable contract. After it, requests without a stable artifact must be
+  regenerated rather than rendered through legacy builders.
+
 ### Current State
 
-- Legacy builders (`openui-export-builder.ts`, `openui-html-export-builder.ts`) still depend on engine internals
-- Stable builders are implemented and tested
-- Both paths coexist for gradual migration
+- Stable builders are the default and are implemented and tested.
+- Legacy builders (`openui-export-builder.ts`, `openui-html-export-builder.ts`)
+  are compatibility-only until **2027-02-01**.
 
 ### Migration Steps
 

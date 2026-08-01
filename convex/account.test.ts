@@ -21,13 +21,63 @@ const seedUser = async (
   userId: string,
 ): Promise<void> => {
   await t.run(async (ctx) => {
-    await ctx.db.insert('sessions', {
+    const sessionId = await ctx.db.insert('sessions', {
       userId,
       prompt: 'A site to erase',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',
       isPrivate: false,
       createdAt: 1,
+    })
+    const deploymentId = await ctx.db.insert('deployments', {
+      sessionId,
+      slug: `lakebed-${userId}`,
+      url: 'https://example.lakebed.app',
+      status: 'ready',
+      provider: 'lakebed',
+      lakebedDeployId: `deploy-${userId}`,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    await ctx.db.insert('commerceTenants', {
+      deploymentId,
+      sessionId,
+      deploymentSlug: `medusa-${userId}`,
+      provider: 'medusa',
+      providerTenantId: `tenant-${userId}`,
+      status: 'ready',
+      syncStatus: 'ready',
+      backendUrl: 'https://medusa.example.test',
+      adminUrl: 'https://medusa.example.test/app',
+      storefrontUrl: 'https://shop.example.test',
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    await ctx.db.insert('exports', {
+      sessionId,
+      target: 'html',
+      status: 'ready',
+      githubUrl: `https://github.com/example/${userId}`,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    await ctx.db.insert('githubConnections', {
+      clerkTokenIdentifier: userId,
+      clerkUserId: userId.split('|').at(-1),
+      githubUserId: 42,
+      githubLogin: 'example',
+      accessToken: 'github-token',
+      scopes: ['repo'],
+      connectedAt: 1,
+      updatedAt: 1,
+    })
+    await ctx.db.insert('githubOAuthStates', {
+      state: `state-${userId}`,
+      clerkTokenIdentifier: userId,
+      clerkUserId: userId.split('|').at(-1),
+      returnTo: '/',
+      createdAt: 1,
+      expiresAt: 2,
     })
     await ctx.db.insert('customerCredits', {
       userId,
@@ -65,15 +115,17 @@ describe('account deletion', () => {
       })
 
     expect(result.sessionsDeleted).toBe(1)
+    expect(result.externalDeletionRequests).toBe(3)
 
-    const { sessions, credits, ledger, subscriptions } = await t.run(
-      async (ctx) => ({
+    const { sessions, credits, ledger, subscriptions, outbox, github } =
+      await t.run(async (ctx) => ({
         sessions: await ctx.db.query('sessions').collect(),
         credits: await ctx.db.query('customerCredits').collect(),
         ledger: await ctx.db.query('creditLedger').collect(),
         subscriptions: await ctx.db.query('subscriptions').collect(),
-      }),
-    )
+        outbox: await ctx.db.query('accountDeletionOutbox').collect(),
+        github: await ctx.db.query('githubConnections').collect(),
+      }))
 
     expect(sessions).toHaveLength(0)
     expect(credits).toHaveLength(0)
@@ -83,6 +135,27 @@ describe('account deletion', () => {
     expect(ledger[0]?.userId).toBe(tombstone)
     expect(subscriptions[0]?.userId).toBe(tombstone)
     expect(tombstone).not.toContain(identity.subject)
+    expect(github).toHaveLength(0)
+    expect(outbox).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'medusa_tenant',
+          resourceId: `tenant-${identity.tokenIdentifier}`,
+          status: 'pending',
+          userTombstone: tombstone,
+        }),
+        expect.objectContaining({
+          kind: 'lakebed_deployment',
+          resourceId: `deploy-${identity.tokenIdentifier}`,
+          status: 'pending',
+        }),
+        expect.objectContaining({
+          kind: 'github_repository',
+          resourceId: `https://github.com/example/${identity.tokenIdentifier}`,
+          status: 'pending',
+        }),
+      ]),
+    )
   })
 
   it('leaves other users untouched', async () => {

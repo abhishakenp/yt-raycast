@@ -157,6 +157,29 @@ describe('createSessionEventStreamResponse', () => {
     expect(setAuth).toHaveBeenCalledWith('token_123')
   })
 
+  it('does not accept an owner secret from stream query parameters', async () => {
+    const query = vi.fn(async () => ({
+      session: { sessionId: 'session_123' },
+      cursor: 100,
+      events: [],
+    }))
+
+    const response = await createSessionEventStreamResponse(
+      'session_123',
+      new Request(
+        'http://localhost/api/sessions/session_123/stream?since=100&anonymousOwnerSecret=query-secret&anonOwnerSecret=legacy-query-secret',
+      ),
+      { query },
+    )
+
+    expect(response.status).toBe(200)
+    expect(query).toHaveBeenCalledWith(expect.anything(), {
+      lookup: 'session_123',
+      since: 100,
+      anonymousOwnerSecret: undefined,
+    })
+  })
+
   it('serializes real Convex generation event shapes with stable replay metadata', async () => {
     const client = {
       query: vi.fn(async () => ({

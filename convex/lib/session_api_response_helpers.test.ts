@@ -255,7 +255,7 @@ function ctxFor(
 }
 
 describe('session API response helpers', () => {
-  it('serializes sorted tasks, completion counts, exports, and integration flags', () => {
+  it('serializes sorted tasks, completion counts, exports, and redacted integration flags', () => {
     const response = serializeSessionApiResponse(
       sessionDoc({
         status: undefined,
@@ -316,7 +316,6 @@ describe('session API response helpers', () => {
       ecommerce: true,
       openuiReady: true,
       elapsed: 1200,
-      cost: 0.24,
       deployment: {
         slug: 'deployed-site',
         url: 'https://deployed-site.example.test',
@@ -325,7 +324,6 @@ describe('session API response helpers', () => {
       integrations: {
         medusa: {
           enabled: true,
-          config: { baseUrl: 'https://medusa.example.test' },
         },
       },
       medusaAdminEmbed: {
@@ -333,6 +331,8 @@ describe('session API response helpers', () => {
         url: null,
       },
     })
+    expect(response).not.toHaveProperty('cost')
+    expect(response.integrations.medusa).not.toHaveProperty('config')
     expect(response.tasks).toEqual([
       expect.objectContaining({
         id: 'task_default',

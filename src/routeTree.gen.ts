@@ -62,6 +62,7 @@ import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-ad
 import { Route as ApiLogrocketSplatRouteImport } from './routes/api/logrocket/$'
 import { Route as ApiLinkfortyWebhookRouteImport } from './routes/api/linkforty.webhook'
 import { Route as ApiImagesSessionIdRouteImport } from './routes/api/images.$sessionId'
+import { Route as ApiGithubWebhookRouteImport } from './routes/api/github.webhook'
 import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
 import { Route as ApiStorefrontMedusaConfigRouteImport } from './routes/api/storefront.medusa.config'
 import { Route as ApiStorefrontMedusaCartRouteImport } from './routes/api/storefront.medusa.cart'
@@ -373,6 +374,11 @@ const ApiImagesSessionIdRoute = ApiImagesSessionIdRouteImport.update({
   path: '/api/images/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGithubWebhookRoute = ApiGithubWebhookRouteImport.update({
+  id: '/api/github/webhook',
+  path: '/api/github/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutStartRoute = ApiCheckoutStartRouteImport.update({
   id: '/api/checkout/start',
   path: '/api/checkout/start',
@@ -667,6 +673,7 @@ export interface FileRoutesByFullPath {
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/github/webhook': typeof ApiGithubWebhookRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/linkforty/webhook': typeof ApiLinkfortyWebhookRoute
   '/api/logrocket/$': typeof ApiLogrocketSplatRoute
@@ -765,6 +772,7 @@ export interface FileRoutesByTo {
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/github/webhook': typeof ApiGithubWebhookRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/linkforty/webhook': typeof ApiLinkfortyWebhookRoute
   '/api/logrocket/$': typeof ApiLogrocketSplatRoute
@@ -865,6 +873,7 @@ export interface FileRoutesById {
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/github/webhook': typeof ApiGithubWebhookRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/linkforty/webhook': typeof ApiLinkfortyWebhookRoute
   '/api/logrocket/$': typeof ApiLogrocketSplatRoute
@@ -966,6 +975,7 @@ export interface FileRouteTypes {
     | '/preview/$slug'
     | '/examples/'
     | '/api/checkout/start'
+    | '/api/github/webhook'
     | '/api/images/$sessionId'
     | '/api/linkforty/webhook'
     | '/api/logrocket/$'
@@ -1064,6 +1074,7 @@ export interface FileRouteTypes {
     | '/preview/$slug'
     | '/examples'
     | '/api/checkout/start'
+    | '/api/github/webhook'
     | '/api/images/$sessionId'
     | '/api/linkforty/webhook'
     | '/api/logrocket/$'
@@ -1163,6 +1174,7 @@ export interface FileRouteTypes {
     | '/preview/$slug'
     | '/examples/'
     | '/api/checkout/start'
+    | '/api/github/webhook'
     | '/api/images/$sessionId'
     | '/api/linkforty/webhook'
     | '/api/logrocket/$'
@@ -1261,6 +1273,7 @@ export interface RootRouteChildren {
   DeployedSlugRoute: typeof DeployedSlugRouteWithChildren
   PreviewSlugRoute: typeof PreviewSlugRouteWithChildren
   ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
+  ApiGithubWebhookRoute: typeof ApiGithubWebhookRoute
   ApiImagesSessionIdRoute: typeof ApiImagesSessionIdRoute
   ApiLinkfortyWebhookRoute: typeof ApiLinkfortyWebhookRoute
   ApiLogrocketSplatRoute: typeof ApiLogrocketSplatRoute
@@ -1665,6 +1678,13 @@ declare module '@tanstack/react-router' {
       path: '/api/images/$sessionId'
       fullPath: '/api/images/$sessionId'
       preLoaderRoute: typeof ApiImagesSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/github/webhook': {
+      id: '/api/github/webhook'
+      path: '/api/github/webhook'
+      fullPath: '/api/github/webhook'
+      preLoaderRoute: typeof ApiGithubWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/checkout/start': {
@@ -2217,6 +2237,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeployedSlugRoute: DeployedSlugRouteWithChildren,
   PreviewSlugRoute: PreviewSlugRouteWithChildren,
   ApiCheckoutStartRoute: ApiCheckoutStartRoute,
+  ApiGithubWebhookRoute: ApiGithubWebhookRoute,
   ApiImagesSessionIdRoute: ApiImagesSessionIdRoute,
   ApiLinkfortyWebhookRoute: ApiLinkfortyWebhookRoute,
   ApiLogrocketSplatRoute: ApiLogrocketSplatRoute,
@@ -2258,12 +2279,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

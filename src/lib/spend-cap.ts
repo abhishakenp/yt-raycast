@@ -16,11 +16,11 @@ const DAY_MS = 24 * 60 * 60 * 1000
 
 type SpendWindow = { startedAt: number; calls: number }
 
-const windows = new Map<string, SpendWindow>()
+let window: SpendWindow | undefined
 
 /** Exposed for tests. */
 export function resetSpendCounters(): void {
-  windows.clear()
+  window = undefined
 }
 
 export function isModelSpendKilled(
@@ -45,7 +45,6 @@ export type SpendDecision =
  * proceed. Call this immediately before dispatching to a model.
  */
 export function admitModelCall(
-  bucket = 'global',
   now = Date.now(),
   env: NodeJS.ProcessEnv = process.env,
 ): SpendDecision {
@@ -56,19 +55,18 @@ export function admitModelCall(
   const cap = dailyCallCap(env)
   if (cap === Number.POSITIVE_INFINITY) return { allowed: true }
 
-  const existing = windows.get(bucket)
-  const window =
-    existing === undefined || now - existing.startedAt >= DAY_MS
+  const currentWindow =
+    window === undefined || now - window.startedAt >= DAY_MS
       ? { startedAt: now, calls: 0 }
-      : existing
+      : window
 
-  if (window.calls >= cap) {
-    windows.set(bucket, window)
+  if (currentWindow.calls >= cap) {
+    window = currentWindow
     return { allowed: false, reason: 'daily_cap' }
   }
 
-  window.calls += 1
-  windows.set(bucket, window)
+  currentWindow.calls += 1
+  window = currentWindow
   return { allowed: true }
 }
 

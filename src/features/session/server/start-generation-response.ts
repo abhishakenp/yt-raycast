@@ -47,7 +47,7 @@ export async function createStartGenerationResponse(
 
   // Global backstop across every model-spending route — per-route limits
   // multiply, this one does not.
-  const spend = admitModelCall('generation')
+  const spend = admitModelCall()
   if (!spend.allowed) return modelSpendBlockedResponse(spend)
 
   const sessionId = sessionIdParam as Id<'sessions'>

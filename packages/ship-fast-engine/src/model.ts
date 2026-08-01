@@ -1,6 +1,7 @@
 import { geminiText } from '@tanstack/ai-gemini'
 import { groqText } from '@tanstack/ai-groq'
 import { cerebrasText } from './llm/cerebras.ts'
+import { pollinationsText } from './llm/pollinations.ts'
 import { DEFAULT_MODEL } from './model-list.ts'
 
 // Map each model id to a factory that builds its typed adapter. Using literal ids
@@ -13,6 +14,7 @@ const ADAPTERS: Record<
   () => any
 > = {
   'cerebras/gpt-oss-120b': () => cerebrasText('gpt-oss-120b'),
+  'pollinations/openai': () => pollinationsText('openai'),
   'llama-3.3-70b-versatile': () => groqText('llama-3.3-70b-versatile'),
   'openai/gpt-oss-120b': () => groqText('openai/gpt-oss-120b'),
   'openai/gpt-oss-20b': () => groqText('openai/gpt-oss-20b'),

@@ -17,4 +17,11 @@ crons.interval(
   internal.sessions.cleanupStuckSessions,
 )
 
+crons.cron(
+  'clear expired session IP hashes',
+  '0 3 * * *',
+  internal.sessions.clearExpiredClientIpHashes,
+  {},
+)
+
 export default crons

@@ -1728,6 +1728,7 @@ describe('prepareExportArtifactBuild', () => {
     const { ctx } = workflowCtxFor({
       sessions: [
         sessionDoc({
+          isPrivate: true,
           preferredLanguage: 'lt',
           genuiTheme: 'modern-minimal',
           themeOverride: 'noir',
@@ -1922,6 +1923,7 @@ describe('loadOwnedExportForGitHubPush', () => {
       identityUserId: userId,
       sessions: [
         sessionDoc({
+          isPrivate: true,
           preferredLanguage: 'lt',
           genuiTheme: 'modern-minimal',
           themeOverride: 'noir',
@@ -2009,6 +2011,18 @@ describe('loadOwnedExportForGitHubPush', () => {
       previewHtml: '',
       includeBadge: true,
     })
+  })
+
+  it('keeps a free project branded even when its export record is already paid', async () => {
+    const { ctx } = workflowCtxFor({
+      identityUserId: userId,
+      sessions: [sessionDoc({ isPrivate: false })],
+      exports: [exportDoc({ requiresPayment: false })],
+    })
+
+    await expect(
+      loadOwnedExportForGitHubPush(ctx, { sessionId, target: 'html' }),
+    ).resolves.toMatchObject({ includeBadge: true })
   })
 
   it('allows anonymous GitHub push without identity when VITE_DISABLE_CLERK is true', async () => {

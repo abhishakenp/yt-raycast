@@ -23,7 +23,6 @@ import {
   paywallTriggeredEvent,
 } from './slack_business_notifications'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
-import { resolveDeploymentBadgeEntitlement } from './deployment_badge_helpers'
 import { progressForStage } from './export_progress_stages'
 
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
@@ -1656,7 +1655,10 @@ export async function prepareExportArtifactBuild(
     locale,
     selectedBrandLogo: session.selectedBrandLogo ?? null,
     isPrivate: session.isPrivate === true,
-    includeBadge: await resolveDeploymentBadgeEntitlement(ctx, session.userId),
+    // Branding is locked to the entitlement at creation. A paid project stays
+    // unbranded after its subscription expires; a free project keeps the
+    // promotion badge after its owner later upgrades.
+    includeBadge: session.isPrivate !== true,
   }
 
   return prepared
@@ -1940,7 +1942,10 @@ export async function loadOwnedExportForGitHubPush(
     isDark,
     locale,
     selectedBrandLogo: session.selectedBrandLogo ?? null,
-    includeBadge: exportRecord.requiresPayment !== false,
+    // Do not infer branding from the current export-payment record. Credit
+    // purchases and subscription changes happen after generation; visibility
+    // is the durable paid/free entitlement captured at session creation.
+    includeBadge: session.isPrivate !== true,
     artifact: toArtifactPayload(artifact),
     filesUrl,
   }

@@ -22,6 +22,7 @@ import type * as generationConfig from "../generationConfig.js";
 import type * as github from "../github.js";
 import type * as lakebed from "../lakebed.js";
 import type * as lakebed_deploy from "../lakebed_deploy.js";
+import type * as maintenance from "../maintenance.js";
 import type * as lib_acquisition_attribution from "../lib/acquisition_attribution.js";
 import type * as lib_billing_constants from "../lib/billing_constants.js";
 import type * as lib_billing_generation_quota from "../lib/billing_generation_quota.js";
@@ -113,6 +114,7 @@ declare const fullApi: ApiFromModules<{
   github: typeof github;
   lakebed: typeof lakebed;
   lakebed_deploy: typeof lakebed_deploy;
+  maintenance: typeof maintenance;
   "lib/acquisition_attribution": typeof lib_acquisition_attribution;
   "lib/billing_constants": typeof lib_billing_constants;
   "lib/billing_generation_quota": typeof lib_billing_generation_quota;

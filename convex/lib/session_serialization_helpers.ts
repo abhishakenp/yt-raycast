@@ -30,11 +30,9 @@ export function serializeSession(session: Doc<'sessions'>) {
     canClaimAnonymous:
       session.userId === undefined && session.anonOwnerSecretHash !== undefined,
     prompt: session.prompt,
-    workspace: session.workspace,
     status: normalizeSessionStatus(session),
     preferredLanguage: session.preferredLanguage,
     preferredExportTarget: session.preferredExportTarget,
-    isPrivate: session.isPrivate,
     previewVersion: session.previewVersion ?? 0,
     elapsed: session.elapsed ?? null,
     createdAt: session.createdAt,
@@ -43,9 +41,7 @@ export function serializeSession(session: Doc<'sessions'>) {
     errorMessage: session.errorMessage,
     deploymentSlug: session.deploymentSlug,
     designReferenceUrls: session.designReferenceUrls ?? [],
-    designReferenceNotes: session.designReferenceNotes ?? '',
     cloneUrl: session.cloneUrl,
-    designReferenceFingerprint: session.designReferenceFingerprint,
     engineVersion: session.engineVersion,
     themeOverride: (session.themeOverride as string | undefined) ?? null,
     themeMode:

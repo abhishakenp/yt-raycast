@@ -637,7 +637,7 @@ export async function createTranslateResponse(
     )
   }
 
-  const spend = admitModelCall('translate')
+  const spend = admitModelCall()
   if (!spend.allowed) return modelSpendBlockedResponse(spend)
 
   let body: TranslationRequestBody = {}

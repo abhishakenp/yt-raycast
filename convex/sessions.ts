@@ -111,7 +111,10 @@ import {
   recordGitHubExportRepository,
   updateExportArtifactBuildProgress,
 } from './lib/session_export_helpers'
-import { checkTranslationEntitlement } from './lib/translation_entitlement_helpers'
+import {
+  checkEditingEntitlement,
+  checkTranslationEntitlement,
+} from './lib/translation_entitlement_helpers'
 import { loadSessionEventStream } from './lib/session_event_stream_helpers'
 import {
   listOwnedGallerySessions,
@@ -494,6 +497,45 @@ export const cleanupStuckSessions = internalMutation({
     }
 
     return { cleaned }
+  },
+})
+
+export const IP_HASH_TTL_MS = 90 * 24 * 60 * 60 * 1000
+const IP_HASH_RETENTION_BATCH_SIZE = 100
+
+/**
+ * Clears session IP hashes after their 90-day retention period. Pagination is
+ * scheduled as a chain so each transaction stays within Convex limits even
+ * when many historical sessions are eligible for redaction.
+ */
+export const clearExpiredClientIpHashes = internalMutation({
+  args: { cursor: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const cutoff = Date.now() - IP_HASH_TTL_MS
+    const page = await ctx.db
+      .query('sessions')
+      .withIndex('by_createdAt', (index) => index.lt('createdAt', cutoff))
+      .paginate({
+        cursor: args.cursor ?? null,
+        numItems: IP_HASH_RETENTION_BATCH_SIZE,
+      })
+
+    let cleared = 0
+    for (const session of page.page) {
+      if (session.clientIpHash === undefined) continue
+      await ctx.db.patch(session._id, { clientIpHash: undefined })
+      cleared++
+    }
+
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.sessions.clearExpiredClientIpHashes,
+        { cursor: page.continueCursor },
+      )
+    }
+
+    return { cleared, hasMore: !page.isDone }
   },
 })
 
@@ -982,7 +1024,7 @@ export const checkTranslationEntitlementQuery = query({
 export const checkInlineEditEntitlementQuery = query({
   args: ownedSessionArgs,
   handler: async (ctx, args) =>
-    checkTranslationEntitlement(ctx, {
+    checkEditingEntitlement(ctx, {
       sessionId: args.sessionId,
       anonymousOwnerSecret: args.anonymousOwnerSecret,
     }),

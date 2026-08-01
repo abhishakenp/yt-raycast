@@ -33,7 +33,11 @@ const exportArtifactStatus = v.union(
   v.literal('failed'),
 )
 
-const provider = v.union(v.literal('stripe'), v.literal('razorpay'))
+const provider = v.union(
+  v.literal('stripe'),
+  v.literal('razorpay'),
+  v.literal('github'),
+)
 const acquisitionSource = v.union(
   v.literal('native_referral'),
   v.literal('dub_partner'),
@@ -43,6 +47,12 @@ const dubOutboxStatus = v.union(
   v.literal('processing'),
   v.literal('completed'),
   v.literal('dead_letter'),
+)
+const deadLetterStatus = v.union(v.literal('open'), v.literal('resolved'))
+const accountDeletionOutboxStatus = v.union(
+  v.literal('pending'),
+  v.literal('completed'),
+  v.literal('failed'),
 )
 const dubOutboxBase = {
   userId: v.string(),
@@ -126,6 +136,15 @@ const moderationField = v.union(
 )
 
 export default defineSchema({
+  // Singleton operational switches. `maintenance` is intentionally public to
+  // read: clients need the state before rendering any product surface. Writes
+  // are admin-only in convex/maintenance.ts.
+  appSettings: defineTable({
+    key: v.string(),
+    enabled: v.boolean(),
+    updatedAt: v.number(),
+  }).index('by_key', ['key']),
+
   sessions: defineTable({
     userId: v.optional(v.string()),
     ownerEmail: v.optional(v.string()),
@@ -179,6 +198,9 @@ export default defineSchema({
     cloneMode: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
+    // A retry resumes this same session, so it remains one billable generation
+    // while retaining an audit trail for operational diagnostics.
+    generationAttemptCount: v.optional(v.number()),
     // Timestamp of the most recent transition into `streaming`. Used as the
     // lease token for the stall reaper: a scheduled `failIfStillStreaming`
     // only fires for the run it was scheduled for, so a newer generation is
@@ -200,6 +222,7 @@ export default defineSchema({
     ])
     .index('by_clientIpHash', ['clientIpHash'])
     .index('by_clientIpHash_createdAt', ['clientIpHash', 'createdAt'])
+    .index('by_createdAt', ['createdAt'])
     .index('by_workspace', ['workspace'])
     .index('by_promptCacheKey', ['promptCacheKey'])
     .index('by_public_createdAt', ['isPrivate', 'createdAt'])
@@ -720,6 +743,45 @@ export default defineSchema({
     .index('by_status_and_nextAttemptAt', ['status', 'nextAttemptAt'])
     .index('by_kind_and_invoiceId', ['kind', 'invoiceId'])
     .index('by_userId', ['userId']),
+
+  // Terminal failures from retried internal work. Payloads remain serialized
+  // so producers can evolve independently without widening this shared table.
+  deadLetterQueue: defineTable({
+    source: v.string(),
+    dedupeKey: v.string(),
+    payloadJson: v.string(),
+    attemptCount: v.number(),
+    error: v.string(),
+    failedAt: v.number(),
+    status: deadLetterStatus,
+    resolvedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index('by_source_and_dedupeKey', ['source', 'dedupeKey'])
+    .index('by_status_and_failedAt', ['status', 'failedAt']),
+
+  // External processors consume these deletion requests after the local
+  // account transaction commits. Keeping an outbox makes erasure requests
+  // durable and retryable without performing destructive network calls from a
+  // user-facing mutation (or from development/test environments).
+  accountDeletionOutbox: defineTable({
+    kind: v.union(
+      v.literal('medusa_tenant'),
+      v.literal('lakebed_deployment'),
+      v.literal('github_repository'),
+    ),
+    resourceId: v.string(),
+    dedupeKey: v.string(),
+    userTombstone: v.string(),
+    status: accountDeletionOutboxStatus,
+    attemptCount: v.number(),
+    lastError: v.optional(v.string()),
+    completedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_dedupeKey', ['dedupeKey'])
+    .index('by_status_and_createdAt', ['status', 'createdAt']),
 
   // Each user owns one stable referral code. Sharing /?ref=CODE attributes new
   // signups to the owner. When LinkForty is enabled, the code also exists as a

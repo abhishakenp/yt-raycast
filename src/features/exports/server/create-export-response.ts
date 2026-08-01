@@ -12,6 +12,11 @@ import {
   buildDownloadFromArtifactFiles,
   buildOpenUIArtifactFiles,
 } from '../services/openui-artifact-files'
+import {
+  buildDownloadFromStableArtifact,
+  buildExportFromStableArtifact,
+} from '../services/stable-export-builder'
+import type { StableExportInput } from '../services/stable-artifact-contract'
 
 type ExportConvexClient = Pick<ConvexHttpClient, 'query' | 'mutation'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
@@ -44,6 +49,7 @@ type ExportBuildInputPayload = {
   themeName?: string
   isDark?: boolean
   locale?: string
+  includeBadge?: boolean
   selectedBrandLogo?: OpenUIExportInput['selectedBrandLogo']
 }
 
@@ -187,13 +193,7 @@ function getBearerToken(request: Request): string | null {
 
 function getOwnerSecret(request?: Request): string | undefined {
   if (!request) return undefined
-  const url = new URL(request.url)
-  return (
-    request.headers.get('x-ship-fast-owner-secret') ??
-    url.searchParams.get('anonymousOwnerSecret') ??
-    url.searchParams.get('anonOwnerSecret') ??
-    undefined
-  )
+  return request.headers.get('x-ship-fast-owner-secret') ?? undefined
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -250,6 +250,8 @@ function isExportBuildInputPayload(
     (value.themeName === undefined || typeof value.themeName === 'string') &&
     (value.isDark === undefined || typeof value.isDark === 'boolean') &&
     (value.locale === undefined || typeof value.locale === 'string') &&
+    (value.includeBadge === undefined ||
+      typeof value.includeBadge === 'boolean') &&
     (value.selectedBrandLogo === undefined ||
       value.selectedBrandLogo === null ||
       isRecord(value.selectedBrandLogo))
@@ -342,6 +344,32 @@ async function buildExportOnDemand(
     )
   }
 
+  // The stable contract is the default for every final HTML artifact. The
+  // legacy OpenUI builder below remains only as a bounded migration fallback
+  // for old sessions which do not contain a final HTML artifact.
+  if (buildInputResult.html.trim()) {
+    const stableInput: StableExportInput = {
+      artifact: { html: buildInputResult.html },
+      sessionId: buildInputResult.sessionId,
+      target,
+      theme: {
+        name: buildInputResult.themeName,
+        isDark: buildInputResult.isDark,
+        locale: buildInputResult.locale,
+      },
+      selectedBrandLogo: buildInputResult.selectedBrandLogo,
+      includeBadge: buildInputResult.includeBadge === true,
+      prompt: buildInputResult.prompt,
+    }
+    const artifact = await buildExportFromStableArtifact(stableInput)
+    const download = await buildDownloadFromStableArtifact(
+      stableInput,
+      artifact.files,
+      artifact.download,
+    )
+    return responseFromBuiltExport(download)
+  }
+
   const input: OpenUIExportInput = {
     source: buildInputResult.source,
     siteSpecJson: buildInputResult.siteSpecJson,
@@ -349,7 +377,7 @@ async function buildExportOnDemand(
     sessionId: buildInputResult.sessionId,
     prompt: buildInputResult.prompt,
     target,
-    includeBadge: false,
+    includeBadge: buildInputResult.includeBadge === true,
     themeName: buildInputResult.themeName,
     isDark: buildInputResult.isDark,
     locale: buildInputResult.locale,

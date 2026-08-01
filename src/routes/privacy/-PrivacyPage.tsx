@@ -123,6 +123,14 @@ export const PrivacyPage = () => {
             identifiers such as IP and account where available, without
             retaining the blocked text in security logs by design).
           </p>
+          <p>
+            For session-level abuse prevention, we store a{' '}
+            <strong>SHA-256 hash of your IP address</strong>, protected with a
+            cryptographic 32-byte salt. We automatically remove this IP hash
+            after <strong>90 days</strong>. This processing is based on our
+            legitimate interests in securing the service and preventing fraud
+            and abuse.
+          </p>
           <h3>3.4 Analytics</h3>
           <p>
             We use <strong>Plausible Analytics</strong> configured for
@@ -302,6 +310,10 @@ export const PrivacyPage = () => {
             and project data are kept until you delete them or your account, or
             until we delete them under our data lifecycle rules. Technical logs
             may be kept for a shorter operational period.
+          </p>
+          <p>
+            Session IP hashes used for security and abuse prevention are
+            automatically cleared after 90 days.
           </p>
           <p>
             The Dub browser attribution cookie lasts for up to 30 days unless

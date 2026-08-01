@@ -51,7 +51,6 @@ describe('session serialization helpers', () => {
       previewVersion: 0,
       updatedAt: 1700001,
       designReferenceUrls: [],
-      designReferenceNotes: '',
       themeOverride: null,
       themeMode: null,
     })
@@ -73,33 +72,35 @@ describe('session serialization helpers', () => {
     })
   })
 
-  it('preserves explicit session fields', () => {
-    expect(
-      serializeSession(
-        sessionDoc({
-          userId: 'user-1',
-          status: 'failed',
-          previewVersion: 3,
-          designReferenceUrls: ['https://example.com/ref'],
-          designReferenceNotes: 'Use the reference',
-          themeOverride: 'dark',
-          themeMode: 'light',
-          selectedBrandLogo: {
-            name: 'Linear',
-            domain: 'linear.app',
-            brandId: 'linear-id',
-            icon: 'https://cdn.brandfetch.io/linear/icon.webp',
-            logo: 'https://cdn.brandfetch.io/linear/logo.svg',
-          },
-        }),
-      ),
-    ).toMatchObject({
+  it('preserves safe explicit session fields while redacting internal session fields', () => {
+    const serialized = serializeSession(
+      sessionDoc({
+        userId: 'user-1',
+        status: 'failed',
+        previewVersion: 3,
+        workspace: 'internal-workspace',
+        isPrivate: true,
+        designReferenceUrls: ['https://example.com/ref'],
+        designReferenceNotes: 'Use the reference',
+        designReferenceFingerprint: 'reference-fingerprint',
+        themeOverride: 'dark',
+        themeMode: 'light',
+        selectedBrandLogo: {
+          name: 'Linear',
+          domain: 'linear.app',
+          brandId: 'linear-id',
+          icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+          logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+        },
+      }),
+    )
+
+    expect(serialized).toMatchObject({
       canClaimAnonymous: false,
       userId: 'user-1',
       status: 'failed',
       previewVersion: 3,
       designReferenceUrls: ['https://example.com/ref'],
-      designReferenceNotes: 'Use the reference',
       themeOverride: 'dark',
       themeMode: 'light',
       selectedBrandLogo: {
@@ -110,6 +111,14 @@ describe('session serialization helpers', () => {
         logo: 'https://cdn.brandfetch.io/linear/logo.svg',
       },
     })
+    for (const field of [
+      'workspace',
+      'isPrivate',
+      'designReferenceNotes',
+      'designReferenceFingerprint',
+    ]) {
+      expect(serialized).not.toHaveProperty(field)
+    }
   })
 
   it('preserves DB-observed failed generation errors for the dashboard', () => {

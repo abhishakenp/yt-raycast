@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { SHIP_FAST_MODELS, supportsReasoningEffort } from './model-list'
+import { resetProviderCircuitsForTest } from './provider-fallback'
 
 const DB_OBSERVED_PROMPT =
   'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.'
@@ -87,6 +88,7 @@ async function* toolCallEndInputChunks() {
 }
 
 beforeEach(() => {
+  resetProviderCircuitsForTest()
   llmMocks.chat.mockReset()
   llmMocks.getAdapter.mockReset()
   llmMocks.talaasChat.mockReset()
@@ -193,6 +195,56 @@ describe('generateText model dispatch', () => {
         0,
       ),
     ).rejects.toThrow('503 high demand')
+  })
+
+  it('falls back from Cerebras to Groq when the primary provider fails', async () => {
+    llmMocks.chat.mockImplementation(({ adapter }) =>
+      adapter.modelId === 'cerebras/gpt-oss-120b'
+        ? runError('503 high demand')
+        : textChunks(DB_OBSERVED_OUTPUT),
+    )
+
+    const { generateText } = await import('./generate')
+    await expect(
+      generateText(
+        'cerebras/gpt-oss-120b',
+        'Build the generated homepage.',
+        DB_OBSERVED_PROMPT,
+        new AbortController().signal,
+        0,
+      ),
+    ).resolves.toBe(DB_OBSERVED_OUTPUT)
+
+    expect(llmMocks.getAdapter.mock.calls.map(([modelId]) => modelId)).toEqual([
+      'cerebras/gpt-oss-120b',
+      'openai/gpt-oss-120b',
+    ])
+  })
+
+  it('skips Cerebras after five consecutive failures for the shared sixty-second circuit window', async () => {
+    llmMocks.chat.mockImplementation(({ adapter }) =>
+      adapter.modelId === 'cerebras/gpt-oss-120b'
+        ? runError('503 high demand')
+        : textChunks(DB_OBSERVED_OUTPUT),
+    )
+    const { generateText } = await import('./generate')
+    const request = () =>
+      generateText(
+        'cerebras/gpt-oss-120b',
+        'Build the generated homepage.',
+        DB_OBSERVED_PROMPT,
+        new AbortController().signal,
+        0,
+      )
+
+    for (let requestIndex = 0; requestIndex < 5; requestIndex += 1) {
+      await expect(request()).resolves.toBe(DB_OBSERVED_OUTPUT)
+    }
+    llmMocks.getAdapter.mockClear()
+
+    await expect(request()).resolves.toBe(DB_OBSERVED_OUTPUT)
+    expect(llmMocks.getAdapter).toHaveBeenCalledTimes(1)
+    expect(llmMocks.getAdapter).toHaveBeenCalledWith('openai/gpt-oss-120b')
   })
 
   it('throws after an empty provider stream so generation callers can fail the session', async () => {

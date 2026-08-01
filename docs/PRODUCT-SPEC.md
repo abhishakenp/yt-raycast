@@ -42,13 +42,13 @@
 
 ## Exports & Artifacts
 
-| Property           | Decision                                                                                         |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| Canonical artifact | What user sees — no preview/export divergence                                                    |
-| `nextjs` alias     | Never retires — expand targets, not remove                                                       |
-| Structural repairs | Not disclosed — smooth UX                                                                        |
-| Export migration   | Stable contract exists, legacy still active. **Decision:** retire legacy path, set concrete date |
-| Signed downloads   | **Decision:** implement signed URLs with 1-hour expiry, revoke on session deletion               |
+| Property           | Decision                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| Canonical artifact | What user sees — no preview/export divergence                                      |
+| `nextjs` alias     | Never retires — expand targets, not remove                                         |
+| Structural repairs | Not disclosed — smooth UX                                                          |
+| Export migration   | Stable contract default from 2026-08-01; legacy OpenUI fallback retires 2027-02-01 |
+| Signed downloads   | **Decision:** implement signed URLs with 1-hour expiry, revoke on session deletion |
 
 ## SEO & AEO
 

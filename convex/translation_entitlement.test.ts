@@ -170,3 +170,62 @@ test('private session requires owner secret', async () => {
   )
   expect(withSecret.code).toBe('payment_required')
 })
+
+test('expired subscribers can edit for 30 days after their subscription ends', async () => {
+  const t = convexTest(schema, modules)
+  const identity = identityFor('editing-grace-user')
+  const sessionId = await createReadySession(t, identity)
+  const now = Date.now()
+
+  await t.run(async (ctx) => {
+    await ctx.db.insert('subscriptions', {
+      userId: identity.tokenIdentifier,
+      provider: 'stripe',
+      status: 'cancelled',
+      planId: 'pro',
+      providerSubscriptionId: 'sub_editing_grace',
+      createdAt: now - 40 * 24 * 60 * 60 * 1000,
+      updatedAt: now - 5 * 24 * 60 * 60 * 1000,
+      canceledAt: now - 5 * 24 * 60 * 60 * 1000,
+    })
+  })
+
+  const editResult = await t
+    .withIdentity(identity)
+    .query(api.sessions.checkInlineEditEntitlementQuery, { sessionId })
+  const translationResult = await t
+    .withIdentity(identity)
+    .query(api.sessions.checkTranslationEntitlementQuery, { sessionId })
+
+  expect(editResult).toMatchObject({ allowed: true, code: 'ok' })
+  expect(translationResult).toMatchObject({
+    allowed: false,
+    code: 'payment_required',
+  })
+})
+
+test('editing is blocked after the subscription grace period ends', async () => {
+  const t = convexTest(schema, modules)
+  const identity = identityFor('editing-grace-expired-user')
+  const sessionId = await createReadySession(t, identity)
+  const now = Date.now()
+
+  await t.run(async (ctx) => {
+    await ctx.db.insert('subscriptions', {
+      userId: identity.tokenIdentifier,
+      provider: 'stripe',
+      status: 'cancelled',
+      planId: 'pro',
+      providerSubscriptionId: 'sub_editing_grace_expired',
+      createdAt: now - 40 * 24 * 60 * 60 * 1000,
+      updatedAt: now - 31 * 24 * 60 * 60 * 1000,
+      canceledAt: now - 31 * 24 * 60 * 60 * 1000,
+    })
+  })
+
+  const result = await t
+    .withIdentity(identity)
+    .query(api.sessions.checkInlineEditEntitlementQuery, { sessionId })
+
+  expect(result).toMatchObject({ allowed: false, code: 'payment_required' })
+})

@@ -201,8 +201,7 @@ export const addCreditsForUser = internalMutation({
   },
   handler: async (ctx, args) => {
     const userId = normalizeUserId(args.userId)
-    if (args.amount <= 0)
-      return { remaining: await getCredits(ctx, userId) }
+    if (args.amount <= 0) return { remaining: await getCredits(ctx, userId) }
 
     const now = Date.now()
     const existing = await ctx.db
@@ -416,6 +415,35 @@ export const recordWebhookEvent = internalMutation({
   },
 })
 
+/** Records GitHub's immutable delivery GUID before a webhook side effect runs. */
+export const recordGitHubWebhookDelivery = mutation({
+  args: { secret: v.string(), deliveryId: v.string() },
+  handler: async (ctx, args) => {
+    verifyServerSecret(
+      'GITHUB_WEBHOOK_MUTATION_SECRET',
+      args.secret,
+      'GitHub webhook delivery is not authorized.',
+    )
+    const deliveryId = args.deliveryId.trim()
+    if (!deliveryId) throw new ConvexError('GitHub delivery ID is required.')
+
+    const existing = await ctx.db
+      .query('webhookEvents')
+      .withIndex('by_provider_idempotencyKey', (index) =>
+        index.eq('provider', 'github').eq('idempotencyKey', deliveryId),
+      )
+      .first()
+    if (existing !== null) return { inserted: false }
+
+    await ctx.db.insert('webhookEvents', {
+      provider: 'github',
+      idempotencyKey: deliveryId,
+      processedAt: Date.now(),
+    })
+    return { inserted: true }
+  },
+})
+
 export const consumeCreditForExport = internalMutation({
   args: {
     userId: v.string(),
@@ -464,9 +492,7 @@ export const getCreditLedger = query({
     const limit = Math.min(args.limit ?? 50, 100)
     const transactions = await ctx.db
       .query('creditLedger')
-      .withIndex('by_userId_createdAt', (index) =>
-        index.eq('userId', userId),
-      )
+      .withIndex('by_userId_createdAt', (index) => index.eq('userId', userId))
       .order('desc')
       .take(limit)
 

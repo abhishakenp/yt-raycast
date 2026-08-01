@@ -161,15 +161,10 @@ describe('createExportResponse', () => {
     expect(response.headers.get('content-type')).toBe(
       'text/html; charset=utf-8',
     )
-    expect(await response.text()).toContain('Generated fallback')
+    expect(await response.text()).toContain('On-demand preview')
     // The stored artifact fetch must NOT be called for HTML target.
     expect(fetchMock).not.toHaveBeenCalled()
-    expect(artifactFileMocks.buildOpenUIArtifactFiles).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'html',
-        source: '<main>On-demand source</main>',
-      }),
-    )
+    expect(artifactFileMocks.buildOpenUIArtifactFiles).not.toHaveBeenCalled()
   })
 
   it('returns 202 while the artifact is still building', async () => {
@@ -276,21 +271,11 @@ describe('createExportResponse', () => {
       'text/html; charset=utf-8',
     )
     expect(response.headers.get('content-disposition')).toBe(
-      'attachment; filename="index.html"',
+      'attachment; filename="session-123.html"',
     )
     expect(await response.text()).toContain('Generated fallback')
     expect(queryMock).toHaveBeenCalledTimes(2)
-    expect(artifactFileMocks.buildOpenUIArtifactFiles).toHaveBeenCalledWith(
-      expect.objectContaining({
-        source: '<main>Generated fallback</main>',
-        previewHtml:
-          '<!doctype html><html><head><title>Fallback Site</title></head><body><main>Generated fallback</main></body></html>',
-        themeName: 'darkmatter',
-        isDark: false,
-        locale: 'lt',
-        selectedBrandLogo,
-      }),
-    )
+    expect(artifactFileMocks.buildOpenUIArtifactFiles).not.toHaveBeenCalled()
   })
 
   it('does not build an on-demand download from OpenUI renderer-error HTML', async () => {
@@ -502,6 +487,34 @@ describe('createExportResponse', () => {
     })
   })
 
+  it('does not accept an owner secret from download query parameters', async () => {
+    queryMock.mockResolvedValueOnce({
+      export: {
+        status: 'ready',
+        requiresPayment: false,
+        previewVersion: 1,
+      },
+      artifact: { status: 'building', previewVersion: 1 },
+      storageUrl: null,
+      latestPreviewVersion: 1,
+    })
+
+    await createExportResponse(
+      'session_123',
+      'html',
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/download/html?anonymousOwnerSecret=query-secret&anonOwnerSecret=legacy-query-secret',
+      ),
+      fakeClient,
+    )
+
+    expect(queryMock).toHaveBeenCalledWith(expect.anything(), {
+      lookup: 'session_123',
+      target: 'html',
+      anonymousOwnerSecret: undefined,
+    })
+  })
+
   it('builds HTML on-demand when no export record exists yet instead of returning 202', async () => {
     // Regression: first download request for HTML would return 202 "still
     // being prepared" because no export record existed. HTML can be built
@@ -542,7 +555,7 @@ describe('createExportResponse', () => {
     expect(response.headers.get('content-type')).toBe(
       'text/html; charset=utf-8',
     )
-    expect(await response.text()).toContain('Generated fallback')
+    expect(await response.text()).toContain('On-demand preview')
     expect(mutationMock).toHaveBeenCalledTimes(1)
   })
 
@@ -593,6 +606,7 @@ describe('createExportResponse', () => {
         themeName: 'darkmatter',
         isDark: false,
         locale: 'en',
+        includeBadge: true,
       })
 
     const response = await createExportResponse(
@@ -605,7 +619,9 @@ describe('createExportResponse', () => {
     expect(response.headers.get('content-type')).toBe(
       'text/html; charset=utf-8',
     )
-    expect(await response.text()).toContain('Generated fallback')
+    const body = await response.text()
+    expect(body).toContain('On-demand preview')
+    expect(body).toContain('data-ship-fast-export-badge="1"')
   })
 
   it('builds on-demand for non-HTML targets when export status is not ready', async () => {
@@ -639,11 +655,6 @@ describe('createExportResponse', () => {
     )
 
     expect(response.status).toBe(200)
-    expect(artifactFileMocks.buildOpenUIArtifactFiles).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'next',
-        source: '<main>On-demand source</main>',
-      }),
-    )
+    expect(artifactFileMocks.buildOpenUIArtifactFiles).not.toHaveBeenCalled()
   })
 })

@@ -57,6 +57,7 @@ vi.mock('convex/react-clerk', () => ({
 }))
 
 vi.mock('convex/react', () => ({
+  useQuery: () => ({ enabled: false }),
   ConvexProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="convex-anonymous">{children}</div>
   ),

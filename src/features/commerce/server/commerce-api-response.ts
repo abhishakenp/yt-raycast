@@ -145,16 +145,8 @@ function stringValue(
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
-function getOwnerSecret(
-  request: Request,
-  body: Record<string, unknown>,
-): string | undefined {
-  return (
-    stringValue(body, 'anonymousOwnerSecret') ??
-    stringValue(body, 'anonOwnerSecret') ??
-    request.headers.get('x-ship-fast-owner-secret') ??
-    undefined
-  )
+function getOwnerSecret(request: Request): string | undefined {
+  return request.headers.get('x-ship-fast-owner-secret') ?? undefined
 }
 
 function getBearerToken(request: Request): string | null {
@@ -548,7 +540,7 @@ export async function createSessionMedusaProvisionResponse(
 ): Promise<Response> {
   try {
     const body = await readJsonBody(request)
-    const anonymousOwnerSecret = getOwnerSecret(request, body)
+    const anonymousOwnerSecret = getOwnerSecret(request)
     const client = createClient(clientOverride)
     const authToken = getBearerToken(request)
     if (authToken !== null) client.setAuth(authToken)

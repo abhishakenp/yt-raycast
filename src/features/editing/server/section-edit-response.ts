@@ -1147,7 +1147,7 @@ export async function createSectionEditResponse(
     )
   }
 
-  const spend = admitModelCall('section-edit')
+  const spend = admitModelCall()
   if (!spend.allowed) return modelSpendBlockedResponse(spend)
 
   let body: JsonBody

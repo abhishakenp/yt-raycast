@@ -44,6 +44,14 @@ describe('PrivacyPage legal content', () => {
         name: '5. Legal bases (EEA, UK, Switzerland, and similar)',
       }),
     ).toBeTruthy()
+    expect(view.container.textContent).toMatch(
+      /SHA-256 hash of your IP address/i,
+    )
+    expect(view.container.textContent).toMatch(/cryptographic 32-byte salt/i)
+    expect(view.container.textContent).toMatch(
+      /automatically (remove|cleared).*90 days/i,
+    )
+    expect(view.container.textContent).toMatch(/legitimate interests/i)
     expect(view.queryByText(/pending incorporation/i)).toBeNull()
     expect(view.queryByText(/TODO/i)).toBeNull()
     expect(view.queryByText(/TBD/i)).toBeNull()

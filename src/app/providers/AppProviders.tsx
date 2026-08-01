@@ -10,6 +10,7 @@ import {
 } from '@/app/providers/provider-config'
 import { getClerkPublishableKey } from '@/shared/auth/clerk-runtime'
 import { openSignInEventName } from '@/shared/auth/use-optional-auth'
+import { MaintenanceWall } from '@/components/MaintenanceWall'
 
 const LazyClerkConvexProvider = lazy(() =>
   import('@/app/providers/ClerkConvexProvider').then((module) => ({
@@ -96,6 +97,7 @@ function WithSignInHost({
       <div className="contents" id="ship-fast-app-content">
         {children}
       </div>
+      <MaintenanceWall />
       {signInRequestId > 0 ? (
         <Suspense fallback={null}>
           <LazySignInModalHost

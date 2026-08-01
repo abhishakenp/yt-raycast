@@ -26,6 +26,42 @@ export type CheckTranslationEntitlementInput = {
 }
 
 /**
+ * Keep editing available for one billing cycle after Pro expires. Projects
+ * remain online indefinitely; this is only the warning window before we block
+ * paid editing features. Provider cancellation webhooks record `canceledAt`
+ * at the effective subscription end, with `updatedAt` retained as a legacy
+ * fallback for pre-existing cancelled records.
+ */
+export const EDITING_ENTITLEMENT_GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000
+
+export async function hasEditingGracePeriod(
+  ctx: Pick<QueryCtx, 'db'>,
+  userId: string | undefined,
+  now = Date.now(),
+): Promise<boolean> {
+  if (userId === undefined) return false
+
+  const subscriptions = await ctx.db
+    .query('subscriptions')
+    .withIndex('by_userId', (index) => index.eq('userId', userId))
+    .take(20)
+
+  return subscriptions.some((subscription) => {
+    if (
+      subscription.status !== 'cancelled' &&
+      subscription.status !== 'past_due'
+    ) {
+      return false
+    }
+    const subscriptionEndedAt =
+      subscription.canceledAt ??
+      subscription.updatedAt ??
+      subscription.createdAt
+    return now < subscriptionEndedAt + EDITING_ENTITLEMENT_GRACE_PERIOD_MS
+  })
+}
+
+/**
  * Ownership + Pro entitlement gate for the `/api/translate` HTTP endpoint.
  * Mirrors the export API's `assertCanMutateSession` + `checkExportEntitlementReadOnly`
  * contract but returns a structured result (no throw) so the HTTP handler can
@@ -82,5 +118,56 @@ export async function checkTranslationEntitlement(
     message:
       entitlement.message ??
       'Subscribe to Pro to translate sites into other languages.',
+  }
+}
+
+/**
+ * Mirrors translation ownership checks, but keeps expired subscribers in the
+ * configured editing grace period. Export/deployment and translation retain
+ * their normal paid entitlement; the grace applies to editing only.
+ */
+export async function checkEditingEntitlement(
+  ctx: QueryCtx,
+  args: CheckTranslationEntitlementInput,
+): Promise<TranslationEntitlementResult> {
+  const session = await ctx.db.get(args.sessionId)
+  if (session === null || session.deletedAt !== undefined) {
+    return { allowed: false, code: 'not_found', message: 'Session not found' }
+  }
+
+  if (areExportPaywallsDisabled() || isAuthDisabled()) {
+    return { allowed: true, code: 'ok' }
+  }
+
+  const isAdmin = await isUserAdmin(ctx)
+  if (isAdmin) return { allowed: true, code: 'ok' }
+
+  const identity = await ctx.auth.getUserIdentity()
+  const isOwner = await isSessionOwner(ctx, session, args.anonymousOwnerSecret)
+  if (!isOwner) {
+    return {
+      allowed: false,
+      code: identity === null ? 'auth_required' : 'forbidden',
+      message:
+        identity === null
+          ? 'Sign in to edit this site.'
+          : 'You do not own this session',
+    }
+  }
+
+  const userId = identity?.tokenIdentifier ?? identity?.subject
+  const entitlement = await checkExportEntitlementReadOnly(ctx, userId, isAdmin)
+  if (
+    entitlement.status === 'ready' ||
+    (await hasEditingGracePeriod(ctx, userId))
+  ) {
+    return { allowed: true, code: 'ok' }
+  }
+
+  return {
+    allowed: false,
+    code: 'payment_required',
+    message:
+      entitlement.message ?? 'Subscribe to Pro to continue editing this site.',
   }
 }

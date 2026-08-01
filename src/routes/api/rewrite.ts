@@ -118,9 +118,6 @@ export const Route = createFileRoute('/api/rewrite')({
           return json({ error: 'Authentication required' }, { status: 401 })
         }
 
-        const spend = admitModelCall('rewrite')
-        if (!spend.allowed) return modelSpendBlockedResponse(spend)
-
         const rawBody = await readRewriteBody(request)
         if (rawBody === null) {
           return json(
@@ -175,6 +172,9 @@ export const Route = createFileRoute('/api/rewrite')({
         }
 
         try {
+          const spend = admitModelCall()
+          if (!spend.allowed) return modelSpendBlockedResponse(spend)
+
           const system =
             'You are a skilled copywriter. Rewrite the user text according to the instruction. Output only the rewritten text, with no quotes, no markdown, and no explanation. Keep the same approximate length unless asked otherwise.'
           const user = `Original text: "${text}"\n\nInstruction: ${instruction}\n\nRewritten text:`

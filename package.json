@@ -33,6 +33,7 @@
     "verify:github-provider": "node scripts/verify-github-provider.mjs",
     "verify:medusa": "node scripts/verify-medusa.mjs",
     "verify:providers": "node scripts/verify-providers.mjs",
+    "verify:config-drift": "node scripts/verify-config-drift.mjs",
     "verify:dashboard-browser": "node scripts/verify-dashboard-browser.mjs",
     "verify:monitoring": "node scripts/verify-monitoring.mjs",
     "verify:restart-persistence": "node scripts/verify-restart-persistence.mjs",
