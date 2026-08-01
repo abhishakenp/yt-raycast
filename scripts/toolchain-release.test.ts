@@ -28,6 +28,17 @@ function declaredBunVersion(manifest: unknown) {
   return packageManagerVersion
 }
 
+function declaredLintScript(manifest: unknown) {
+  if (!isRecord(manifest) || !isRecord(manifest.scripts)) {
+    throw new Error('package.json must declare scripts')
+  }
+  const lint = manifest.scripts.lint
+  if (typeof lint !== 'string') {
+    throw new Error('package.json must declare a lint script')
+  }
+  return lint
+}
+
 describe('release toolchain contract', () => {
   it('loads the ESLint flat config with the installed dependency graph', () => {
     const projectRoot = resolve(import.meta.dirname, '..')
@@ -54,5 +65,13 @@ describe('release toolchain contract', () => {
     }).trim()
 
     expect(runningVersion).toBe(expectedVersion)
+  })
+
+  it('keeps the lint command aligned with CI warning handling', () => {
+    const manifest = JSON.parse(
+      readFileSync(resolve(import.meta.dirname, '..', 'package.json'), 'utf8'),
+    )
+
+    expect(declaredLintScript(manifest)).not.toContain('--max-warnings=0')
   })
 })
