@@ -879,7 +879,7 @@ export function renderSectionHtml(section: any, siteSpec: any = {}): string {
         siteSpec.siteType === 'ecommerce' &&
         items.length > 0
       const productCardHtml = (item: Record<string, unknown>, dup: unknown) => `
-                  <article class="card product-card product-card--retail product-card--carousel"${Boolean(dup) ? ' aria-hidden="true"' : ''}>
+                  <article class="card product-card product-card--retail product-card--carousel"${dup ? ' aria-hidden="true"' : ''}>
                     ${productFigureHtml(item, { emptyAlt: Boolean(dup) })}
                     ${retailProductCardInnerHtml(item)}
                   </article>

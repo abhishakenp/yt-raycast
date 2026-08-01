@@ -394,7 +394,7 @@ function parseTokens(
     const cleanToken = token.replace(/^:+/, '')
     const colonIdx = cleanToken.indexOf(':')
     if (colonIdx > 0) {
-      let key = cleanToken.slice(0, colonIdx).toLowerCase()
+      const key = cleanToken.slice(0, colonIdx).toLowerCase()
       let value = cleanToken.slice(colonIdx + 1)
       while (value.startsWith(':')) value = value.slice(1)
 
