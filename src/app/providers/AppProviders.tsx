@@ -97,7 +97,6 @@ function WithSignInHost({
       <div className="contents" id="ship-fast-app-content">
         {children}
       </div>
-      <MaintenanceWall />
       {signInRequestId > 0 ? (
         <Suspense fallback={null}>
           <LazySignInModalHost
@@ -154,6 +153,7 @@ export function AppProviders({ children }: AppProvidersProps) {
             >
               {children}
             </WithSignInHost>
+            <MaintenanceWall />
           </LazyClerkConvexProvider>
         </Suspense>
       </QueryClientProvider>
@@ -172,6 +172,7 @@ export function AppProviders({ children }: AppProvidersProps) {
             >
               {children}
             </WithSignInHost>
+            <MaintenanceWall />
           </LazyConvexAnonymousProvider>
         </Suspense>
       </QueryClientProvider>
