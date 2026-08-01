@@ -126,6 +126,7 @@ describe('createWebhookApiResponse', () => {
   it('normalizes Stripe current_period_end (seconds) and cancel_at_period_end into the mutation payload', async () => {
     const body = JSON.stringify({
       id: 'evt_period_end',
+      type: 'customer.subscription.updated',
       data: {
         object: {
           id: 'sub_1',
@@ -215,6 +216,7 @@ describe('createWebhookApiResponse', () => {
   it('normalizes Razorpay current_end (seconds) into the mutation payload', async () => {
     const body = JSON.stringify({
       event: 'subscription.activated',
+      id: 'evt_razorpay_period_end',
       payload: {
         subscription: {
           entity: {
