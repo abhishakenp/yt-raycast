@@ -228,7 +228,7 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
     expect(row.classList.contains('is-hidden')).toBe(false)
   })
 
-  it('starts the three-second speculative-generation countdown from the complete form draft', () => {
+  it('does not fire speculative generation (disabled — too expensive)', () => {
     render(<HomePage />)
     const input = getPromptInput()
 
@@ -236,12 +236,9 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
       target: { value: 'Build a fast customer onboarding website' },
     })
 
-    expect(mocks.scheduleSpeculativeGeneration).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        preferredLanguage: 'en',
-        prompt: 'Build a fast customer onboarding website',
-      }),
-    )
+    // Speculative generation is intentionally disabled at the HomePage call
+    // site. The hook implementation remains intact for future re-enablement.
+    expect(mocks.scheduleSpeculativeGeneration).not.toHaveBeenCalled()
   })
 
   it('does not render or request typeahead completions while typing', () => {

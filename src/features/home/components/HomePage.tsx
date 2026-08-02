@@ -184,14 +184,16 @@ export const HomePage = () => {
     const designReferenceNotes = String(
       formData.get('design-ref-notes') ?? '',
     ).trim()
-    scheduleSpeculativeGeneration({
-      prompt: String(formData.get('prompt') ?? prompt),
-      preferredLanguage: String(formData.get('prompt-language') ?? 'en'),
-      isPrivate: formData.get('private-generation') === 'on',
-      designReferenceUrls,
-      designReferenceNotes,
-      cloneUrl: designReferenceUrls[0],
-    })
+    // Speculative generation disabled — too expensive. Hook implementation
+    // left intact; re-enable by uncommenting this call.
+    // scheduleSpeculativeGeneration({
+    //   prompt: String(formData.get('prompt') ?? prompt),
+    //   preferredLanguage: String(formData.get('prompt-language') ?? 'en'),
+    //   isPrivate: formData.get('private-generation') === 'on',
+    //   designReferenceUrls,
+    //   designReferenceNotes,
+    //   cloneUrl: designReferenceUrls[0],
+    // })
   }, [
     generationDraftVersion,
     preferredLanguage,
